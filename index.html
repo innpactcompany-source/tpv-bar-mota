@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Bar Piscina · Mota del Cuervo — Comandas</title>
+<style>
+  /* ============================================================
+     BAR PISCINA — Gestor de comandas (v3, sincronizado)
+     Igual que antes + se sincroniza entre móviles con Supabase.
+     Sin configurar funciona en modo LOCAL (un solo móvil).
+     EDITAR CARTA -> objeto MENU. CONFIGURAR NUBE -> arriba del script.
+     ============================================================ */
+  @import url('https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700;800&display=swap');
+
+  :root{
+    --blue:#1E52D9; --blue-dark:#1642B0; --blue-tint:#F1F5FF; --blue-2:#E1E9FD;
+    --blue-line:#CFDCFB; --ink:#14213D; --muted:#7686A6; --white:#FFFFFF;
+    --danger:#D64545; --shadow:0 6px 20px rgba(30,82,217,.14);
+  }
+  *{ box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
+  html,body{ height:100%; }
+  body{ font-family:'Inter',system-ui,-apple-system,sans-serif; color:var(--ink); background:var(--white); overflow:hidden; }
+  .display{ font-family:'Anton','Archivo Black',Impact,sans-serif; letter-spacing:.4px; text-transform:uppercase; font-weight:400; }
+  button{ font-family:inherit; cursor:pointer; border:none; background:none; color:inherit; }
+  input{ font-family:inherit; }
+  .num{ font-variant-numeric:tabular-nums; }
+
+  .app{ display:flex; flex-direction:column; height:100dvh; }
+  #hdr{ flex:0 0 auto; }
+  #main{ flex:1 1 auto; overflow-y:auto; min-height:0; }
+
+  /* ================= CABECERA ================= */
+  .hb{ background:var(--blue); color:#fff; padding:12px 16px 14px; display:flex; align-items:center; gap:12px; }
+  .hb .mill{ width:40px; height:40px; flex:0 0 auto; }
+  .hb .brand{ display:flex; flex-direction:column; line-height:.92; }
+  .hb .brand .t1{ font-size:11px; letter-spacing:2.5px; opacity:.85; }
+  .hb .brand .t2{ font-size:22px; }
+  .hb .caja{ margin-left:auto; display:flex; align-items:center; gap:10px; background:rgba(255,255,255,.12); padding:7px 8px 7px 12px; border-radius:14px; }
+  .hb .caja .cl{ font-size:10px; letter-spacing:1.5px; opacity:.8; }
+  .hb .caja .cv{ font-size:17px; font-weight:800; }
+  .hb .caja .cc{ font-size:11px; opacity:.85; }
+  .hb .caja .creset{ font-size:12px; color:#fff; background:rgba(255,255,255,.16); padding:6px 10px; border-radius:10px; }
+  .hb .caja .creset:active{ background:rgba(255,255,255,.3); }
+  .hb .logo{ display:flex; align-items:center; gap:12px; background:none; padding:0; transition:opacity .12s; }
+  .hb .logo:active{ opacity:.7; }
+
+  /* punto de conexión */
+  .dot{ width:9px; height:9px; border-radius:50%; background:#3ED598; box-shadow:0 0 0 3px rgba(62,213,152,.20); flex:0 0 auto; }
+  .dot.off{ background:#F26D6D; box-shadow:0 0 0 3px rgba(242,109,109,.20); }
+  .ht .dot{ margin-left:6px; }
+
+  /* modal de confirmación */
+  .overlay{ position:fixed; inset:0; background:rgba(20,33,61,.5); display:flex; align-items:center; justify-content:center; padding:24px; z-index:100; animation:fade .12s ease; }
+  @keyframes fade{ from{opacity:0} to{opacity:1} }
+  .modal{ background:#fff; border-radius:18px; padding:22px 20px 16px; width:100%; max-width:360px; box-shadow:0 20px 50px rgba(20,33,61,.35); }
+  .m-msg{ font-size:18px; font-weight:700; line-height:1.3; }
+  .m-msg b{ color:var(--blue); }
+  .m-sub{ font-size:13.5px; color:var(--muted); margin-top:7px; line-height:1.4; }
+  .m-actions{ display:grid; grid-template-columns:1fr 1fr; gap:9px; margin-top:18px; }
+  .m-btn{ padding:14px; border-radius:12px; font-weight:800; font-size:15px; }
+  .m-cancel{ background:var(--blue-tint); color:var(--ink); }
+  .m-cancel:active{ background:var(--blue-2); }
+  .m-ok{ background:var(--blue); color:#fff; }
+  .m-ok:active{ background:var(--blue-dark); }
+  .m-danger{ background:var(--danger); color:#fff; }
+  .m-danger:active{ filter:brightness(.9); }
+  .ex-list{ margin-top:14px; max-height:44vh; overflow-y:auto; display:flex; flex-direction:column; gap:8px; }
+  .ex-row{ display:flex; align-items:center; gap:10px; background:var(--blue-tint); border-radius:11px; padding:8px 10px; }
+  .ex-i{ flex:1 1 auto; display:flex; flex-direction:column; }
+  .ex-n{ font-size:15px; font-weight:600; }
+  .ex-p{ font-size:12px; color:var(--muted); }
+  .ex-total{ display:flex; align-items:center; justify-content:space-between; margin-top:14px; padding-top:12px; border-top:1px solid var(--blue-line); }
+  .ex-total .exl{ font-size:15px; font-weight:700; }
+  .ex-total .ex-tv{ font-size:24px; font-weight:800; color:var(--blue); }
+
+  /* cabecera de detalle de mesa */
+  .ht{ background:var(--blue); color:#fff; padding:10px 12px; display:flex; align-items:center; gap:10px; }
+  .ht .back{ width:40px; height:40px; border-radius:12px; background:rgba(255,255,255,.14); font-size:22px; display:grid; place-items:center; flex:0 0 auto; }
+  .ht .back:active{ background:rgba(255,255,255,.3); }
+  .ht .thead{ display:flex; flex-direction:column; min-width:0; flex:1 1 auto; }
+  .ht .tname{ font-size:22px; line-height:1; }
+  .ht .tsub{ background:rgba(255,255,255,.14); border:none; color:#fff; border-radius:9px; padding:5px 9px; font-size:13px; margin-top:5px; width:100%; max-width:280px; }
+  .ht .tsub::placeholder{ color:rgba(255,255,255,.6); }
+  .ht .ttot{ font-size:22px; font-weight:800; flex:0 0 auto; }
+
+  /* segmentado Cuenta/Añadir */
+  .seg{ display:flex; gap:6px; padding:10px 12px; background:var(--white); position:sticky; top:0; z-index:5; border-bottom:1px solid var(--blue-line); }
+  .seg button{ flex:1; padding:11px; border-radius:12px; font-weight:800; font-size:15px; background:var(--blue-tint); color:var(--blue); }
+  .seg button.on{ background:var(--blue); color:#fff; box-shadow:var(--shadow); }
+
+  /* ================= TABLERO ================= */
+  .board-title{ padding:16px 16px 6px; font-size:15px; color:var(--muted); font-weight:700; letter-spacing:.3px; }
+  .grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:11px; padding:6px 16px 24px; }
+  .mesa{ background:var(--white); border:2px solid var(--blue-line); border-radius:16px; padding:14px; min-height:92px; display:flex; flex-direction:column; justify-content:space-between; text-align:left; transition:transform .06s,border-color .12s; }
+  .mesa:active{ transform:scale(.97); }
+  .mesa .mtop{ display:flex; align-items:baseline; justify-content:space-between; gap:6px; }
+  .mesa .mname{ font-size:19px; }
+  .mesa .mtot{ font-size:15px; font-weight:800; color:var(--blue); }
+  .mesa .msub{ font-size:12px; color:var(--muted); margin-top:6px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .mesa.has{ border-color:var(--blue); background:var(--blue-tint); }
+  .mesa.has .mname{ color:var(--blue); }
+  .mesa.add{ border-style:dashed; color:var(--blue); align-items:center; justify-content:center; min-height:92px; }
+  .mesa.add .plus{ font-size:30px; line-height:1; }
+  .mesa.add .al{ font-size:12px; font-weight:700; margin-top:2px; }
+
+  /* ================= CUENTA ================= */
+  .pane{ padding:12px 12px 0; }
+  .empty{ text-align:center; color:var(--muted); font-size:14px; padding:44px 20px; line-height:1.5; }
+  .line{ display:flex; align-items:center; gap:8px; background:var(--blue-tint); border-radius:12px; padding:8px 8px 8px 12px; margin-bottom:8px; }
+  .line .li{ flex:1 1 auto; min-width:0; }
+  .line .ln{ font-size:15px; font-weight:600; line-height:1.25; }
+  .line .lp{ font-size:12px; color:var(--muted); }
+  .stepper{ display:flex; align-items:center; gap:3px; flex:0 0 auto; }
+  .stepper button{ width:32px; height:32px; border-radius:9px; background:#fff; color:var(--blue); font-size:20px; font-weight:700; display:grid; place-items:center; border:1px solid var(--blue-line); }
+  .stepper button:active{ background:var(--blue-2); }
+  .stepper .q{ min-width:22px; text-align:center; font-weight:800; font-size:15px; }
+  .line .lsub{ width:58px; text-align:right; font-weight:800; font-size:14px; flex:0 0 auto; }
+  .line .del{ width:26px; height:32px; color:var(--muted); font-size:15px; flex:0 0 auto; }
+  .line .del:active{ color:var(--danger); }
+
+  /* pie fijo (cuenta y añadir) */
+  .foot{ position:sticky; bottom:0; background:var(--white); border-top:1px solid var(--blue-line); padding:12px 14px calc(12px + env(safe-area-inset-bottom)); }
+  .total{ display:flex; align-items:baseline; justify-content:space-between; margin-bottom:11px; }
+  .total .tl{ font-size:15px; font-weight:700; }
+  .total .tv{ font-size:32px; color:var(--blue); }
+  .actions{ display:grid; grid-template-columns:1fr 1.7fr; gap:9px; }
+  .btn{ padding:15px; border-radius:13px; font-weight:800; font-size:15px; text-align:center; }
+  .btn-clear{ background:#fff; color:var(--danger); border:2px solid #f2cfcf; }
+  .btn-clear:active{ background:#fdeaea; }
+  .btn-pay{ background:var(--blue); color:#fff; box-shadow:var(--shadow); }
+  .btn-pay:active{ background:var(--blue-dark); }
+  .btn:disabled{ opacity:.4; box-shadow:none; }
+  .btn-view{ background:var(--blue); color:#fff; box-shadow:var(--shadow); }
+  .btn-view:active{ background:var(--blue-dark); }
+
+  /* ================= AÑADIR ================= */
+  .fb{ display:flex; gap:8px; padding:12px 12px 4px; }
+  .fb button{ flex:1; padding:12px; border-radius:12px; font-weight:800; font-size:15px; background:var(--blue-tint); color:var(--blue); }
+  .fb button.on{ background:var(--blue); color:#fff; }
+  .acc-wrap{ padding:6px 12px 0; }
+  .acc{ border:1.5px solid var(--blue-line); border-radius:13px; margin-bottom:10px; overflow:hidden; }
+  .acc-h{ width:100%; display:flex; align-items:center; justify-content:space-between; padding:14px 14px; font-weight:800; font-size:16px; color:var(--ink); background:var(--white); }
+  .acc-h .chev{ transition:transform .2s; color:var(--blue); font-size:14px; }
+  .acc.open .acc-h{ color:var(--blue); background:var(--blue-tint); }
+  .acc.open .acc-h .chev{ transform:rotate(90deg); }
+  .acc-body{ display:none; padding:10px; grid-template-columns:1fr 1fr; gap:8px; background:var(--blue-tint); }
+  .acc.open .acc-body{ display:grid; }
+  .acc-item{ position:relative; background:#fff; border:1.5px solid var(--blue-line); border-radius:11px; padding:10px 11px; text-align:left; display:flex; flex-direction:column; gap:5px; min-height:58px; justify-content:space-between; transition:transform .06s; }
+  .acc-item:active{ transform:scale(.95); border-color:var(--blue); }
+  .acc-item .ain{ font-size:13.5px; font-weight:600; line-height:1.15; }
+  .acc-item .aip{ font-size:14px; font-weight:800; color:var(--blue); }
+  .acc-item .badge{ position:absolute; top:-8px; right:-8px; min-width:22px; height:22px; padding:0 6px; background:var(--blue); color:#fff; border-radius:11px; font-size:12px; font-weight:800; display:none; align-items:center; justify-content:center; box-shadow:0 2px 6px rgba(30,82,217,.35); }
+  .acc-item.in .badge{ display:flex; }
+
+  /* ===== Tablet apaisada / ordenador ===== */
+  @media (min-width:900px){
+    #main{ max-width:1120px; margin:0 auto; width:100%; }
+    .acc-body{ grid-template-columns:1fr 1fr 1fr; }
+    /* vista de mesa en 2 columnas: menú (izq) + cuenta (der) */
+    .tv2{ display:grid; grid-template-columns:1fr 380px; height:100%; min-height:0; }
+    .tv-left{ overflow-y:auto; min-height:0; padding:0 4px 24px; }
+    .tv-right{ display:flex; flex-direction:column; min-height:0; border-left:1px solid var(--blue-line); background:var(--blue-tint); }
+    .tv-right #cuenta-pane{ flex:1 1 auto; overflow-y:auto; min-height:0; }
+    .tv-right .foot{ position:static; }
+  }
+  /* tablet estrecha: acordeón a 2 columnas pero sigue el modo móvil (pestañas) */
+  @media (min-width:600px) and (max-width:899px){
+    #main{ max-width:640px; margin:0 auto; width:100%; }
+    .acc-body{ grid-template-columns:1fr 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <div id="hdr"></div>
+  <div id="main"></div>
+</div>
+
+<!-- Librería de la nube (se ignora sola si no hay internet) -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+/* ================================================================
+   0) CONFIGURAR NUBE  —  PEGA AQUÍ TUS DOS LÍNEAS
+   (Supabase -> Project Settings -> API)
+   Si las dejas vacías, la app funciona en modo LOCAL (un móvil).
+   ================================================================ */
+const SUPABASE_URL = "https://xgtheuslufmgvadrknkh.supabase.co";
+const SUPABASE_KEY = "sb_publishable_hwze_N-sgY7eCb2Jr7kHQw_xxsOJHWY";
+
+/* ================================================================
+   1) CARTA — edita precios / platos / bebidas aquí
+   ================================================================ */
+const MENU = {
+  comida: { label:'Comida', groups:{
+    'Tapas': [ ['Bravas',6.5],['Fingers de pollo',6.5],['Fingers de queso',5.5],['Pinchos morunos',4.5],['Calamares',7.5],['Croquetas de jamón',5.5] ],
+    'Burguers, sandwich y perrito': [ ['Hamburguesa de vacuno',7],['Hamburguesa de pollo',6.5],['Sándwich mixto',3],['Perrito',4] ],
+    'Bocadillos y montados': [ ['Bocadillo lomo',5.5],['Bocadillo magreta',5.5],['Bocadillo bacon',5.5],['Bocadillo pechuga',5.5],['Montado lomo',4.5],['Montado magreta',4.5],['Montado bacon',4.5],['Montado pechuga',4.5] ],
+    'Combinados': [ ['Comb. lomo',6],['Comb. magreta',6],['Comb. bacon',6],['Comb. pechuga plancha',6],['Comb. pechuga rebozada',6] ],
+    'Papas': [ ['Jumpers ketchup',1],['Jumpers mantequilla',1],['Campesinas',1.8],['Jamón',1.8],['Palomitas',1.8],['Originales Vidal',1.8] ],
+    'Chuches': [ ['Bolsa de chuches',1.5],['Gofre',2],['Regaliz',0.3],['Chupachups',0.5],['Chicle',0.15] ],
+    'Helados y polos': [ ['Magnum',3],['Chock and Ball',3],['Cornetto Max',3],['Cornetto XXL',3],['Sándwich Dino',2.9],['Sándwich Filipinos',2.9],['Twister',2.2],['Frigopié',2.1],['Haribo',2.1],['Calippo',2],['Sándwich original',1.6],['Donut Filipinos',1.6],['Flash',0.5] ],
+  }},
+  bebidas: { label:'Bebidas', groups:{
+    'Refrescos': [ ['Coca-Cola',2.5],['Fanta',2.5],['Fuze Tea',2.5],['Aquarius',2.5],['Agua',1.5] ],
+    'Cervezas': [ ['Caña',2.5],['Doble',3],['Tercio',2.5],['Tinto de verano',2.5] ],
+    'Vinos': [ ['Vino semidulce',2.5],['Vino tinto',2.2],['Vino blanco',2.2],['Vermut',2] ],
+    'Cubatas y piedras': [ ['Cubata',5.5],['Piedra',3] ],
+    'Granizados': [ ['Granizado café',2.8],['Granizado café + Baileys',3.8],['Granizado limón',2.5],['Granizado fresa',2.5],['Granizado España',3] ],
+    'Café': [ ['Café solo',1.5],['Café con leche',1.8],['Americano',1.5],['Café del tiempo',1.8],['Bombón',1.8],['Café con licor',2],['Cortado',1.6] ],
+  }},
+};
+
+const DEFAULT_TABLES=['Barra','Mesa 1','Mesa 2','Mesa 3','Mesa 4','Mesa 5','Mesa 6','Mesa 7','Mesa 8'];
+
+/* Tipo de cada producto para ordenar la cuenta (bebidas antes que comida) */
+const ITEM_TYPE={};
+Object.keys(MENU).forEach(sec=>{ Object.values(MENU[sec].groups).forEach(items=>{ items.forEach(([name])=>{ ITEM_TYPE[name]=sec; }); }); });
+function lineRank(name){ const t=ITEM_TYPE[name.split(' (')[0]]; return t==='bebidas'?0 : t==='comida'?1 : 2; }
+
+/* Extras dentro de cada categoría.
+   free:true -> el 1º de CADA uno de esos (bacon/queso/tomate) va gratis; el resto se cobra.
+   Patatas fritas: se cobra SIEMPRE desde la 1ª.
+   Perritos, burguers y combinados ya llevan patatas incluidas, por eso no la ofrecen. */
+const EXTRAS=[
+  {name:'Bacon',price:0.5,free:true},
+  {name:'Queso',price:0.5,free:true},
+  {name:'Tomate rallado',price:0.5,free:true},
+  {name:'Patatas fritas',price:1,free:false},
+  {name:'Hielo',price:0.1,free:false},
+];
+const EXTRAS_BY_CAT={
+  'Bocadillos y montados':['Bacon','Queso','Tomate rallado','Patatas fritas'],
+  'Combinados':['Bacon','Queso','Tomate rallado'],
+  'Burguers, sandwich y perrito':['Queso','Bacon'],
+  'Café':['Hielo'],
+};
+const WITH_EXTRAS=Object.keys(EXTRAS_BY_CAT);
+function extrasFor(cat){ return (EXTRAS_BY_CAT[cat]||[]).map(n=>EXTRAS.find(e=>e.name===n)).filter(Boolean); }
+
+/* ================================================================
+   2) Estado + utilidades
+   ================================================================ */
+const CLOUD = !!(SUPABASE_URL && SUPABASE_KEY && window.supabase);
+let sb=null, online=false;
+
+const today=()=>new Date().toISOString().slice(0,10);
+let state = {
+  tableList:[...DEFAULT_TABLES],
+  tables:{},                 // name -> { sub:'', lines:[{name,price,qty}] }
+  view:'board', active:null, tab:'add', fb:'comida', openCat:null,
+  caja:{ count:0, total:0, date:today() },
+};
+const eur=n=>n.toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2})+' €';
+const tbl =n=>state.tables[n]||{sub:'',lines:[]};
+const ensure=n=>{ if(!state.tables[n]) state.tables[n]={sub:'',lines:[]}; return state.tables[n]; };
+const tTotal=n=>tbl(n).lines.reduce((s,l)=>s+l.price*l.qty,0);
+const tCount=n=>tbl(n).lines.reduce((s,l)=>s+l.qty,0);
+const el=(t,c,h)=>{ const e=document.createElement(t); if(c)e.className=c; if(h!=null)e.innerHTML=h; return e; };
+function sortNames(a,b){ const rk=n=> n==='Barra'?-1 : (/^Mesa \d+$/.test(n)? parseInt(n.slice(5),10) : 9999); return rk(a)-rk(b) || a.localeCompare(b,'es'); }
+
+const MILL='<svg class="mill" viewBox="0 0 100 100" fill="none"><g stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><line x1="50" y1="46" x2="22" y2="18"/><line x1="50" y1="46" x2="78" y2="18"/><line x1="50" y1="46" x2="22" y2="74"/><line x1="50" y1="46" x2="78" y2="74"/><path d="M41 60 L44 46 L56 46 L59 60"/><path d="M44 46 L50 39 L56 46"/></g><circle cx="50" cy="46" r="4" fill="#fff"/></svg>';
+
+/* ================================================================
+   3) Capa de datos: LOCAL (un móvil) o NUBE (sincronizado)
+   ================================================================ */
+const KEY='bar-mota-v2', OLD='bar-mota-estado-v1';
+const Store={
+  async load(k){ try{ const v=localStorage.getItem(k); return v?JSON.parse(v):null; }catch(_){ return null; } },
+  save(k,val){ try{ localStorage.setItem(k,JSON.stringify(val)); }catch(_){ } },
+};
+
+const LocalDB={
+  async load(){
+    let saved=await Store.load(KEY);
+    if(!saved){ const old=await Store.load(OLD);
+      if(old){ const t={}; Object.keys(old.tables||{}).forEach(n=>{ t[n]={sub:'',lines:old.tables[n]||[]}; });
+        saved={ tableList:old.tableList||state.tableList, tables:t, caja:old.caja }; } }
+    if(saved){ state.tableList=saved.tableList&&saved.tableList.length?saved.tableList:[...DEFAULT_TABLES];
+      state.tables=saved.tables||{};
+      state.caja=(saved.caja&&saved.caja.date===today())?saved.caja:{count:0,total:0,date:today()}; }
+    online=true;
+  },
+  persist(){ Store.save(KEY,{tableList:state.tableList,tables:state.tables,caja:state.caja}); },
+  async addItem(){ this.persist(); }, async stepItem(){ this.persist(); }, async removeItem(){ this.persist(); },
+  async clearMesa(){ this.persist(); }, async setSub(){ this.persist(); }, async addMesa(){ this.persist(); },
+  async pay(){ this.persist(); }, async resetCaja(){ this.persist(); },
+  subscribe(){},
+};
+
+const CloudDB={
+  async load(){
+    try{
+      let { data:mesas, error } = await sb.from('mesas').select('name,sub');
+      if(error) throw error;
+      if(!mesas || !mesas.length){ const seed=DEFAULT_TABLES.map(n=>({name:n,sub:''}));
+        await sb.from('mesas').upsert(seed,{onConflict:'name',ignoreDuplicates:true}); mesas=seed; }
+      const { data:orders } = await sb.from('orders').select('mesa,item,price,qty');
+      const start=new Date(); start.setHours(0,0,0,0);
+      const { data:tk } = await sb.from('tickets').select('total').gte('closed_at', start.toISOString());
+      const names=mesas.map(m=>m.name).sort(sortNames);
+      const tables={};
+      names.forEach(n=>{ const r=mesas.find(x=>x.name===n); tables[n]={sub:(r&&r.sub)||'',lines:[]}; });
+      (orders||[]).forEach(o=>{ if(!tables[o.mesa]) tables[o.mesa]={sub:'',lines:[]};
+        tables[o.mesa].lines.push({name:o.item,price:Number(o.price),qty:o.qty}); });
+      Object.values(tables).forEach(t=>t.lines.sort((a,b)=>a.name.localeCompare(b.name,'es')));
+      state.tableList=names; state.tables=tables;
+      state.caja={ count:(tk||[]).length, total:(tk||[]).reduce((s,r)=>s+Number(r.total),0), date:today() };
+      online=true;
+    }catch(e){ online=false; }
+  },
+  async addItem(mesa,item,price){ flag((await sb.rpc('add_item',{_mesa:mesa,_item:item,_price:price})).error); },
+  async stepItem(mesa,item,d){ flag((await sb.rpc('step_item',{_mesa:mesa,_item:item,_d:d})).error); },
+  async removeItem(mesa,item){ flag((await sb.from('orders').delete().eq('mesa',mesa).eq('item',item)).error); },
+  async clearMesa(mesa){ flag((await sb.from('orders').delete().eq('mesa',mesa)).error); },
+  async setSub(mesa,sub){ flag((await sb.from('mesas').upsert({name:mesa,sub},{onConflict:'name'})).error); },
+  async addMesa(name){ flag((await sb.from('mesas').upsert({name,sub:''},{onConflict:'name',ignoreDuplicates:true})).error); },
+  async pay(mesa,total){ await sb.from('tickets').insert({mesa,total}); flag((await sb.from('orders').delete().eq('mesa',mesa)).error); },
+  async resetCaja(){},
+  subscribe(cb){
+    sb.channel('bar-piscina')
+      .on('postgres_changes',{event:'*',schema:'public',table:'orders'},cb)
+      .on('postgres_changes',{event:'*',schema:'public',table:'mesas'},cb)
+      .on('postgres_changes',{event:'*',schema:'public',table:'tickets'},cb)
+      .subscribe(st=>{ online=(st==='SUBSCRIBED'); setDot(); });
+  },
+};
+function flag(error){ online=!error; setDot(); }
+const DB = CLOUD ? CloudDB : LocalDB;
+
+/* resync: cuando otro móvil cambia algo, recargamos y refrescamos */
+let syncTimer=null;
+function scheduleSync(){ clearTimeout(syncTimer); syncTimer=setTimeout(async()=>{ await DB.load(); refresh(); },150); }
+
+/* ================================================================
+   4) Acciones  (optimista: se ve al instante, luego sincroniza)
+   ================================================================ */
+function openTable(n){ state.active=n; state.view='table'; state.fb='comida'; state.openCat=null; state.tab = tbl(n).lines.length?'cuenta':'add'; renderApp(); }
+function back(){ state.view='board'; renderApp(); }
+function goHome(){ state.view='board'; renderApp(); }
+
+async function addItem(name,price){
+  const t=ensure(state.active); const ex=t.lines.find(l=>l.name===name);
+  if(ex) ex.qty++; else t.lines.push({name,price,qty:1});
+  commit();
+  await DB.addItem(state.active,name,price);
+}
+async function stepItem(name,d){
+  const t=ensure(state.active); const l=t.lines.find(x=>x.name===name); if(!l)return;
+  l.qty+=d; if(l.qty<=0) t.lines=t.lines.filter(x=>x.name!==name);
+  commit();
+  await DB.stepItem(state.active,name,d);
+}
+async function removeItem(name){
+  const t=ensure(state.active); t.lines=t.lines.filter(x=>x.name!==name);
+  commit();
+  await DB.removeItem(state.active,name);
+}
+let subTimer=null;
+function setSub(v){ ensure(state.active).sub=v; const m=state.active; clearTimeout(subTimer); subTimer=setTimeout(()=>DB.setSub(m,v),400); }
+async function addTable(){
+  const nums=state.tableList.filter(t=>/^Mesa \d+$/.test(t)).map(t=>+t.slice(5));
+  const name='Mesa '+((nums.length?Math.max(...nums):0)+1);
+  state.tableList.push(name); ensure(name); renderApp();
+  await DB.addMesa(name);
+}
+function clearTable(){
+  if(tCount(state.active)===0)return;
+  confirmDialog({ message:'¿Vaciar la cuenta de <b>'+state.active+'</b>?', sub:'Se borra todo el pedido. La mesa sigue abierta.', okLabel:'Vaciar', danger:true,
+    onOk:async()=>{ const m=state.active; if(state.tables[m]) state.tables[m].lines=[]; renderCuenta(); await DB.clearMesa(m); } });
+}
+function payTable(){
+  const tot=tTotal(state.active); if(tot<=0)return;
+  confirmDialog({ message:'¿Marcar <b>'+state.active+'</b> como cobrada?', sub:'Total '+eur(tot)+'. La mesa se reinicia y vuelve libre.', okLabel:'Cobrado',
+    onOk:async()=>{ const m=state.active;
+      if(state.caja.date!==today()) state.caja={count:0,total:0,date:today()};
+      state.caja.count++; state.caja.total+=tot;
+      if(state.tables[m]) state.tables[m].lines=[];
+      back(); await DB.pay(m,tot); } });
+}
+function resetCaja(){
+  confirmDialog({ message:'¿Cerrar caja del día?', sub:'El contador de tickets y el total vuelven a cero.', okLabel:'Cerrar caja', danger:true,
+    onOk:()=>{ state.caja={count:0,total:0,date:today()}; DB.resetCaja(); renderApp(); } });
+}
+
+/* Modal de confirmación propio (no usa el confirm() del navegador) */
+function confirmDialog({message, sub, okLabel, danger, onOk}){
+  const ov=el('div','overlay');
+  ov.innerHTML='<div class="modal"><div class="m-msg">'+message+'</div>'+
+    (sub?'<div class="m-sub">'+sub+'</div>':'')+
+    '<div class="m-actions"><button class="m-btn m-cancel">Cancelar</button>'+
+    '<button class="m-btn '+(danger?'m-danger':'m-ok')+'">'+okLabel+'</button></div></div>';
+  document.body.appendChild(ov);
+  const close=()=>ov.remove();
+  ov.addEventListener('click',e=>{ if(e.target===ov) close(); });
+  ov.querySelector('.m-cancel').onclick=close;
+  ov.querySelector('.'+(danger?'m-danger':'m-ok')).onclick=()=>{ close(); onOk(); };
+}
+
+/* Diálogo de extras: se abre al pedir un bocadillo/montado o combinado.
+   Reglas: el 1er condimento (bacon/queso/tomate) es gratis; el resto se cobra.
+   Patatas fritas se cobra siempre desde la 1ª. */
+function openExtrasModal(baseName, basePrice, cat){
+  const list=extrasFor(cat);
+  const freeItems=list.filter(e=>e.free), paidItems=list.filter(e=>!e.free);
+  const low=arr=>arr.map(e=>e.name.toLowerCase()).join('/');
+  const subNote = (freeItems.length&&paidItems.length) ? ('1º de cada '+low(freeItems)+' gratis · '+low(paidItems)+' siempre')
+                : freeItems.length ? '1º de cada extra gratis'
+                : ('cada '+low(paidItems)+' se cobra');
+  const priceOf=n=>{ const e=list.find(x=>x.name===n); return e?e.price:0; };
+  const isFree=n=>{ const e=list.find(x=>x.name===n); return !!(e&&e.free); };
+  let seq=[];  // unidades de extra en el orden en que se añaden
+  const rows=list.map(e=>
+    '<div class="ex-row" data-ex="'+e.name+'"><div class="ex-i"><span class="ex-n">'+e.name+'</span><span class="ex-p num">+'+eur(e.price)+'</span></div>'+
+    '<div class="stepper"><button data-a="m">−</button><span class="q num">0</span><button data-a="p">+</button></div></div>').join('');
+  const ov=el('div','overlay');
+  ov.innerHTML='<div class="modal"><div class="m-msg">'+baseName+'</div>'+
+    '<div class="m-sub">Base '+eur(basePrice)+' · '+subNote+'</div>'+
+    '<div class="ex-list">'+rows+'</div>'+
+    '<div class="ex-total"><span class="exl">Total</span><span class="ex-tv num">'+eur(basePrice)+'</span></div>'+
+    '<div class="m-actions"><button class="m-btn m-cancel">Cancelar</button>'+
+    '<button class="m-btn m-ok ex-add">Añadir</button></div></div>';
+  document.body.appendChild(ov);
+  const close=()=>ov.remove();
+  const countOf=n=> seq.filter(x=>x===n).length;
+  const charged=()=>{
+    let sum=0;
+    list.forEach(e=>{ const c=countOf(e.name); if(c<=0) return;
+      sum += e.free ? (c-1)*e.price : c*e.price; });  // 1º de CADA condimento gratis; patatas todas se cobran
+    return sum;
+  };
+  const total=()=> basePrice + charged();
+  const paint=()=>{
+    ov.querySelector('.ex-tv').textContent=eur(total());
+    ov.querySelectorAll('.ex-row').forEach(r=>{ r.querySelector('.q').textContent=countOf(r.dataset.ex); });
+  };
+  ov.querySelectorAll('.ex-row').forEach(row=>{
+    const name=row.dataset.ex;
+    row.querySelector('[data-a=m]').onclick=()=>{ const i=seq.lastIndexOf(name); if(i>=0){ seq.splice(i,1); paint(); } };
+    row.querySelector('[data-a=p]').onclick=()=>{ seq.push(name); paint(); };
+  });
+  ov.addEventListener('click',e=>{ if(e.target===ov) close(); });
+  ov.querySelector('.m-cancel').onclick=close;
+  ov.querySelector('.ex-add').onclick=()=>{
+    const chosen=list.filter(e=>countOf(e.name)>0);
+    let name=baseName, price=basePrice;
+    if(chosen.length){
+      const parts=chosen.map(e=>{ const c=countOf(e.name); return c>1 ? e.name.toLowerCase()+'×'+c : e.name.toLowerCase(); });
+      name=baseName+' ('+parts.join(', ')+')'; price=total();
+    }
+    close(); addItem(name, price);
+  };
+}
+
+function setTab(t){ state.tab=t; renderTableBody(); }
+function setFb(fb){ state.fb=fb; state.openCat=null; renderAddPane(); }
+function toggleCat(cat){
+  const was=state.openCat; state.openCat=(was===cat)?null:cat;
+  document.querySelectorAll('.acc').forEach(a=>{ a.classList.toggle('open', a.dataset.cat===state.openCat); });
+}
+
+/* ================================================================
+   5) Render
+   ================================================================ */
+function dotHTML(){ return CLOUD ? '<span class="dot'+(online?'':' off')+'"></span>' : ''; }
+function setDot(){ document.querySelectorAll('.dot').forEach(d=>{ d.classList.toggle('off',!online); d.title=online?'En línea':'Sin conexión'; }); }
+
+let isDesktop = window.matchMedia('(min-width:900px)').matches;
+
+function refresh(){
+  if(state.view==='board'){ renderApp(); return; }
+  const ht=document.getElementById('ht-tot'); if(ht) ht.textContent=eur(tTotal(state.active));
+  if(isDesktop){ renderCuenta(); refreshBadges(); }
+  else if(state.tab==='cuenta') renderCuenta(); else renderAddPane();
+  setDot();
+}
+
+function renderApp(){
+  const hdr=document.getElementById('hdr'), main=document.getElementById('main');
+  hdr.innerHTML=''; main.innerHTML=''; main.scrollTop=0;
+  if(state.view==='board'){ renderHeaderBoard(hdr); renderBoard(main); }
+  else if(isDesktop){ renderHeaderTable(hdr); renderTableDesktop(main); }
+  else { renderHeaderTable(hdr); renderTableShell(main); renderTableBody(); }
+  setDot();
+}
+
+/* Vista de mesa en ESCRITORIO: menú (izq) + cuenta (der), sin pestañas */
+function renderTableDesktop(main){
+  const wrap=el('div','tv2');
+  // izquierda: añadir
+  const left=el('div','tv-left');
+  const fb=el('div','fb','<button data-fb="comida">Comida</button><button data-fb="bebidas">Bebidas</button>');
+  fb.querySelector('[data-fb=comida]').onclick=()=>setFb('comida');
+  fb.querySelector('[data-fb=bebidas]').onclick=()=>setFb('bebidas');
+  left.appendChild(fb);
+  left.appendChild(el('div','acc-wrap','<div id="acc-list"></div>'));
+  // derecha: cuenta
+  const right=el('div','tv-right');
+  right.appendChild((()=>{ const p=el('div','pane'); p.id='cuenta-pane'; return p; })());
+  const foot=el('div','foot',
+    '<div class="total"><span class="tl">TOTAL</span><span class="tv num" id="c-total">'+eur(tTotal(state.active))+'</span></div>'+
+    '<div class="actions"><button class="btn btn-clear" id="c-clear">Vaciar</button><button class="btn btn-pay" id="c-pay">Cobrado</button></div>');
+  foot.querySelector('#c-clear').onclick=clearTable;
+  foot.querySelector('#c-pay').onclick=payTable;
+  right.appendChild(foot);
+  wrap.appendChild(left); wrap.appendChild(right);
+  main.appendChild(wrap);
+  renderAddPane(); renderCuenta();
+}
+
+function renderHeaderBoard(hdr){
+  const h=el('div','hb', '<button class="logo">'+MILL+
+    '<div class="brand"><span class="t1 display">BAR PISCINA</span><span class="t2 display">MOTA DEL CUERVO</span></div></button>'+
+    '<div class="caja">'+dotHTML()+'<div style="display:flex;flex-direction:column;line-height:1.1"><span class="cl">CAJA HOY</span><span class="cv num">'+eur(state.caja.total)+'</span></div>'+
+    '<span class="cc">'+state.caja.count+' tickets</span>'+(CLOUD?'':'<button class="creset">Cerrar</button>')+'</div>');
+  const rb=h.querySelector('.creset'); if(rb) rb.onclick=resetCaja;
+  h.querySelector('.logo').onclick=goHome;
+  hdr.appendChild(h);
+}
+function renderBoard(main){
+  main.appendChild(el('div','board-title','MESAS'));
+  const g=el('div','grid');
+  state.tableList.forEach(n=>{
+    const tot=tTotal(n), sub=tbl(n).sub;
+    const b=el('button','mesa'+(tot>0?' has':''),
+      '<div class="mtop"><span class="mname display">'+n+'</span>'+(tot>0?'<span class="mtot num">'+eur(tot)+'</span>':'')+'</div>'+
+      (sub?'<div class="msub">'+sub+'</div>':''));
+    b.onclick=()=>openTable(n); g.appendChild(b);
+  });
+  const add=el('button','mesa add','<span class="plus">+</span><span class="al">Añadir mesa</span>');
+  add.onclick=addTable; g.appendChild(add);
+  main.appendChild(g);
+}
+
+function renderHeaderTable(hdr){
+  const n=state.active, sub=tbl(n).sub;
+  const h=el('div','ht',
+    '<button class="back">←</button>'+
+    '<div class="thead"><span class="tname display">'+n+'</span>'+
+    '<input class="tsub" placeholder="Añadir nombre (p. ej. sombrilla 4)" value="'+sub.replace(/"/g,'&quot;')+'"></div>'+
+    '<span class="ttot num" id="ht-tot">'+eur(tTotal(n))+'</span>'+dotHTML());
+  h.querySelector('.back').onclick=back;
+  h.querySelector('.tsub').oninput=e=>setSub(e.target.value);
+  hdr.appendChild(h);
+}
+function renderTableShell(main){
+  const seg=el('div','seg','<button data-t="cuenta">Cuenta</button><button data-t="add">Añadir</button>');
+  seg.querySelector('[data-t=cuenta]').onclick=()=>setTab('cuenta');
+  seg.querySelector('[data-t=add]').onclick=()=>setTab('add');
+  main.appendChild(seg);
+  main.appendChild(el('div','', '<div id="tbody"></div>'));
+}
+function renderTableBody(){
+  document.querySelectorAll('.seg button').forEach(b=>b.classList.toggle('on', b.dataset.t===state.tab));
+  const body=document.getElementById('tbody'); body.innerHTML='';
+  if(state.tab==='cuenta') renderCuentaInto(body); else renderAddInto(body);
+}
+
+/* ----- Cuenta ----- */
+function renderCuentaInto(body){
+  const pane=el('div','pane'); pane.id='cuenta-pane'; body.appendChild(pane);
+  const foot=el('div','foot',
+    '<div class="total"><span class="tl">TOTAL</span><span class="tv num" id="c-total">'+eur(tTotal(state.active))+'</span></div>'+
+    '<div class="actions"><button class="btn btn-clear" id="c-clear">Vaciar</button><button class="btn btn-pay" id="c-pay">Cobrado</button></div>');
+  body.appendChild(foot);
+  foot.querySelector('#c-clear').onclick=clearTable;
+  foot.querySelector('#c-pay').onclick=payTable;
+  renderCuenta();
+}
+function renderCuenta(){
+  const pane=document.getElementById('cuenta-pane'); if(!pane)return; pane.innerHTML='';
+  const arr=tbl(state.active).lines.slice().sort((a,b)=>lineRank(a.name)-lineRank(b.name));
+  if(!arr.length){ pane.appendChild(el('div','empty','Aún no hay nada en esta cuenta.<br>Ve a «Añadir» para empezar.')); }
+  else arr.forEach(l=>{
+    const row=el('div','line',
+      '<div class="li"><div class="ln">'+l.name+'</div><div class="lp num">'+eur(l.price)+' / ud</div></div>'+
+      '<div class="stepper"><button data-a="m">−</button><span class="q num">'+l.qty+'</span><button data-a="p">+</button></div>'+
+      '<div class="lsub num">'+eur(l.price*l.qty)+'</div><button class="del" data-a="d">✕</button>');
+    row.querySelector('[data-a=m]').onclick=()=>stepItem(l.name,-1);
+    row.querySelector('[data-a=p]').onclick=()=>stepItem(l.name,1);
+    row.querySelector('[data-a=d]').onclick=()=>removeItem(l.name);
+    pane.appendChild(row);
+  });
+  const tot=tTotal(state.active);
+  const ct=document.getElementById('c-total'); if(ct) ct.textContent=eur(tot);
+  const cp=document.getElementById('c-pay'); if(cp) cp.disabled=tot<=0;
+  const cc=document.getElementById('c-clear'); if(cc) cc.disabled=tot<=0;
+  const ht=document.getElementById('ht-tot'); if(ht) ht.textContent=eur(tot);
+}
+
+/* ----- Añadir ----- */
+function renderAddInto(body){
+  const fb=el('div','fb','<button data-fb="comida">Comida</button><button data-fb="bebidas">Bebidas</button>');
+  fb.querySelector('[data-fb=comida]').onclick=()=>setFb('comida');
+  fb.querySelector('[data-fb=bebidas]').onclick=()=>setFb('bebidas');
+  body.appendChild(fb);
+  body.appendChild(el('div','acc-wrap','<div id="acc-list"></div>'));
+  const foot=el('div','foot',
+    '<div class="total"><span class="tl">TOTAL MESA</span><span class="tv num" id="a-total">'+eur(tTotal(state.active))+'</span></div>'+
+    '<div class="actions" style="grid-template-columns:1fr"><button class="btn btn-view" id="a-view">Ver cuenta ▸</button></div>');
+  body.appendChild(foot);
+  foot.querySelector('#a-view').onclick=()=>setTab('cuenta');
+  renderAddPane();
+}
+function renderAddPane(){
+  document.querySelectorAll('.fb button').forEach(b=>b.classList.toggle('on', b.dataset.fb===state.fb));
+  const list=document.getElementById('acc-list'); if(!list)return; list.innerHTML='';
+  const groups=MENU[state.fb].groups; const lines=tbl(state.active).lines;
+  const qtyOf=name=>{ const l=lines.find(x=>x.name===name); return l?l.qty:0; };
+  Object.keys(groups).forEach(cat=>{
+    const acc=el('div','acc'+(state.openCat===cat?' open':'')); acc.dataset.cat=cat;
+    const head=el('button','acc-h','<span>'+cat+'</span><span class="chev">▶</span>');
+    head.onclick=()=>toggleCat(cat);
+    const bodyEl=el('div','acc-body');
+    groups[cat].forEach(([name,price])=>{
+      const q=qtyOf(name);
+      const it=el('button','acc-item'+(q>0?' in':''),
+        '<span class="ain">'+name+'</span><span class="aip num">'+eur(price)+'</span><span class="badge num">'+q+'</span>');
+      it.dataset.name=name;
+      it.onclick = WITH_EXTRAS.includes(cat) ? (()=>openExtrasModal(name,price,cat)) : (()=>addItem(name,price));
+      bodyEl.appendChild(it);
+    });
+    acc.appendChild(head); acc.appendChild(bodyEl); list.appendChild(acc);
+  });
+  updateFoot();
+}
+function refreshBadges(){
+  const lines=tbl(state.active).lines;
+  document.querySelectorAll('.acc-item').forEach(it=>{
+    const l=lines.find(x=>x.name===it.dataset.name); const q=l?l.qty:0;
+    it.classList.toggle('in',q>0); const b=it.querySelector('.badge'); if(b) b.textContent=q;
+  });
+}
+/* refresca lo que esté visible tras un cambio (vale para móvil y escritorio) */
+function commit(){ renderCuenta(); refreshBadges(); updateFoot(); }
+function updateFoot(){
+  const tot=tTotal(state.active);
+  const a=document.getElementById('a-total'); if(a) a.textContent=eur(tot);
+  const ht=document.getElementById('ht-tot'); if(ht) ht.textContent=eur(tot);
+}
+
+/* ================================================================
+   6) Arranque
+   ================================================================ */
+(async function init(){
+  if(CLOUD){ try{ sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY); }catch(e){} }
+  await DB.load();
+  renderApp();
+  DB.subscribe(scheduleSync);
+})();
+
+/* si se redimensiona la ventana y cambia móvil<->escritorio, re-render */
+let rzTimer=null;
+window.addEventListener('resize', ()=>{ clearTimeout(rzTimer); rzTimer=setTimeout(()=>{
+  const now=window.matchMedia('(min-width:900px)').matches;
+  if(now!==isDesktop){ isDesktop=now; renderApp(); }
+},150); });
+</script>
+</body>
+</html>
