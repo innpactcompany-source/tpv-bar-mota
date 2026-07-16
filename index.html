@@ -92,7 +92,7 @@
   /* ================= TABLERO ================= */
   .board-title{ padding:16px 16px 6px; font-size:15px; color:var(--muted); font-weight:700; letter-spacing:.3px; }
   .grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:11px; padding:6px 16px 24px; }
-  .mesa{ background:var(--white); border:2px solid var(--blue-line); border-radius:16px; padding:14px; min-height:92px; display:flex; flex-direction:column; justify-content:space-between; text-align:left; transition:transform .06s,border-color .12s; }
+  .mesa{ position:relative; background:var(--white); border:2px solid var(--blue-line); border-radius:16px; padding:14px; min-height:92px; display:flex; flex-direction:column; justify-content:space-between; text-align:left; transition:transform .06s,border-color .12s; }
   .mesa:active{ transform:scale(.97); }
   .mesa .mtop{ display:flex; align-items:baseline; justify-content:space-between; gap:6px; }
   .mesa .mname{ font-size:19px; }
@@ -153,6 +153,45 @@
   .acc-item .badge{ position:absolute; top:-8px; right:-8px; min-width:22px; height:22px; padding:0 6px; background:var(--blue); color:#fff; border-radius:11px; font-size:12px; font-weight:800; display:none; align-items:center; justify-content:center; box-shadow:0 2px 6px rgba(30,82,217,.35); }
   .acc-item.in .badge{ display:flex; }
 
+  /* ===== recuento / tickets / productos ===== */
+  .rpt{ padding:14px 12px 24px; }
+  .rsum{ display:flex; flex-direction:column; gap:12px; }
+  .rcard{ background:var(--blue-tint); border-radius:16px; padding:16px; display:flex; flex-direction:column; gap:4px; }
+  .rcard .rk{ font-size:13px; color:var(--muted); font-weight:700; }
+  .rcard .rv{ font-size:30px; font-weight:800; color:var(--blue); }
+  .rcard .rd{ font-size:12px; color:var(--muted); }
+  .rcard.big{ background:var(--blue); } .rcard.big .rk{ color:#cfe0ff; } .rcard.big .rv{ color:#fff; }
+  .tlist{ display:flex; flex-direction:column; gap:8px; }
+  .tk{ background:var(--blue-tint); border-radius:12px; overflow:hidden; }
+  .tk-head{ width:100%; display:flex; align-items:baseline; gap:10px; padding:11px 13px; text-align:left; }
+  .tk-m{ font-weight:800; }
+  .tk-h{ font-size:12px; color:var(--muted); }
+  .tk-t{ margin-left:auto; font-weight:800; color:var(--blue); }
+  .tk-chev{ font-size:11px; color:var(--blue); transition:transform .2s; }
+  .tk.open .tk-chev{ transform:rotate(90deg); }
+  .tk-body{ display:none; padding:0 13px 10px; }
+  .tk.open .tk-body{ display:block; }
+  .tkl{ display:flex; justify-content:space-between; gap:10px; padding:6px 0; border-top:1px solid var(--blue-line); font-size:13.5px; }
+  .tkl .tkls{ font-weight:700; color:var(--blue); flex:0 0 auto; }
+  .plist{ display:flex; flex-direction:column; gap:18px; }
+  .psec h3{ font-size:19px; color:var(--blue); margin-bottom:8px; }
+  .prow{ display:flex; align-items:center; justify-content:space-between; padding:9px 4px; border-bottom:1px solid var(--blue-line); }
+  .prow .pn{ font-size:14.5px; }
+  .prow .pq{ font-weight:800; color:var(--blue); }
+  /* botón cobro parcial */
+  .btn-split{ width:100%; background:#fff; color:var(--blue); border:2px solid var(--blue-line); margin-bottom:9px; }
+  .btn-split:active{ background:var(--blue-tint); }
+  /* editar / eliminar mesas */
+  .board-head{ display:flex; align-items:center; justify-content:space-between; padding:16px 16px 6px; }
+  .board-head .board-title{ padding:0; }
+  .edit-toggle{ font-size:13px; font-weight:700; color:var(--blue); background:var(--blue-tint); padding:7px 14px; border-radius:20px; }
+  .edit-toggle:active{ background:var(--blue-2); }
+  .mesa.editing{ border-color:var(--danger); background:#fdeaea; }
+  .mesa .mdel{ position:absolute; top:8px; right:10px; color:var(--danger); font-size:16px; font-weight:800; }
+  /* caja clicable */
+  .hb .caja{ cursor:pointer; border:none; }
+  .hb .caja .cchev{ font-size:20px; opacity:.7; margin-left:2px; line-height:1; }
+
   /* ===== Tablet apaisada / ordenador ===== */
   @media (min-width:900px){
     #main{ max-width:1120px; margin:0 auto; width:100%; }
@@ -194,21 +233,21 @@ const SUPABASE_KEY = "sb_publishable_hwze_N-sgY7eCb2Jr7kHQw_xxsOJHWY";
    ================================================================ */
 const MENU = {
   comida: { label:'Comida', groups:{
-    'Tapas': [ ['Bravas',6.5],['Fingers de pollo',6.5],['Fingers de queso',5.5],['Pinchos morunos',4.5],['Calamares',7.5],['Croquetas de jamón',5.5] ],
+    'Tapas': [ ['Bravas',6.5],['Fingers de pollo',6.5],['Fingers de queso',5.5],['Pinchos morunos',4.5],['Calamares',7.5],['Croquetas de jamón',5.5],['Patatas fritas',2.5] ],
     'Burguers, sandwich y perrito': [ ['Hamburguesa de vacuno',7],['Hamburguesa de pollo',6.5],['Sándwich mixto',3],['Perrito',4] ],
     'Bocadillos y montados': [ ['Bocadillo lomo',5.5],['Bocadillo magreta',5.5],['Bocadillo bacon',5.5],['Bocadillo pechuga',5.5],['Montado lomo',4.5],['Montado magreta',4.5],['Montado bacon',4.5],['Montado pechuga',4.5] ],
     'Combinados': [ ['Comb. lomo',6],['Comb. magreta',6],['Comb. bacon',6],['Comb. pechuga plancha',6],['Comb. pechuga rebozada',6] ],
     'Papas': [ ['Jumpers ketchup',1],['Jumpers mantequilla',1],['Campesinas',1.8],['Jamón',1.8],['Palomitas',1.8],['Originales Vidal',1.8] ],
     'Chuches': [ ['Bolsa de chuches',1.5],['Gofre',2],['Regaliz',0.3],['Chupachups',0.5],['Chicle',0.15] ],
-    'Helados y polos': [ ['Magnum',3],['Chock and Ball',3],['Cornetto Max',3],['Cornetto XXL',3],['Sándwich Dino',2.9],['Sándwich Filipinos',2.9],['Twister',2.2],['Frigopié',2.1],['Haribo',2.1],['Calippo',2],['Sándwich original',1.6],['Donut Filipinos',1.6],['Flash',0.5] ],
+    'Helados y polos': [ ['Magnum',3],['Chock and Ball',3],['Cornetto Max',3],['Cornetto XXL',3],['Sándwich Dino',2.9],['Sándwich Filipinos',2.9],['Twister',2.2],['Frigopié',2.1],['Haribo',2.1],['Frigo Chuches',2.1],['Calippo',2],['Cornetto Normal',2],['Sándwich original',1.6],['Donut Filipinos',1.6],['Frigurón',1.5],['Flash',0.5] ],
   }},
   bebidas: { label:'Bebidas', groups:{
-    'Refrescos': [ ['Coca-Cola',2.5],['Fanta',2.5],['Fuze Tea',2.5],['Aquarius',2.5],['Agua',1.5] ],
-    'Cervezas': [ ['Caña',2.5],['Doble',3],['Tercio',2.5],['Tinto de verano',2.5] ],
+    'Refrescos': [ ['Coca-Cola',2.5],['Fanta',2.5],['Fuze Tea',2.5],['Aquarius',2.5],['Zumo',2],['Tónica',2],['Agua',1.5] ],
+    'Cervezas': [ ['Caña',2.5],['Jarra de cerveza',3],['Jarra de tinto',3],['Tercio',2.5],['Tinto de verano',2.5] ],
     'Vinos': [ ['Vino semidulce',2.5],['Vino tinto',2.2],['Vino blanco',2.2],['Vermut',2] ],
     'Cubatas y piedras': [ ['Cubata',5.5],['Piedra',3] ],
     'Granizados': [ ['Granizado café',2.8],['Granizado café + Baileys',3.8],['Granizado limón',2.5],['Granizado fresa',2.5],['Granizado España',3] ],
-    'Café': [ ['Café solo',1.5],['Café con leche',1.8],['Americano',1.5],['Café del tiempo',1.8],['Bombón',1.8],['Café con licor',2],['Cortado',1.6] ],
+    'Café': [ ['Café solo',1.5],['Café con leche',1.8],['Americano',1.5],['Café del tiempo',1.8],['Bombón',1.8],['Café con licor',2],['Cortado',1.6],['Colocado',2] ],
   }},
 };
 
@@ -251,6 +290,10 @@ let state = {
   tables:{},                 // name -> { sub:'', lines:[{name,price,qty}] }
   view:'board', active:null, tab:'add', fb:'comida', openCat:null,
   caja:{ count:0, total:0, date:today() },
+  tickets:[],                // tickets cobrados de hoy: {mesa,total,items:[{name,qty,price}],at}
+  reportTab:'resumen',       // resumen | tickets | productos
+  prodPeriod:'dia',          // dia | semana | mes
+  editMesas:false,
 };
 const eur=n=>n.toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2})+' €';
 const tbl =n=>state.tables[n]||{sub:'',lines:[]};
@@ -279,13 +322,16 @@ const LocalDB={
         saved={ tableList:old.tableList||state.tableList, tables:t, caja:old.caja }; } }
     if(saved){ state.tableList=saved.tableList&&saved.tableList.length?saved.tableList:[...DEFAULT_TABLES];
       state.tables=saved.tables||{};
-      state.caja=(saved.caja&&saved.caja.date===today())?saved.caja:{count:0,total:0,date:today()}; }
+      const okDay = saved.caja && saved.caja.date===today();
+      state.caja = okDay ? saved.caja : {count:0,total:0,date:today()};
+      state.tickets = (okDay && Array.isArray(saved.tickets)) ? saved.tickets : []; }
     online=true;
   },
-  persist(){ Store.save(KEY,{tableList:state.tableList,tables:state.tables,caja:state.caja}); },
+  persist(){ Store.save(KEY,{tableList:state.tableList,tables:state.tables,caja:state.caja,tickets:state.tickets}); },
   async addItem(){ this.persist(); }, async stepItem(){ this.persist(); }, async removeItem(){ this.persist(); },
   async clearMesa(){ this.persist(); }, async setSub(){ this.persist(); }, async addMesa(){ this.persist(); },
-  async pay(){ this.persist(); }, async resetCaja(){ this.persist(); },
+  async deleteMesa(){ this.persist(); },
+  async pay(){ this.persist(); }, async payPartial(){ this.persist(); }, async resetCaja(){ this.persist(); },
   subscribe(){},
 };
 
@@ -298,7 +344,10 @@ const CloudDB={
         await sb.from('mesas').upsert(seed,{onConflict:'name',ignoreDuplicates:true}); mesas=seed; }
       const { data:orders } = await sb.from('orders').select('mesa,item,price,qty');
       const start=new Date(); start.setHours(0,0,0,0);
-      const { data:tk } = await sb.from('tickets').select('total').gte('closed_at', start.toISOString());
+      // tickets del día (con items y subnombre si las columnas existen; si no, sin ellos)
+      let tkRes = await sb.from('tickets').select('mesa,total,items,sub,closed_at').gte('closed_at', start.toISOString()).order('closed_at',{ascending:false});
+      if(tkRes.error) tkRes = await sb.from('tickets').select('mesa,total,closed_at').gte('closed_at', start.toISOString()).order('closed_at',{ascending:false});
+      const tk=tkRes.data||[];
       const names=mesas.map(m=>m.name).sort(sortNames);
       const tables={};
       names.forEach(n=>{ const r=mesas.find(x=>x.name===n); tables[n]={sub:(r&&r.sub)||'',lines:[]}; });
@@ -306,7 +355,8 @@ const CloudDB={
         tables[o.mesa].lines.push({name:o.item,price:Number(o.price),qty:o.qty}); });
       Object.values(tables).forEach(t=>t.lines.sort((a,b)=>a.name.localeCompare(b.name,'es')));
       state.tableList=names; state.tables=tables;
-      state.caja={ count:(tk||[]).length, total:(tk||[]).reduce((s,r)=>s+Number(r.total),0), date:today() };
+      state.tickets = tk.map(r=>({mesa:r.mesa,sub:r.sub||'',total:Number(r.total),items:r.items||[],at:r.closed_at}));
+      state.caja={ count:state.tickets.length, total:state.tickets.reduce((s,t)=>s+t.total,0), date:today() };
       online=true;
     }catch(e){ online=false; }
   },
@@ -316,7 +366,11 @@ const CloudDB={
   async clearMesa(mesa){ flag((await sb.from('orders').delete().eq('mesa',mesa)).error); },
   async setSub(mesa,sub){ flag((await sb.from('mesas').upsert({name:mesa,sub},{onConflict:'name'})).error); },
   async addMesa(name){ flag((await sb.from('mesas').upsert({name,sub:''},{onConflict:'name',ignoreDuplicates:true})).error); },
-  async pay(mesa,total){ await sb.from('tickets').insert({mesa,total}); flag((await sb.from('orders').delete().eq('mesa',mesa)).error); },
+  async deleteMesa(mesa){ await sb.from('orders').delete().eq('mesa',mesa); flag((await sb.from('mesas').delete().eq('name',mesa)).error); },
+  async pay(mesa,total,items,sub){ let r=await sb.from('tickets').insert({mesa,total,items,sub}); if(r.error) await sb.from('tickets').insert({mesa,total});
+    flag((await sb.from('orders').delete().eq('mesa',mesa)).error); },
+  async payPartial(mesa,total,items,sub){ let r=await sb.from('tickets').insert({mesa,total,items,sub}); if(r.error) await sb.from('tickets').insert({mesa,total});
+    for(const it of items){ await sb.rpc('step_item',{_mesa:mesa,_item:it.name,_d:-it.qty}); } flag(null); },
   async resetCaja(){},
   subscribe(cb){
     sb.channel('bar-piscina')
@@ -372,16 +426,81 @@ function clearTable(){
 }
 function payTable(){
   const tot=tTotal(state.active); if(tot<=0)return;
-  confirmDialog({ message:'¿Marcar <b>'+state.active+'</b> como cobrada?', sub:'Total '+eur(tot)+'. La mesa se reinicia y vuelve libre.', okLabel:'Cobrado',
+  confirmDialog({ message:'¿Marcar <b>'+state.active+'</b> como cobrada?', sub:'Total '+eur(tot)+'. La mesa se reinicia y queda libre.', okLabel:'Cobrado',
     onOk:async()=>{ const m=state.active;
-      if(state.caja.date!==today()) state.caja={count:0,total:0,date:today()};
-      state.caja.count++; state.caja.total+=tot;
-      if(state.tables[m]) state.tables[m].lines=[];
-      back(); await DB.pay(m,tot); } });
+      const items=tbl(m).lines.map(l=>({name:l.name,qty:l.qty,price:l.price}));
+      const sub=tbl(m).sub||'';
+      logTicket(m,tot,items,sub);
+      if(state.tables[m]){ state.tables[m].lines=[]; state.tables[m].sub=''; }
+      back();
+      DB.setSub(m,''); await DB.pay(m,tot,items,sub); } });
+}
+/* guarda el ticket cobrado en memoria (caja + lista) */
+function logTicket(mesa,total,items,sub){
+  if(state.caja.date!==today()){ state.caja={count:0,total:0,date:today()}; state.tickets=[]; }
+  state.caja.count++; state.caja.total+=total;
+  state.tickets.unshift({mesa,sub:sub||'',total,items,at:new Date().toISOString()});
 }
 function resetCaja(){
-  confirmDialog({ message:'¿Cerrar caja del día?', sub:'El contador de tickets y el total vuelven a cero.', okLabel:'Cerrar caja', danger:true,
-    onOk:()=>{ state.caja={count:0,total:0,date:today()}; DB.resetCaja(); renderApp(); } });
+  confirmDialog({ message:'¿Cerrar caja del día?', sub:'El contador, el total y los tickets del día se ponen a cero.', okLabel:'Cerrar caja', danger:true,
+    onOk:()=>{ state.caja={count:0,total:0,date:today()}; state.tickets=[]; DB.resetCaja(); renderApp(); } });
+}
+
+/* ---- borrar mesa ---- */
+function toggleEditMesas(){ state.editMesas=!state.editMesas; renderApp(); }
+function askDeleteMesa(n){
+  const has=tCount(n)>0;
+  confirmDialog({ message:'¿Eliminar <b>'+n+'</b>?', sub: has?('Tiene '+eur(tTotal(n))+' sin cobrar; se perderá.'):'La mesa desaparece del tablero.', okLabel:'Eliminar', danger:true,
+    onOk:async()=>{ delete state.tables[n]; state.tableList=state.tableList.filter(x=>x!==n); if(state.active===n) state.active=null; renderApp(); await DB.deleteMesa(n); } });
+}
+
+/* ---- recuento ---- */
+function openReport(){ state.view='report'; state.reportTab='resumen'; renderApp(); }
+function setReportTab(t){ state.reportTab=t; renderApp(); }
+
+/* ---- cobro parcial (cada uno paga lo suyo) ---- */
+function openSplitModal(){
+  const m=state.active; const lines=tbl(m).lines.slice().sort((a,b)=>lineRank(a.name)-lineRank(b.name));
+  if(!lines.length) return;
+  const sel={}; lines.forEach(l=>sel[l.name]=0);
+  const rows=lines.map(l=>
+    '<div class="ex-row" data-ex="'+l.name.replace(/"/g,'&quot;')+'"><div class="ex-i"><span class="ex-n">'+l.name+'</span><span class="ex-p num">'+eur(l.price)+' · '+l.qty+' ud</span></div>'+
+    '<div class="stepper"><button data-a="m">−</button><span class="q num">0</span><button data-a="p">+</button></div></div>').join('');
+  const ov=el('div','overlay');
+  ov.innerHTML='<div class="modal"><div class="m-msg">Cobro parcial · '+m+'</div>'+
+    '<div class="m-sub">Marca lo que te pagan ahora</div>'+
+    '<div class="ex-list">'+rows+'</div>'+
+    '<div class="ex-total"><span class="exl">A cobrar</span><span class="ex-tv num" id="sp-tot">'+eur(0)+'</span></div>'+
+    '<div class="m-actions"><button class="m-btn m-cancel">Cancelar</button>'+
+    '<button class="m-btn m-ok sp-add" disabled>Cobrado</button></div></div>';
+  document.body.appendChild(ov);
+  const close=()=>ov.remove();
+  const lineOf=name=>lines.find(l=>l.name===name);
+  const total=()=>lines.reduce((s,l)=>s+l.price*sel[l.name],0);
+  const paint=()=>{ const t=total(); ov.querySelector('#sp-tot').textContent=eur(t);
+    ov.querySelector('.sp-add').disabled=t<=0;
+    ov.querySelectorAll('.ex-row').forEach(r=>{ r.querySelector('.q').textContent=sel[r.dataset.ex]; }); };
+  ov.querySelectorAll('.ex-row').forEach(row=>{
+    const name=row.dataset.ex;
+    row.querySelector('[data-a=m]').onclick=()=>{ if(sel[name]>0){ sel[name]--; paint(); } };
+    row.querySelector('[data-a=p]').onclick=()=>{ if(sel[name]<lineOf(name).qty){ sel[name]++; paint(); } };
+  });
+  ov.addEventListener('click',e=>{ if(e.target===ov) close(); });
+  ov.querySelector('.m-cancel').onclick=close;
+  ov.querySelector('.sp-add').onclick=async()=>{
+    const items=lines.filter(l=>sel[l.name]>0).map(l=>({name:l.name,qty:sel[l.name],price:l.price}));
+    if(!items.length) return;
+    const tot=items.reduce((s,i)=>s+i.price*i.qty,0);
+    const mm=state.active;
+    const sub=tbl(mm).sub||'';
+    items.forEach(i=>{ const l=tbl(mm).lines.find(x=>x.name===i.name); if(l) l.qty-=i.qty; });
+    state.tables[mm].lines=state.tables[mm].lines.filter(l=>l.qty>0);
+    logTicket(mm,tot,items,sub);
+    close();
+    if(tbl(mm).lines.length===0){ state.tables[mm].sub=''; DB.setSub(mm,''); back(); }
+    else commit();
+    await DB.payPartial(mm,tot,items,sub);
+  };
 }
 
 /* Modal de confirmación propio (no usa el confirm() del navegador) */
@@ -469,7 +588,7 @@ function setDot(){ document.querySelectorAll('.dot').forEach(d=>{ d.classList.to
 let isDesktop = window.matchMedia('(min-width:900px)').matches;
 
 function refresh(){
-  if(state.view==='board'){ renderApp(); return; }
+  if(state.view==='board'||state.view==='report'){ renderApp(); return; }
   const ht=document.getElementById('ht-tot'); if(ht) ht.textContent=eur(tTotal(state.active));
   if(isDesktop){ renderCuenta(); refreshBadges(); }
   else if(state.tab==='cuenta') renderCuenta(); else renderAddPane();
@@ -479,10 +598,90 @@ function refresh(){
 function renderApp(){
   const hdr=document.getElementById('hdr'), main=document.getElementById('main');
   hdr.innerHTML=''; main.innerHTML=''; main.scrollTop=0;
-  if(state.view==='board'){ renderHeaderBoard(hdr); renderBoard(main); }
+  if(state.view==='report'){ renderHeaderReport(hdr); renderReport(main); }
+  else if(state.view==='board'){ renderHeaderBoard(hdr); renderBoard(main); }
   else if(isDesktop){ renderHeaderTable(hdr); renderTableDesktop(main); }
   else { renderHeaderTable(hdr); renderTableShell(main); renderTableBody(); }
   setDot();
+}
+
+/* ---- Recuento del día ---- */
+function renderHeaderReport(hdr){
+  const h=el('div','ht','<button class="back">←</button><div class="thead"><span class="tname display" style="font-size:20px">Recuento del día</span></div>'+dotHTML());
+  h.querySelector('.back').onclick=back;
+  hdr.appendChild(h);
+}
+function renderReport(main){
+  const seg=el('div','seg','<button data-r="resumen">Resumen</button><button data-r="tickets">Tickets</button><button data-r="productos">Productos</button>');
+  seg.querySelectorAll('button').forEach(b=>{ b.classList.toggle('on', b.dataset.r===state.reportTab); b.onclick=()=>setReportTab(b.dataset.r); });
+  main.appendChild(seg);
+  const body=el('div','rpt'); main.appendChild(body);
+  if(state.reportTab==='resumen') renderResumen(body);
+  else if(state.reportTab==='tickets') renderTickets(body);
+  else renderProductos(body);
+}
+function renderResumen(body){
+  const cobrado=state.caja.total, nT=state.caja.count;
+  const pend=state.tableList.reduce((s,n)=>s+tTotal(n),0);
+  const openN=state.tableList.filter(n=>tTotal(n)>0).length;
+  body.innerHTML='<div class="rsum">'+
+    '<div class="rcard"><span class="rk">Cobrado hoy</span><span class="rv num">'+eur(cobrado)+'</span><span class="rd">'+nT+' ticket'+(nT===1?'':'s')+'</span></div>'+
+    '<div class="rcard"><span class="rk">Pendiente de cobrar</span><span class="rv num">'+eur(pend)+'</span><span class="rd">'+openN+' mesa'+(openN===1?'':'s')+' abierta'+(openN===1?'':'s')+'</span></div>'+
+    '<div class="rcard big"><span class="rk">Total (cobrado + pendiente)</span><span class="rv num">'+eur(cobrado+pend)+'</span></div>'+
+  '</div>';
+  if(!CLOUD){ const b=el('button','btn btn-clear','Cerrar caja del día'); b.style.margin='18px 0 0'; b.onclick=resetCaja; body.appendChild(b); }
+}
+function renderTickets(body){
+  if(!state.tickets.length){ body.innerHTML='<div class="empty">Aún no hay tickets cobrados hoy.</div>'; return; }
+  const wrap=el('div','tlist');
+  state.tickets.forEach(t=>{
+    const hora=new Date(t.at).toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'});
+    const title=t.mesa+(t.sub?' · '+t.sub:'');
+    const items=t.items||[];
+    const rows = items.length
+      ? items.map(i=>'<div class="tkl"><span class="tkln">'+i.qty+'× '+i.name+'</span><span class="tkls num">'+eur((i.price||0)*i.qty)+'</span></div>').join('')
+      : '<div class="tkl"><span class="tkln" style="color:var(--muted)">Sin detalle de productos</span></div>';
+    const card=el('div','tk');
+    card.innerHTML=
+      '<button class="tk-head"><span class="tk-m">'+title+'</span><span class="tk-h">'+hora+'</span><span class="tk-t num">'+eur(t.total)+'</span><span class="tk-chev">▶</span></button>'+
+      '<div class="tk-body">'+rows+'</div>';
+    card.querySelector('.tk-head').onclick=()=>card.classList.toggle('open');
+    wrap.appendChild(card);
+  });
+  body.appendChild(wrap);
+}
+function renderProductos(body){
+  body.innerHTML='';
+  const seg=el('div','fb','<button data-p="dia">Día</button><button data-p="semana">Semana</button><button data-p="mes">Mes</button>');
+  seg.querySelectorAll('button').forEach(b=>{ b.classList.toggle('on', b.dataset.p===state.prodPeriod); b.onclick=()=>{ state.prodPeriod=b.dataset.p; renderProductos(body); }; });
+  body.appendChild(seg);
+  const list=el('div','plist'); body.appendChild(list);
+  list.innerHTML='<div class="empty">Cargando…</div>';
+  loadProductos(list);
+}
+async function loadProductos(list){
+  const now=new Date(); const since=new Date(now);
+  if(state.prodPeriod==='dia'){ since.setHours(0,0,0,0); }
+  else if(state.prodPeriod==='semana'){ const d=(now.getDay()+6)%7; since.setDate(now.getDate()-d); since.setHours(0,0,0,0); }
+  else { since.setDate(1); since.setHours(0,0,0,0); }
+  let tickets;
+  if(state.prodPeriod==='dia' || !CLOUD){ tickets=state.tickets; }
+  else {
+    let r=await sb.from('tickets').select('items').gte('closed_at', since.toISOString());
+    if(r.error) r=await sb.from('tickets').select('total').gte('closed_at', since.toISOString());
+    tickets=(r.data||[]).map(x=>({items:x.items||[]}));
+  }
+  renderProdList(list,tickets);
+}
+function renderProdList(list,tickets){
+  const agg={};
+  tickets.forEach(t=>(t.items||[]).forEach(i=>{ const base=i.name.split(' (')[0]; agg[base]=(agg[base]||0)+i.qty; }));
+  const beb=[],com=[];
+  Object.keys(agg).forEach(name=>{ (ITEM_TYPE[name]==='bebidas'?beb:com).push({name,qty:agg[name]}); });
+  const bySold=(a,b)=>b.qty-a.qty || a.name.localeCompare(b.name,'es'); beb.sort(bySold); com.sort(bySold);
+  if(!beb.length && !com.length){ list.innerHTML='<div class="empty">Sin ventas en este periodo.</div>'; return; }
+  const sec=(title,arr)=> arr.length ? ('<div class="psec"><h3 class="display">'+title+'</h3>'+arr.map(r=>'<div class="prow"><span class="pn">'+r.name+'</span><span class="pq num">'+r.qty+'</span></div>').join('')+'</div>') : '';
+  list.innerHTML=sec('Bebidas',beb)+sec('Comida',com);
 }
 
 /* Vista de mesa en ESCRITORIO: menú (izq) + cuenta (der), sin pestañas */
@@ -500,9 +699,11 @@ function renderTableDesktop(main){
   right.appendChild((()=>{ const p=el('div','pane'); p.id='cuenta-pane'; return p; })());
   const foot=el('div','foot',
     '<div class="total"><span class="tl">TOTAL</span><span class="tv num" id="c-total">'+eur(tTotal(state.active))+'</span></div>'+
+    '<button class="btn btn-split" id="c-split">Cobrar solo una parte</button>'+
     '<div class="actions"><button class="btn btn-clear" id="c-clear">Vaciar</button><button class="btn btn-pay" id="c-pay">Cobrado</button></div>');
   foot.querySelector('#c-clear').onclick=clearTable;
   foot.querySelector('#c-pay').onclick=payTable;
+  foot.querySelector('#c-split').onclick=openSplitModal;
   right.appendChild(foot);
   wrap.appendChild(left); wrap.appendChild(right);
   main.appendChild(wrap);
@@ -512,24 +713,28 @@ function renderTableDesktop(main){
 function renderHeaderBoard(hdr){
   const h=el('div','hb', '<button class="logo">'+MILL+
     '<div class="brand"><span class="t1 display">BAR PISCINA</span><span class="t2 display">MOTA DEL CUERVO</span></div></button>'+
-    '<div class="caja">'+dotHTML()+'<div style="display:flex;flex-direction:column;line-height:1.1"><span class="cl">CAJA HOY</span><span class="cv num">'+eur(state.caja.total)+'</span></div>'+
-    '<span class="cc">'+state.caja.count+' tickets</span>'+(CLOUD?'':'<button class="creset">Cerrar</button>')+'</div>');
-  const rb=h.querySelector('.creset'); if(rb) rb.onclick=resetCaja;
+    '<button class="caja">'+dotHTML()+'<div style="display:flex;flex-direction:column;line-height:1.1"><span class="cl">CAJA HOY</span><span class="cv num">'+eur(state.caja.total)+'</span></div>'+
+    '<span class="cc">'+state.caja.count+' tickets</span><span class="cchev">›</span></button>');
   h.querySelector('.logo').onclick=goHome;
+  h.querySelector('.caja').onclick=openReport;
   hdr.appendChild(h);
 }
 function renderBoard(main){
-  main.appendChild(el('div','board-title','MESAS'));
+  const head=el('div','board-head','<span class="board-title">MESAS</span>');
+  const et=el('button','edit-toggle', state.editMesas?'Hecho':'Editar');
+  et.onclick=toggleEditMesas; head.appendChild(et);
+  main.appendChild(head);
   const g=el('div','grid');
   state.tableList.forEach(n=>{
     const tot=tTotal(n), sub=tbl(n).sub;
-    const b=el('button','mesa'+(tot>0?' has':''),
+    const b=el('button','mesa'+(tot>0?' has':'')+(state.editMesas?' editing':''),
+      (state.editMesas?'<span class="mdel">✕</span>':'')+
       '<div class="mtop"><span class="mname display">'+n+'</span>'+(tot>0?'<span class="mtot num">'+eur(tot)+'</span>':'')+'</div>'+
       (sub?'<div class="msub">'+sub+'</div>':''));
-    b.onclick=()=>openTable(n); g.appendChild(b);
+    b.onclick = state.editMesas ? (()=>askDeleteMesa(n)) : (()=>openTable(n));
+    g.appendChild(b);
   });
-  const add=el('button','mesa add','<span class="plus">+</span><span class="al">Añadir mesa</span>');
-  add.onclick=addTable; g.appendChild(add);
+  if(!state.editMesas){ const add=el('button','mesa add','<span class="plus">+</span><span class="al">Añadir mesa</span>'); add.onclick=addTable; g.appendChild(add); }
   main.appendChild(g);
 }
 
@@ -562,10 +767,12 @@ function renderCuentaInto(body){
   const pane=el('div','pane'); pane.id='cuenta-pane'; body.appendChild(pane);
   const foot=el('div','foot',
     '<div class="total"><span class="tl">TOTAL</span><span class="tv num" id="c-total">'+eur(tTotal(state.active))+'</span></div>'+
+    '<button class="btn btn-split" id="c-split">Cobrar solo una parte</button>'+
     '<div class="actions"><button class="btn btn-clear" id="c-clear">Vaciar</button><button class="btn btn-pay" id="c-pay">Cobrado</button></div>');
   body.appendChild(foot);
   foot.querySelector('#c-clear').onclick=clearTable;
   foot.querySelector('#c-pay').onclick=payTable;
+  foot.querySelector('#c-split').onclick=openSplitModal;
   renderCuenta();
 }
 function renderCuenta(){
@@ -586,6 +793,7 @@ function renderCuenta(){
   const ct=document.getElementById('c-total'); if(ct) ct.textContent=eur(tot);
   const cp=document.getElementById('c-pay'); if(cp) cp.disabled=tot<=0;
   const cc=document.getElementById('c-clear'); if(cc) cc.disabled=tot<=0;
+  const cs=document.getElementById('c-split'); if(cs) cs.disabled=tot<=0;
   const ht=document.getElementById('ht-tot'); if(ht) ht.textContent=eur(tot);
 }
 
