@@ -192,6 +192,104 @@
   .hb .caja{ cursor:pointer; border:none; }
   .hb .caja .cchev{ font-size:20px; opacity:.7; margin-left:2px; line-height:1; }
 
+  /* menú del molino (hub) */
+  .hub{ padding:18px 16px; display:flex; flex-direction:column; gap:14px; }
+  .hubbtn{ background:var(--blue-tint); border:2px solid var(--blue-line); border-radius:18px; padding:22px 18px; text-align:left; display:flex; flex-direction:column; gap:6px; transition:transform .06s; }
+  .hubbtn:active{ transform:scale(.98); border-color:var(--blue); }
+  .hubbtn .hubt{ font-size:26px; color:var(--blue); }
+  .hubbtn .hubd{ font-size:13px; color:var(--muted); }
+
+  /* ===== COCINA (KDS) ===== */
+  :root{ --kpend:#E23A2E; --kmar:#F08C00; --klis:#2F9E44; --kserv:#8B97B8; }
+  .kds{ display:flex; flex-direction:column; height:100%; min-height:0; }
+  .kds-bar{ display:flex; align-items:center; gap:14px; padding:8px 14px; background:#fff; border-bottom:1px solid var(--blue-line); flex:0 0 auto; }
+  .kds-stat{ display:flex; flex-direction:column; align-items:center; }
+  .kds-stat b{ font-size:22px; font-weight:800; line-height:1; font-variant-numeric:tabular-nums; }
+  .kds-stat span{ font-size:8.5px; letter-spacing:.12em; color:var(--muted); font-weight:700; }
+  .kds-stat.p b{ color:var(--kpend); } .kds-stat.m b{ color:var(--kmar); } .kds-stat.l b{ color:var(--klis); }
+  .kds-spacer{ flex:1; }
+  .kds-mute{ padding:8px 12px; border-radius:10px; background:var(--blue-tint); color:var(--blue); font-weight:700; font-size:12px; }
+  .kds-clock{ font-size:20px; font-weight:800; font-variant-numeric:tabular-nums; color:var(--muted); }
+  .prodline{ display:flex; align-items:center; gap:8px; padding:8px 14px; background:#fff; border-bottom:1px solid var(--blue-line); overflow-x:auto; scrollbar-width:none; flex:0 0 auto; }
+  .prodline::-webkit-scrollbar{ display:none; }
+  .prodline:empty{ display:none; }
+  .pl-lbl{ flex:0 0 auto; font-size:9px; letter-spacing:.18em; color:var(--muted); font-weight:800; }
+  .pl-tag{ flex:0 0 auto; display:flex; align-items:center; gap:6px; background:var(--blue-tint); border:1.5px solid var(--blue-line); padding:4px 11px; border-radius:999px; font-size:13px; font-weight:600; white-space:nowrap; }
+  .pl-tag b{ font-size:16px; font-weight:800; color:var(--blue); }
+  .kboard{ flex:1 1 auto; display:grid; grid-template-columns:1fr 1fr 1fr; overflow:hidden; min-height:0; }
+  .kcol{ display:flex; flex-direction:column; min-width:0; min-height:0; border-right:1px solid var(--blue-line); }
+  .kcol:last-child{ border-right:none; }
+  .kcol .col-h{ display:flex; align-items:center; gap:8px; padding:10px 13px; font-weight:800; font-size:13px; letter-spacing:.06em; color:#fff; flex:0 0 auto; }
+  .kcol[data-s="pendiente"] .col-h{ background:var(--kpend); }
+  .kcol[data-s="en_marcha"] .col-h{ background:var(--kmar); }
+  .kcol[data-s="lista"] .col-h{ background:var(--klis); }
+  .kcol .col-h .n{ margin-left:auto; background:rgba(255,255,255,.25); border-radius:8px; padding:1px 9px; font-size:13px; }
+  .kcol .col-body{ flex:1 1 auto; overflow-y:auto; padding:11px; display:flex; flex-direction:column; gap:11px; min-height:0; }
+  .korder{ background:#fff; border:1.5px solid var(--blue-line); border-left:6px solid var(--muted); border-radius:13px; overflow:hidden; box-shadow:var(--shadow); }
+  .korder[data-s="pendiente"]{ border-left-color:var(--kpend); }
+  .korder[data-s="en_marcha"]{ border-left-color:var(--kmar); }
+  .korder[data-s="lista"]{ border-left-color:var(--klis); }
+  .korder.late{ animation:klate 1.2s ease-in-out infinite; }
+  @keyframes klate{ 0%,100%{ box-shadow:var(--shadow); } 50%{ box-shadow:0 0 0 4px rgba(226,58,46,.35); } }
+  .korder .o-top{ display:flex; align-items:center; gap:9px; padding:10px 12px 6px; }
+  .korder .o-mesa{ font-weight:800; font-size:16px; color:var(--blue); }
+  .korder .o-timer{ margin-left:auto; font-size:24px; font-weight:800; font-variant-numeric:tabular-nums; line-height:1; }
+  .t-ok{ color:var(--klis); } .t-warn{ color:var(--kmar); } .t-bad{ color:var(--kpend); }
+  .korder .o-items{ padding:2px 12px 10px; display:flex; flex-direction:column; gap:8px; }
+  .itrow{ border-radius:10px; padding:8px 10px 9px; border:1.5px solid var(--blue-line); background:var(--blue-tint); }
+  .itrow.done{ opacity:.5; }
+  .it-head{ display:flex; align-items:baseline; gap:8px; }
+  .it-head .q{ font-weight:800; font-size:19px; color:var(--blue); min-width:26px; font-variant-numeric:tabular-nums; }
+  .it-head .nm{ font-weight:700; font-size:15.5px; line-height:1.2; }
+  .units{ display:flex; flex-wrap:wrap; gap:7px; margin-top:8px; align-items:center; }
+  .uchip{ display:flex; align-items:center; gap:6px; min-height:40px; padding:6px 12px; border-radius:10px; color:#fff; font-weight:800; font-size:11px; letter-spacing:.04em; }
+  .uchip b{ font-size:19px; font-weight:800; font-variant-numeric:tabular-nums; line-height:1; }
+  .uchip.p{ background:var(--kpend); } .uchip.m{ background:var(--kmar); } .uchip.l{ background:var(--klis); }
+  .uchip.s{ background:var(--kserv); opacity:.85; }
+  .uchip:active:not(.s){ transform:scale(.95); }
+  .it-undo{ margin-left:auto; width:36px; height:36px; border-radius:9px; background:#fff; border:1.5px solid var(--blue-line); color:var(--muted); font-size:14px; flex:0 0 auto; }
+  .it-undo:disabled{ opacity:.25; }
+  .korder .o-act{ display:flex; border-top:1.5px solid var(--blue-line); }
+  .korder .o-act .main{ flex:1; padding:13px; font-weight:800; font-size:14px; letter-spacing:.06em; color:#fff; }
+  .korder[data-s="pendiente"] .o-act .main{ background:var(--kpend); }
+  .korder[data-s="en_marcha"] .o-act .main{ background:var(--kmar); }
+  .korder[data-s="lista"] .o-act .main{ background:var(--klis); }
+  #kds-toast{ position:fixed; bottom:18px; left:50%; transform:translateX(-50%) translateY(140%); background:var(--klis); color:#fff; font-weight:800; padding:12px 20px; border-radius:12px; font-size:14px; transition:transform .3s ease; z-index:200; box-shadow:0 6px 20px rgba(16,35,90,.25); text-align:center; max-width:90vw; }
+  #kds-toast.brand{ background:var(--blue); }
+  #kds-toast.on{ transform:translateX(-50%) translateY(0); }
+  @media (max-width:820px){
+    .kboard{ grid-template-columns:repeat(3,86vw); overflow-x:auto; scroll-snap-type:x mandatory; }
+    .kcol{ scroll-snap-align:start; }
+    .kds-stat{ display:none; }
+  }
+
+  /* reservas */
+  .rv-addwrap{ padding:14px 12px 4px; }
+  .rv-add{ width:100%; background:var(--blue); color:#fff; border-radius:13px; padding:15px; font-weight:800; font-size:16px; box-shadow:var(--shadow); }
+  .rv-add:active{ background:var(--blue-dark); }
+  .rvlist{ padding:10px 12px 24px; display:flex; flex-direction:column; gap:10px; }
+  .rvcard{ background:var(--blue-tint); border-radius:14px; padding:13px 14px; }
+  .rv-top{ display:flex; align-items:center; justify-content:space-between; }
+  .rv-fch{ font-size:13px; font-weight:800; color:var(--blue); text-transform:capitalize; }
+  .rv-del{ width:26px; height:26px; color:var(--muted); font-size:15px; }
+  .rv-del:active{ color:var(--danger); }
+  .rv-nm{ font-size:18px; font-weight:700; margin-top:4px; }
+  .rv-meta{ font-size:13px; color:var(--muted); margin-top:2px; }
+  .rv-note{ font-size:13.5px; margin-top:7px; line-height:1.35; }
+  .rvform{ display:flex; flex-direction:column; gap:12px; margin-top:14px; }
+  .rvf{ display:flex; flex-direction:column; gap:5px; }
+  .rvf span{ font-size:13px; font-weight:700; color:var(--muted); }
+  .rvf input, .rvf textarea{ border:2px solid var(--blue-line); border-radius:11px; padding:11px; font-size:15px; background:#fff; color:var(--ink); width:100%; resize:vertical; }
+  .rvf input:focus, .rvf textarea:focus{ outline:none; border-color:var(--blue); }
+
+  /* propina */
+  .tipchips{ display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:7px; margin-top:14px; }
+  .tipchip{ padding:11px 6px; border-radius:11px; background:var(--blue-tint); color:var(--blue); font-weight:800; font-size:14px; border:2px solid transparent; }
+  .tipchip.on{ border-color:var(--blue); background:#fff; }
+  .tiprow{ display:flex; align-items:center; gap:8px; margin-top:12px; font-weight:700; }
+  .tiprow .tipinp{ margin-left:auto; width:90px; border:2px solid var(--blue-line); border-radius:10px; padding:9px 10px; font-size:15px; text-align:right; background:#fff; color:var(--ink); }
+  .tiprow .tipinp:focus{ outline:none; border-color:var(--blue); }
+
   /* ===== Tablet apaisada / ordenador ===== */
   @media (min-width:900px){
     #main{ max-width:1120px; margin:0 auto; width:100%; }
@@ -235,7 +333,7 @@ const MENU = {
   comida: { label:'Comida', groups:{
     'Tapas': [ ['Bravas',6.5],['Fingers de pollo',6.5],['Fingers de queso',5.5],['Pinchos morunos',4.5],['Calamares',7.5],['Croquetas de jamón',5.5],['Patatas fritas',2.5] ],
     'Burguers, sandwich y perrito': [ ['Hamburguesa de vacuno',7],['Hamburguesa de pollo',6.5],['Sándwich mixto',3],['Perrito',4] ],
-    'Bocadillos y montados': [ ['Bocadillo lomo',5.5],['Bocadillo magreta',5.5],['Bocadillo bacon',5.5],['Bocadillo pechuga',5.5],['Montado lomo',4.5],['Montado magreta',4.5],['Montado bacon',4.5],['Montado pechuga',4.5] ],
+    'Bocadillos y montados': [ ['Bocadillo lomo',5.5],['Bocadillo magreta',5.5],['Bocadillo bacon',5.5],['Bocadillo pechuga',5.5],['Bocadillo pechuga rebozada',5.5],['Montado lomo',4.5],['Montado magreta',4.5],['Montado bacon',4.5],['Montado pechuga',4.5],['Montado pechuga rebozada',4.5] ],
     'Combinados': [ ['Comb. lomo',6],['Comb. magreta',6],['Comb. bacon',6],['Comb. pechuga plancha',6],['Comb. pechuga rebozada',6] ],
     'Papas': [ ['Jumpers ketchup',1],['Jumpers mantequilla',1],['Campesinas',1.8],['Jamón',1.8],['Palomitas',1.8],['Originales Vidal',1.8] ],
     'Chuches': [ ['Bolsa de chuches',1.5],['Gofre',2],['Regaliz',0.3],['Chupachups',0.5],['Chicle',0.15] ],
@@ -243,7 +341,7 @@ const MENU = {
   }},
   bebidas: { label:'Bebidas', groups:{
     'Refrescos': [ ['Coca-Cola',2.5],['Fanta',2.5],['Fuze Tea',2.5],['Aquarius',2.5],['Zumo',2],['Tónica',2],['Agua',1.5] ],
-    'Cervezas': [ ['Caña',2.5],['Jarra de cerveza',3],['Jarra de tinto',3],['Tercio',2.5],['Tinto de verano',2.5] ],
+    'Cervezas': [ ['Caña',2.5],['Jarra de cerveza',3],['Jarra de tinto',3],['Megajarra',7],['Tercio',2.5],['Tinto de verano',2.5] ],
     'Vinos': [ ['Vino semidulce',2.5],['Vino tinto',2.2],['Vino blanco',2.2],['Vermut',2] ],
     'Cubatas y piedras': [ ['Cubata',5.5],['Piedra',3] ],
     'Granizados': [ ['Granizado café',2.8],['Granizado café + Baileys',3.8],['Granizado limón',2.5],['Granizado fresa',2.5],['Granizado España',3] ],
@@ -253,10 +351,15 @@ const MENU = {
 
 const DEFAULT_TABLES=['Barra','Mesa 1','Mesa 2','Mesa 3','Mesa 4','Mesa 5','Mesa 6','Mesa 7','Mesa 8'];
 
-/* Tipo de cada producto para ordenar la cuenta (bebidas antes que comida) */
-const ITEM_TYPE={};
-Object.keys(MENU).forEach(sec=>{ Object.values(MENU[sec].groups).forEach(items=>{ items.forEach(([name])=>{ ITEM_TYPE[name]=sec; }); }); });
+/* Tipo y categoría de cada producto (para ordenar la cuenta y para la cocina) */
+const ITEM_TYPE={}, ITEM_CAT={};
+Object.keys(MENU).forEach(sec=>{ Object.entries(MENU[sec].groups).forEach(([grp,items])=>{ items.forEach(([name])=>{ ITEM_TYPE[name]=sec; ITEM_CAT[name]=grp; }); }); });
 function lineRank(name){ const t=ITEM_TYPE[name.split(' (')[0]]; return t==='bebidas'?0 : t==='comida'?1 : 2; }
+/* Categorías que pasan por cocina (se cocinan). Chuches, helados, papas de bolsa y bebidas NO. */
+const KITCHEN_CATS=['Tapas','Burguers, sandwich y perrito','Bocadillos y montados','Combinados'];
+function isKitchen(name){ return KITCHEN_CATS.includes(ITEM_CAT[name.split(' (')[0]]); }
+/* Kiosko: helados/polos, chuches y papas de bolsa (para el ranking de productos) */
+const KIOSKO_CATS=['Helados y polos','Chuches','Papas'];
 
 /* Extras dentro de cada categoría.
    free:true -> el 1º de CADA uno de esos (bacon/queso/tomate) va gratis; el resto se cobra.
@@ -294,6 +397,7 @@ let state = {
   reportTab:'resumen',       // resumen | tickets | productos
   prodPeriod:'dia',          // dia | semana | mes
   editMesas:false,
+  reservas:[],               // {id,fecha,nombre,personas,nota}
 };
 const eur=n=>n.toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2})+' €';
 const tbl =n=>state.tables[n]||{sub:'',lines:[]};
@@ -324,13 +428,16 @@ const LocalDB={
       state.tables=saved.tables||{};
       const okDay = saved.caja && saved.caja.date===today();
       state.caja = okDay ? saved.caja : {count:0,total:0,date:today()};
-      state.tickets = (okDay && Array.isArray(saved.tickets)) ? saved.tickets : []; }
+      state.tickets = (okDay && Array.isArray(saved.tickets)) ? saved.tickets : [];
+      state.reservas = Array.isArray(saved.reservas) ? saved.reservas.filter(r=>(r.fecha||'')>=today()) : []; }
     online=true;
   },
-  persist(){ Store.save(KEY,{tableList:state.tableList,tables:state.tables,caja:state.caja,tickets:state.tickets}); },
+  persist(){ Store.save(KEY,{tableList:state.tableList,tables:state.tables,caja:state.caja,tickets:state.tickets,reservas:state.reservas}); },
   async addItem(){ this.persist(); }, async stepItem(){ this.persist(); }, async removeItem(){ this.persist(); },
   async clearMesa(){ this.persist(); }, async setSub(){ this.persist(); }, async addMesa(){ this.persist(); },
   async deleteMesa(){ this.persist(); },
+  async setKitchen(){ this.persist(); },
+  async addReserva(){ this.persist(); }, async deleteReserva(){ this.persist(); },
   async pay(){ this.persist(); }, async payPartial(){ this.persist(); }, async resetCaja(){ this.persist(); },
   subscribe(){},
 };
@@ -342,20 +449,26 @@ const CloudDB={
       if(error) throw error;
       if(!mesas || !mesas.length){ const seed=DEFAULT_TABLES.map(n=>({name:n,sub:''}));
         await sb.from('mesas').upsert(seed,{onConflict:'name',ignoreDuplicates:true}); mesas=seed; }
-      const { data:orders } = await sb.from('orders').select('mesa,item,price,qty');
+      let ordRes = await sb.from('orders').select('mesa,item,price,qty,km,kl,ks,creada_en');
+      if(ordRes.error) ordRes = await sb.from('orders').select('mesa,item,price,qty');
+      const orders = ordRes.data;
       const start=new Date(); start.setHours(0,0,0,0);
-      // tickets del día (con items y subnombre si las columnas existen; si no, sin ellos)
-      let tkRes = await sb.from('tickets').select('mesa,total,items,sub,closed_at').gte('closed_at', start.toISOString()).order('closed_at',{ascending:false});
+      // tickets del día (con items, subnombre y propina si las columnas existen)
+      let tkRes = await sb.from('tickets').select('mesa,total,items,sub,propina,closed_at').gte('closed_at', start.toISOString()).order('closed_at',{ascending:false});
+      if(tkRes.error) tkRes = await sb.from('tickets').select('mesa,total,items,sub,closed_at').gte('closed_at', start.toISOString()).order('closed_at',{ascending:false});
       if(tkRes.error) tkRes = await sb.from('tickets').select('mesa,total,closed_at').gte('closed_at', start.toISOString()).order('closed_at',{ascending:false});
       const tk=tkRes.data||[];
+      // reservas de hoy en adelante
+      const rr=await sb.from('reservas').select('id,fecha,nombre,personas,nota').gte('fecha', today()).order('fecha',{ascending:true});
+      state.reservas=(rr.data||[]).map(r=>({id:r.id,fecha:r.fecha,nombre:r.nombre||'',personas:r.personas||0,nota:r.nota||''}));
       const names=mesas.map(m=>m.name).sort(sortNames);
       const tables={};
       names.forEach(n=>{ const r=mesas.find(x=>x.name===n); tables[n]={sub:(r&&r.sub)||'',lines:[]}; });
       (orders||[]).forEach(o=>{ if(!tables[o.mesa]) tables[o.mesa]={sub:'',lines:[]};
-        tables[o.mesa].lines.push({name:o.item,price:Number(o.price),qty:o.qty}); });
+        tables[o.mesa].lines.push({name:o.item,price:Number(o.price),qty:o.qty,km:o.km||0,kl:o.kl||0,ks:o.ks||0,creada_en:o.creada_en||null}); });
       Object.values(tables).forEach(t=>t.lines.sort((a,b)=>a.name.localeCompare(b.name,'es')));
       state.tableList=names; state.tables=tables;
-      state.tickets = tk.map(r=>({mesa:r.mesa,sub:r.sub||'',total:Number(r.total),items:r.items||[],at:r.closed_at}));
+      state.tickets = tk.map(r=>({mesa:r.mesa,sub:r.sub||'',total:Number(r.total),propina:Number(r.propina||0),items:r.items||[],at:r.closed_at}));
       state.caja={ count:state.tickets.length, total:state.tickets.reduce((s,t)=>s+t.total,0), date:today() };
       online=true;
     }catch(e){ online=false; }
@@ -367,7 +480,10 @@ const CloudDB={
   async setSub(mesa,sub){ flag((await sb.from('mesas').upsert({name:mesa,sub},{onConflict:'name'})).error); },
   async addMesa(name){ flag((await sb.from('mesas').upsert({name,sub:''},{onConflict:'name',ignoreDuplicates:true})).error); },
   async deleteMesa(mesa){ await sb.from('orders').delete().eq('mesa',mesa); flag((await sb.from('mesas').delete().eq('name',mesa)).error); },
-  async pay(mesa,total,items,sub){ let r=await sb.from('tickets').insert({mesa,total,items,sub}); if(r.error) await sb.from('tickets').insert({mesa,total});
+  async setKitchen(mesa,item,km,kl,ks){ flag((await sb.from('orders').update({km,kl,ks}).eq('mesa',mesa).eq('item',item)).error); },
+  async addReserva(r){ flag((await sb.from('reservas').insert({fecha:r.fecha,nombre:r.nombre,personas:r.personas,nota:r.nota})).error); },
+  async deleteReserva(id){ flag((await sb.from('reservas').delete().eq('id',id)).error); },
+  async pay(mesa,total,items,sub,propina){ let r=await sb.from('tickets').insert({mesa,total,items,sub,propina}); if(r.error) r=await sb.from('tickets').insert({mesa,total,items,sub}); if(r.error) await sb.from('tickets').insert({mesa,total});
     flag((await sb.from('orders').delete().eq('mesa',mesa)).error); },
   async payPartial(mesa,total,items,sub){ let r=await sb.from('tickets').insert({mesa,total,items,sub}); if(r.error) await sb.from('tickets').insert({mesa,total});
     for(const it of items){ await sb.rpc('step_item',{_mesa:mesa,_item:it.name,_d:-it.qty}); } flag(null); },
@@ -377,6 +493,7 @@ const CloudDB={
       .on('postgres_changes',{event:'*',schema:'public',table:'orders'},cb)
       .on('postgres_changes',{event:'*',schema:'public',table:'mesas'},cb)
       .on('postgres_changes',{event:'*',schema:'public',table:'tickets'},cb)
+      .on('postgres_changes',{event:'*',schema:'public',table:'reservas'},cb)
       .subscribe(st=>{ online=(st==='SUBSCRIBED'); setDot(); });
   },
 };
@@ -396,7 +513,7 @@ function goHome(){ state.view='board'; renderApp(); }
 
 async function addItem(name,price){
   const t=ensure(state.active); const ex=t.lines.find(l=>l.name===name);
-  if(ex) ex.qty++; else t.lines.push({name,price,qty:1});
+  if(ex) ex.qty++; else t.lines.push({name,price,qty:1,km:0,kl:0,ks:0,creada_en:new Date().toISOString()});
   commit();
   await DB.addItem(state.active,name,price);
 }
@@ -425,21 +542,39 @@ function clearTable(){
     onOk:async()=>{ const m=state.active; if(state.tables[m]) state.tables[m].lines=[]; renderCuenta(); await DB.clearMesa(m); } });
 }
 function payTable(){
-  const tot=tTotal(state.active); if(tot<=0)return;
-  confirmDialog({ message:'¿Marcar <b>'+state.active+'</b> como cobrada?', sub:'Total '+eur(tot)+'. La mesa se reinicia y queda libre.', okLabel:'Cobrado',
-    onOk:async()=>{ const m=state.active;
-      const items=tbl(m).lines.map(l=>({name:l.name,qty:l.qty,price:l.price}));
-      const sub=tbl(m).sub||'';
-      logTicket(m,tot,items,sub);
-      if(state.tables[m]){ state.tables[m].lines=[]; state.tables[m].sub=''; }
-      back();
-      DB.setSub(m,''); await DB.pay(m,tot,items,sub); } });
+  const m=state.active; const subt=tTotal(m); if(subt<=0)return;
+  let tip=0;
+  const chips=[['Sin propina',0],['+0,50',0.5],['+1',1],['+2',2]];
+  const ov=el('div','overlay');
+  ov.innerHTML='<div class="modal"><div class="m-msg">Cobrar · '+m+'</div>'+
+    '<div class="m-sub">Subtotal '+eur(subt)+' · añade propina si hay</div>'+
+    '<div class="tipchips">'+chips.map((c,i)=>'<button class="tipchip'+(i===0?' on':'')+'" data-t="'+c[1]+'">'+c[0]+'</button>').join('')+'</div>'+
+    '<div class="tiprow"><span class="exl">Propina</span><input class="tipinp num" type="number" inputmode="decimal" step="0.10" min="0" value="0"> €</div>'+
+    '<div class="ex-total"><span class="exl">Total a cobrar</span><span class="ex-tv num" id="pm-tot">'+eur(subt)+'</span></div>'+
+    '<div class="m-actions"><button class="m-btn m-cancel">Cancelar</button><button class="m-btn m-ok pm-ok">Cobrado</button></div></div>';
+  document.body.appendChild(ov);
+  const close=()=>ov.remove();
+  const inp=ov.querySelector('.tipinp');
+  const paint=()=>{ ov.querySelector('#pm-tot').textContent=eur(subt+tip);
+    ov.querySelectorAll('.tipchip').forEach(b=>b.classList.toggle('on', parseFloat(b.dataset.t)===tip)); };
+  ov.querySelectorAll('.tipchip').forEach(b=>{ b.onclick=()=>{ tip=parseFloat(b.dataset.t); inp.value=tip.toFixed(2); paint(); }; });
+  inp.oninput=()=>{ tip=Math.max(0, parseFloat(inp.value)||0); paint(); };
+  ov.addEventListener('click',e=>{ if(e.target===ov) close(); });
+  ov.querySelector('.m-cancel').onclick=close;
+  ov.querySelector('.pm-ok').onclick=async()=>{
+    const items=tbl(m).lines.map(l=>({name:l.name,qty:l.qty,price:l.price}));
+    const sub=tbl(m).sub||''; const total=subt+tip;
+    logTicket(m,total,items,sub,tip);
+    if(state.tables[m]){ state.tables[m].lines=[]; state.tables[m].sub=''; }
+    close(); back();
+    DB.setSub(m,''); await DB.pay(m,total,items,sub,tip);
+  };
 }
 /* guarda el ticket cobrado en memoria (caja + lista) */
-function logTicket(mesa,total,items,sub){
+function logTicket(mesa,total,items,sub,propina){
   if(state.caja.date!==today()){ state.caja={count:0,total:0,date:today()}; state.tickets=[]; }
   state.caja.count++; state.caja.total+=total;
-  state.tickets.unshift({mesa,sub:sub||'',total,items,at:new Date().toISOString()});
+  state.tickets.unshift({mesa,sub:sub||'',total,propina:propina||0,items,at:new Date().toISOString()});
 }
 function resetCaja(){
   confirmDialog({ message:'¿Cerrar caja del día?', sub:'El contador, el total y los tickets del día se ponen a cero.', okLabel:'Cerrar caja', danger:true,
@@ -457,6 +592,45 @@ function askDeleteMesa(n){
 /* ---- recuento ---- */
 function openReport(){ state.view='report'; state.reportTab='resumen'; renderApp(); }
 function setReportTab(t){ state.reportTab=t; renderApp(); }
+
+/* ---- menú del molino: Cocina / Reservas ---- */
+function openMenu(){ state.view='menu'; renderApp(); }
+function openCocina(){ state.view='cocina'; renderApp(); }
+function openReservas(){ state.view='reservas'; renderApp(); }
+
+function addReserva(r){
+  const rec={ id:(CLOUD?null:Date.now()), fecha:r.fecha, nombre:r.nombre, personas:r.personas, nota:r.nota };
+  state.reservas.push(rec); state.reservas.sort((a,b)=>(a.fecha||'').localeCompare(b.fecha||''));
+  renderApp(); DB.addReserva(rec);
+}
+function deleteReserva(id){
+  confirmDialog({ message:'¿Eliminar esta reserva?', okLabel:'Eliminar', danger:true,
+    onOk:async()=>{ state.reservas=state.reservas.filter(r=>r.id!==id); renderApp(); await DB.deleteReserva(id); } });
+}
+function openReservaModal(){
+  const ov=el('div','overlay');
+  ov.innerHTML='<div class="modal"><div class="m-msg">Nueva reserva</div>'+
+    '<div class="rvform">'+
+      '<label class="rvf"><span>Fecha</span><input class="rv-fecha" type="date" value="'+today()+'"></label>'+
+      '<label class="rvf"><span>Nombre</span><input class="rv-nombre" type="text" placeholder="Quién reserva"></label>'+
+      '<label class="rvf"><span>Personas</span><input class="rv-pers" type="number" inputmode="numeric" min="1" value="2"></label>'+
+      '<label class="rvf"><span>Nota</span><textarea class="rv-nota" rows="2" placeholder="Detalles (opcional)"></textarea></label>'+
+    '</div>'+
+    '<div class="m-actions"><button class="m-btn m-cancel">Cancelar</button><button class="m-btn m-ok rv-ok">Guardar</button></div></div>';
+  document.body.appendChild(ov);
+  const close=()=>ov.remove();
+  ov.addEventListener('click',e=>{ if(e.target===ov) close(); });
+  ov.querySelector('.m-cancel').onclick=close;
+  ov.querySelector('.rv-ok').onclick=()=>{
+    const fecha=ov.querySelector('.rv-fecha').value||today();
+    const nombre=ov.querySelector('.rv-nombre').value.trim();
+    const personas=parseInt(ov.querySelector('.rv-pers').value)||0;
+    const nota=ov.querySelector('.rv-nota').value.trim();
+    if(!nombre){ ov.querySelector('.rv-nombre').focus(); return; }
+    close(); addReserva({fecha,nombre,personas,nota});
+  };
+}
+function fmtFecha(f){ if(!f) return ''; const d=new Date(f+'T12:00:00'); return d.toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long'}); }
 
 /* ---- cobro parcial (cada uno paga lo suyo) ---- */
 function openSplitModal(){
@@ -588,7 +762,7 @@ function setDot(){ document.querySelectorAll('.dot').forEach(d=>{ d.classList.to
 let isDesktop = window.matchMedia('(min-width:900px)').matches;
 
 function refresh(){
-  if(state.view==='board'||state.view==='report'){ renderApp(); return; }
+  if(['board','report','menu','cocina','reservas'].includes(state.view)){ renderApp(); return; }
   const ht=document.getElementById('ht-tot'); if(ht) ht.textContent=eur(tTotal(state.active));
   if(isDesktop){ renderCuenta(); refreshBadges(); }
   else if(state.tab==='cuenta') renderCuenta(); else renderAddPane();
@@ -599,10 +773,162 @@ function renderApp(){
   const hdr=document.getElementById('hdr'), main=document.getElementById('main');
   hdr.innerHTML=''; main.innerHTML=''; main.scrollTop=0;
   if(state.view==='report'){ renderHeaderReport(hdr); renderReport(main); }
+  else if(state.view==='menu'){ renderHeaderSimple(hdr,'Bar Piscina',goHome); renderMenuScreen(main); }
+  else if(state.view==='cocina'){ renderHeaderSimple(hdr,'Cocina',openMenu); renderCocina(main); }
+  else if(state.view==='reservas'){ renderHeaderSimple(hdr,'Reservas',openMenu); renderReservas(main); }
   else if(state.view==='board'){ renderHeaderBoard(hdr); renderBoard(main); }
   else if(isDesktop){ renderHeaderTable(hdr); renderTableDesktop(main); }
   else { renderHeaderTable(hdr); renderTableShell(main); renderTableBody(); }
   setDot();
+}
+
+function renderHeaderSimple(hdr, title, onBack){
+  const h=el('div','ht','<button class="back">←</button><div class="thead"><span class="tname display" style="font-size:20px">'+title+'</span></div>'+dotHTML());
+  h.querySelector('.back').onclick=onBack;
+  hdr.appendChild(h);
+}
+
+/* menú del molino */
+function renderMenuScreen(main){
+  const wrap=el('div','hub');
+  const mk=(title,desc,fn)=>{ const b=el('button','hubbtn','<span class="hubt display">'+title+'</span><span class="hubd">'+desc+'</span>'); b.onclick=fn; return b; };
+  wrap.appendChild(mk('Cocina','Comandas de comida pendientes por mesa', openCocina));
+  wrap.appendChild(mk('Reservas','Añade y consulta las reservas', openReservas));
+  main.appendChild(wrap);
+}
+
+/* ================================================================
+   COCINA (KDS): las comandas se derivan de la COMIDA de las mesas.
+   Estado por unidad en la propia línea: km=haciendo, kl=listo, ks=servido;
+   p (pendiente) = qty - km - kl - ks. Sincroniza por la tabla orders.
+   ================================================================ */
+let muted=false, kPrevMesas=new Set(), kInit=false, toastTimer;
+const foodLines = mesa => tbl(mesa).lines.filter(l=>isKitchen(l.name));
+function lineState(l){ const km=l.km||0, kl=l.kl||0, ks=l.ks||0; return {p:Math.max(0,l.qty-km-kl-ks), m:km, l:kl, s:ks}; }
+function kComandas(){
+  const list=[];
+  state.tableList.forEach(mesa=>{
+    const fl=foodLines(mesa); if(!fl.length) return;
+    if(!fl.some(l=>{const s=lineState(l); return (s.p+s.m+s.l)>0;})) return;  // todo servido -> archivada
+    const times=fl.map(l=>l.creada_en?new Date(l.creada_en).getTime():Date.now());
+    list.push({ mesa, sub:tbl(mesa).sub, creada_en:Math.min(...times), lines:fl });
+  });
+  return list.sort((a,b)=>a.creada_en-b.creada_en);
+}
+function kAgg(c){ let p=0,m=0,l=0; c.lines.forEach(x=>{const s=lineState(x); p+=s.p;m+=s.m;l+=s.l;}); if(p+m+l===0) return 'lista'; if(m===0&&l===0) return 'pendiente'; if(p===0&&m===0) return 'lista'; return 'en_marcha'; }
+const esc = s => String(s).replace(/'/g,"\\'");
+
+async function kMove(mesa,item,from){
+  const l=tbl(mesa).lines.find(x=>x.name===item); if(!l) return; l.km=l.km||0;l.kl=l.kl||0;l.ks=l.ks||0;
+  const s=lineState(l);
+  if(from==='p' && s.p>0){ l.km++; }
+  else if(from==='m' && s.m>0){ l.km--; l.kl++; beep(1); showToast(mesa+': '+item+' LISTO — recoger', true); }
+  else if(from==='l' && s.l>0){ l.kl--; l.ks++; kCheckDone(mesa); }
+  kRenderBoard(); await DB.setKitchen(mesa,item,l.km,l.kl,l.ks);
+}
+async function kUndo(mesa,item){
+  const l=tbl(mesa).lines.find(x=>x.name===item); if(!l) return; l.km=l.km||0;l.kl=l.kl||0;l.ks=l.ks||0;
+  if(l.ks>0){ l.ks--; l.kl++; } else if(l.kl>0){ l.kl--; l.km++; } else if(l.km>0){ l.km--; }
+  kRenderBoard(); await DB.setKitchen(mesa,item,l.km,l.kl,l.ks);
+}
+async function kBulk(mesa){
+  const fl=foodLines(mesa); const st=kAgg({lines:fl});
+  fl.forEach(l=>{ const s=lineState(l); l.km=l.km||0;l.kl=l.kl||0;l.ks=l.ks||0;
+    if(st==='pendiente'){ l.km=l.km+s.p; }
+    else if(st==='en_marcha'){ l.kl=l.kl+s.p+s.m; l.km=0; }
+    else { l.ks=l.ks+s.l; l.kl=0; } });
+  if(st==='en_marcha') showToast(mesa+' COMPLETA — servir', true);
+  kRenderBoard(); for(const l of fl){ await DB.setKitchen(mesa,l.name,l.km||0,l.kl||0,l.ks||0); }
+}
+function kCheckDone(mesa){ const fl=foodLines(mesa); if(fl.length && fl.every(l=>(l.ks||0)>=l.qty)) showToast(mesa+' completada', false); }
+
+function fmtTimer(ms){ const s=Math.max(0,Math.floor(ms/1000)); return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0'); }
+function timerClass(ms){ const m=ms/60000; return m<5?'t-ok':m<8?'t-warn':'t-bad'; }
+function kClockTxt(){ const d=new Date(); return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'); }
+
+function unitChips(c,it){
+  const s=lineState(it), m=esc(c.mesa), nm=esc(it.name); let h='';
+  if(s.p>0) h+='<button class="uchip p" onclick="kMove(\''+m+'\',\''+nm+'\',\'p\')"><b>'+s.p+'</b>PDTE ▶</button>';
+  if(s.m>0) h+='<button class="uchip m" onclick="kMove(\''+m+'\',\''+nm+'\',\'m\')"><b>'+s.m+'</b>HACIENDO ▶</button>';
+  if(s.l>0) h+='<button class="uchip l" onclick="kMove(\''+m+'\',\''+nm+'\',\'l\')"><b>'+s.l+'</b>LISTO · SALE ▶</button>';
+  if(s.s>0) h+='<span class="uchip s"><b>'+s.s+'</b>SERVIDO ✓</span>';
+  h+='<button class="it-undo" onclick="kUndo(\''+m+'\',\''+nm+'\')" '+((s.m+s.l+s.s)>0?'':'disabled')+'>↩</button>';
+  return h;
+}
+const BULK_TXT={pendiente:'EMPEZAR TODO ▶',en_marcha:'TODO LISTO ✓',lista:'SERVIR TODO'};
+function orderCard(c){
+  const age=Date.now()-c.creada_en, st=kAgg(c), late=st!=='lista'&&age>8*60000, m=esc(c.mesa);
+  return '<div class="korder '+(late?'late':'')+'" data-s="'+st+'">'+
+    '<div class="o-top"><span class="o-mesa">'+c.mesa+(c.sub?' · '+c.sub:'')+'</span>'+
+      '<span class="o-timer '+timerClass(age)+'" data-t="'+c.creada_en+'">'+fmtTimer(age)+'</span></div>'+
+    '<div class="o-items">'+c.lines.map(it=>'<div class="itrow '+((it.ks||0)>=it.qty?'done':'')+'"><div class="it-head"><span class="q">'+it.qty+'×</span><span class="nm">'+it.name+'</span></div><div class="units">'+unitChips(c,it)+'</div></div>').join('')+'</div>'+
+    '<div class="o-act"><button class="main" onclick="kBulk(\''+m+'\')">'+BULK_TXT[st]+'</button></div></div>';
+}
+
+function renderCocina(main){
+  const wrap=el('div','kds');
+  wrap.innerHTML=
+    '<div class="kds-bar"><div class="kds-stat p"><b id="kPend">0</b><span>POR HACER</span></div>'+
+      '<div class="kds-stat m"><b id="kMar">0</b><span>EN MARCHA</span></div>'+
+      '<div class="kds-stat l"><b id="kLis">0</b><span>LISTAS</span></div>'+
+      '<div class="kds-spacer"></div>'+
+      '<button class="kds-mute" id="kMute">'+(muted?'Sonido ✕':'Sonido ✓')+'</button>'+
+      '<div class="kds-clock" id="kClock">'+kClockTxt()+'</div></div>'+
+    '<div class="prodline" id="prodline"></div>'+
+    '<div class="kboard">'+
+      '<div class="kcol" data-s="pendiente"><div class="col-h">POR HACER<span class="n" id="nPend">0</span></div><div class="col-body" id="colPend"></div></div>'+
+      '<div class="kcol" data-s="en_marcha"><div class="col-h">EN MARCHA<span class="n" id="nMar">0</span></div><div class="col-body" id="colMar"></div></div>'+
+      '<div class="kcol" data-s="lista"><div class="col-h">LISTAS PARA SERVIR<span class="n" id="nLis">0</span></div><div class="col-body" id="colLis"></div></div>'+
+    '</div>';
+  main.appendChild(wrap);
+  wrap.querySelector('#kMute').onclick=()=>{ muted=!muted; wrap.querySelector('#kMute').textContent=muted?'Sonido ✕':'Sonido ✓'; };
+  kRenderBoard();
+}
+function kRenderBoard(){
+  if(state.view!=='cocina') return;
+  const comandas=kComandas();
+  const cur=new Set(comandas.map(c=>c.mesa));
+  if(kInit){ for(const mm of cur){ if(!kPrevMesas.has(mm)){ beep(2); break; } } }
+  kPrevMesas=cur; kInit=true;
+  const pend=comandas.filter(c=>kAgg(c)==='pendiente'), mar=comandas.filter(c=>kAgg(c)==='en_marcha'), lis=comandas.filter(c=>kAgg(c)==='lista');
+  const setCol=(id,arr,emp)=>{ const e=document.getElementById(id); if(e) e.innerHTML=arr.map(orderCard).join('')||'<div class="empty">'+emp+'</div>'; };
+  setCol('colPend',pend,'Sin comandas pendientes'); setCol('colMar',mar,'Nada en marcha'); setCol('colLis',lis,'Nada listo aún');
+  const set=(id,v)=>{ const e=document.getElementById(id); if(e) e.textContent=v; };
+  set('nPend',pend.length); set('nMar',mar.length); set('nLis',lis.length);
+  let up=0,um=0,ul=0; comandas.forEach(c=>c.lines.forEach(it=>{const s=lineState(it); up+=s.p;um+=s.m;ul+=s.l;}));
+  set('kPend',up); set('kMar',um); set('kLis',ul);
+  const agg={}; comandas.forEach(c=>c.lines.forEach(it=>{const s=lineState(it); if(s.p>0) agg[it.name]=(agg[it.name]||0)+s.p;}));
+  const tags=Object.entries(agg).sort((a,b)=>b[1]-a[1]); const pl=document.getElementById('prodline');
+  if(pl) pl.innerHTML = tags.length ? '<span class="pl-lbl">EN COLA</span>'+tags.map(([n,q])=>'<span class="pl-tag"><b>'+q+'</b>'+n+'</span>').join('') : '';
+}
+
+/* sonido + toast */
+function beep(times){ if(muted) return; try{ const ctx=new (window.AudioContext||window.webkitAudioContext)();
+  for(let i=0;i<(times||1);i++){ const o=ctx.createOscillator(),g=ctx.createGain(); o.connect(g);g.connect(ctx.destination);
+    o.frequency.value=880;o.type='sine'; const t=ctx.currentTime+i*0.18; g.gain.setValueAtTime(.25,t); g.gain.exponentialRampToValueAtTime(.001,t+.14); o.start(t);o.stop(t+.15); } }catch(e){} }
+function showToast(msg,brand){ let t=document.getElementById('kds-toast'); if(!t){ t=el('div'); t.id='kds-toast'; document.body.appendChild(t); }
+  t.textContent=msg; t.className=brand?'brand':''; t.classList.add('on'); clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove('on'),2600); }
+
+/* cronómetros + reloj (solo actúan en la vista cocina) */
+setInterval(()=>{ document.querySelectorAll('.o-timer').forEach(e=>{ const age=Date.now()-(+e.dataset.t); e.textContent=fmtTimer(age); e.className='o-timer '+timerClass(age); });
+  const c=document.getElementById('kClock'); if(c) c.textContent=kClockTxt(); },1000);
+setInterval(()=>{ if(state.view==='cocina') kRenderBoard(); },20000);
+
+/* reservas */
+function renderReservas(main){
+  const w=el('div','rv-addwrap'); const add=el('button','rv-add','+  Añadir reserva'); add.onclick=openReservaModal; w.appendChild(add); main.appendChild(w);
+  if(!state.reservas.length){ main.appendChild(el('div','empty','No hay reservas próximas.<br>Toca «Añadir reserva» para crear una.')); return; }
+  const list=el('div','rvlist');
+  state.reservas.forEach(r=>{
+    const card=el('div','rvcard',
+      '<div class="rv-top"><span class="rv-fch">'+fmtFecha(r.fecha)+'</span><button class="rv-del">✕</button></div>'+
+      '<div class="rv-nm">'+(r.nombre||'—')+'</div>'+
+      '<div class="rv-meta">'+(r.personas?(r.personas+' personas'):'')+'</div>'+
+      (r.nota?'<div class="rv-note">'+r.nota+'</div>':''));
+    card.querySelector('.rv-del').onclick=()=>deleteReserva(r.id);
+    list.appendChild(card);
+  });
+  main.appendChild(list);
 }
 
 /* ---- Recuento del día ---- */
@@ -622,10 +948,11 @@ function renderReport(main){
 }
 function renderResumen(body){
   const cobrado=state.caja.total, nT=state.caja.count;
+  const propinas=state.tickets.reduce((s,t)=>s+(t.propina||0),0);
   const pend=state.tableList.reduce((s,n)=>s+tTotal(n),0);
   const openN=state.tableList.filter(n=>tTotal(n)>0).length;
   body.innerHTML='<div class="rsum">'+
-    '<div class="rcard"><span class="rk">Cobrado hoy</span><span class="rv num">'+eur(cobrado)+'</span><span class="rd">'+nT+' ticket'+(nT===1?'':'s')+'</span></div>'+
+    '<div class="rcard"><span class="rk">Cobrado hoy</span><span class="rv num">'+eur(cobrado)+'</span><span class="rd">'+nT+' ticket'+(nT===1?'':'s')+(propinas>0?(' · '+eur(propinas)+' en propinas'):'')+'</span></div>'+
     '<div class="rcard"><span class="rk">Pendiente de cobrar</span><span class="rv num">'+eur(pend)+'</span><span class="rd">'+openN+' mesa'+(openN===1?'':'s')+' abierta'+(openN===1?'':'s')+'</span></div>'+
     '<div class="rcard big"><span class="rk">Total (cobrado + pendiente)</span><span class="rv num">'+eur(cobrado+pend)+'</span></div>'+
   '</div>';
@@ -638,9 +965,10 @@ function renderTickets(body){
     const hora=new Date(t.at).toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'});
     const title=t.mesa+(t.sub?' · '+t.sub:'');
     const items=t.items||[];
-    const rows = items.length
+    const rows = (items.length
       ? items.map(i=>'<div class="tkl"><span class="tkln">'+i.qty+'× '+i.name+'</span><span class="tkls num">'+eur((i.price||0)*i.qty)+'</span></div>').join('')
-      : '<div class="tkl"><span class="tkln" style="color:var(--muted)">Sin detalle de productos</span></div>';
+      : '<div class="tkl"><span class="tkln" style="color:var(--muted)">Sin detalle de productos</span></div>')
+      + ((t.propina>0)?'<div class="tkl"><span class="tkln">Propina</span><span class="tkls num">'+eur(t.propina)+'</span></div>':'');
     const card=el('div','tk');
     card.innerHTML=
       '<button class="tk-head"><span class="tk-m">'+title+'</span><span class="tk-h">'+hora+'</span><span class="tk-t num">'+eur(t.total)+'</span><span class="tk-chev">▶</span></button>'+
@@ -676,12 +1004,15 @@ async function loadProductos(list){
 function renderProdList(list,tickets){
   const agg={};
   tickets.forEach(t=>(t.items||[]).forEach(i=>{ const base=i.name.split(' (')[0]; agg[base]=(agg[base]||0)+i.qty; }));
-  const beb=[],com=[];
-  Object.keys(agg).forEach(name=>{ (ITEM_TYPE[name]==='bebidas'?beb:com).push({name,qty:agg[name]}); });
-  const bySold=(a,b)=>b.qty-a.qty || a.name.localeCompare(b.name,'es'); beb.sort(bySold); com.sort(bySold);
-  if(!beb.length && !com.length){ list.innerHTML='<div class="empty">Sin ventas en este periodo.</div>'; return; }
+  const beb=[],com=[],kio=[];
+  Object.keys(agg).forEach(name=>{
+    const bucket = KIOSKO_CATS.includes(ITEM_CAT[name]) ? kio : (ITEM_TYPE[name]==='bebidas'?beb:com);
+    bucket.push({name,qty:agg[name]});
+  });
+  const bySold=(a,b)=>b.qty-a.qty || a.name.localeCompare(b.name,'es'); beb.sort(bySold); com.sort(bySold); kio.sort(bySold);
+  if(!beb.length && !com.length && !kio.length){ list.innerHTML='<div class="empty">Sin ventas en este periodo.</div>'; return; }
   const sec=(title,arr)=> arr.length ? ('<div class="psec"><h3 class="display">'+title+'</h3>'+arr.map(r=>'<div class="prow"><span class="pn">'+r.name+'</span><span class="pq num">'+r.qty+'</span></div>').join('')+'</div>') : '';
-  list.innerHTML=sec('Bebidas',beb)+sec('Comida',com);
+  list.innerHTML=sec('Bebidas',beb)+sec('Comida',com)+sec('Kiosko',kio);
 }
 
 /* Vista de mesa en ESCRITORIO: menú (izq) + cuenta (der), sin pestañas */
@@ -715,7 +1046,7 @@ function renderHeaderBoard(hdr){
     '<div class="brand"><span class="t1 display">BAR PISCINA</span><span class="t2 display">MOTA DEL CUERVO</span></div></button>'+
     '<button class="caja">'+dotHTML()+'<div style="display:flex;flex-direction:column;line-height:1.1"><span class="cl">CAJA HOY</span><span class="cv num">'+eur(state.caja.total)+'</span></div>'+
     '<span class="cc">'+state.caja.count+' tickets</span><span class="cchev">›</span></button>');
-  h.querySelector('.logo').onclick=goHome;
+  h.querySelector('.logo').onclick=openMenu;
   h.querySelector('.caja').onclick=openReport;
   hdr.appendChild(h);
 }
