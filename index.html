@@ -4,6 +4,15 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Bar Piscina · Mota del Cuervo — Comandas</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1E52D9">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Bar Piscina">
+<meta name="mobile-web-app-capable" content="yes">
 <style>
   /* ============================================================
      BAR PISCINA — Gestor de comandas (v3, sincronizado)
@@ -173,6 +182,12 @@
   .tk.open .tk-body{ display:block; }
   .tkl{ display:flex; justify-content:space-between; gap:10px; padding:6px 0; border-top:1px solid var(--blue-line); font-size:13.5px; }
   .tkl .tkls{ font-weight:700; color:var(--blue); flex:0 0 auto; }
+  .tk-acts{ display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:10px; }
+  .tka{ padding:11px 8px; border-radius:10px; font-weight:800; font-size:13px; background:#fff; border:1.5px solid var(--blue-line); }
+  .tka.undo{ color:var(--blue); }
+  .tka.undo:active{ background:var(--blue-2); }
+  .tka.del{ color:var(--danger); border-color:#f2cfcf; }
+  .tka.del:active{ background:#fdeaea; }
   .plist{ display:flex; flex-direction:column; gap:18px; }
   .psec h3{ font-size:19px; color:var(--blue); margin-bottom:8px; }
   .prow{ display:flex; align-items:center; justify-content:space-between; padding:9px 4px; border-bottom:1px solid var(--blue-line); }
@@ -273,10 +288,18 @@
   .rv-fch{ font-size:13px; font-weight:800; color:var(--blue); text-transform:capitalize; }
   .rv-del{ width:26px; height:26px; color:var(--muted); font-size:15px; }
   .rv-del:active{ color:var(--danger); }
-  .rv-nm{ font-size:18px; font-weight:700; margin-top:4px; }
+  .rv-nm{ font-size:18px; font-weight:700; }
+  .rv-mid{ display:flex; align-items:center; gap:10px; margin-top:4px; }
+  .rv-pers-badge{ margin-left:auto; flex:0 0 auto; background:var(--blue); color:#fff; border-radius:999px; padding:4px 12px; font-size:12px; font-weight:700; }
+  .rv-pers-badge b{ font-size:15px; font-weight:800; }
+  .perschips{ display:grid; grid-template-columns:repeat(6,1fr); gap:6px; margin-bottom:7px; }
+  .pchip{ padding:11px 2px; border-radius:10px; background:var(--blue-tint); color:var(--blue); font-weight:800; font-size:15px; border:2px solid transparent; }
+  .pchip.on{ background:var(--blue); color:#fff; border-color:var(--blue); }
   .rv-meta{ font-size:13px; color:var(--muted); margin-top:2px; }
   .rv-note{ font-size:13.5px; margin-top:7px; line-height:1.35; }
   .rvform{ display:flex; flex-direction:column; gap:12px; margin-top:14px; }
+  .rvrow{ display:grid; grid-template-columns:1.4fr 1fr; gap:10px; }
+  .rv-hora-b{ background:var(--blue-2); color:var(--blue); border-radius:8px; padding:3px 9px; font-size:13px; font-weight:800; margin-left:8px; }
   .rvf{ display:flex; flex-direction:column; gap:5px; }
   .rvf span{ font-size:13px; font-weight:700; color:var(--muted); }
   .rvf input, .rvf textarea{ border:2px solid var(--blue-line); border-radius:11px; padding:11px; font-size:15px; background:#fff; color:var(--ink); width:100%; resize:vertical; }
@@ -331,51 +354,76 @@ const SUPABASE_KEY = "sb_publishable_hwze_N-sgY7eCb2Jr7kHQw_xxsOJHWY";
    ================================================================ */
 const MENU = {
   comida: { label:'Comida', groups:{
-    'Tapas': [ ['Bravas',6.5],['Fingers de pollo',6.5],['Fingers de queso',5.5],['Pinchos morunos',4.5],['Calamares',7.5],['Croquetas de jamón',5.5],['Patatas fritas',2.5] ],
-    'Burguers, sandwich y perrito': [ ['Hamburguesa de vacuno',7],['Hamburguesa de pollo',6.5],['Sándwich mixto',3],['Perrito',4] ],
-    'Bocadillos y montados': [ ['Bocadillo lomo',5.5],['Bocadillo magreta',5.5],['Bocadillo bacon',5.5],['Bocadillo pechuga',5.5],['Bocadillo pechuga rebozada',5.5],['Montado lomo',4.5],['Montado magreta',4.5],['Montado bacon',4.5],['Montado pechuga',4.5],['Montado pechuga rebozada',4.5] ],
-    'Combinados': [ ['Comb. lomo',6],['Comb. magreta',6],['Comb. bacon',6],['Comb. pechuga plancha',6],['Comb. pechuga rebozada',6] ],
-    'Papas': [ ['Jumpers ketchup',1],['Jumpers mantequilla',1],['Campesinas',1.8],['Jamón',1.8],['Palomitas',1.8],['Originales Vidal',1.8] ],
-    'Chuches': [ ['Bolsa de chuches',1.5],['Gofre',2],['Regaliz',0.3],['Chupachups',0.5],['Chicle',0.15] ],
-    'Helados y polos': [ ['Magnum',3],['Chock and Ball',3],['Cornetto Max',3],['Cornetto XXL',3],['Sándwich Dino',2.9],['Sándwich Filipinos',2.9],['Twister',2.2],['Frigopié',2.1],['Haribo',2.1],['Frigo Chuches',2.1],['Calippo',2],['Cornetto Normal',2],['Sándwich original',1.6],['Donut Filipinos',1.6],['Frigurón',1.5],['Flash',0.5] ],
+    'Tapas': [ ['Bravas',6.5],['Fingers de Pollo',6.5],['Fingers de Queso',5.5],['Pinchos Morunos',4.5],['Calamares',7.5],['Croquetas de Jamón',5.5],['Patatas Fritas',2.5],['Ración de Pan',1] ],
+    'Burguers, Sándwich y Perrito': [ ['Hamburguesa de Vacuno',7],['Hamburguesa de Pollo',6.5],['Sándwich Mixto',3],['Perrito',4] ],
+    'Bocadillos y Montados': [ ['Bocadillo de Lomo',5.5],['Bocadillo de Magreta',5.5],['Bocadillo de Bacon',5.5],['Bocadillo de Pechuga',5.5],['Bocadillo de Pechuga Rebozada',5.5],['Montado de Lomo',4.5],['Montado de Magreta',4.5],['Montado de Bacon',4.5],['Montado de Pechuga',4.5],['Montado de Pechuga Rebozada',4.5] ],
+    'Combinados': [ ['Combinado de Lomo',6],['Combinado de Magreta',6],['Combinado de Bacon',6],['Combinado de Pechuga Plancha',6],['Combinado de Pechuga Rebozada',6] ],
+    'Papas': [ ['Jumpers Ketchup',1],['Jumpers Mantequilla',1],['Campesinas',1.8],['Jamón',1.8],['Palomitas',1.8],['Originales Vidal',1.8] ],
+    'Chuches': [ ['Bolsa de Chuches',1.5],['Gofre',2],['Regaliz',0.3],['Chupachups',0.5],['Chicle',0.15] ],
+    'Helados y Polos': [ ['Magnum',3],['Chock and Ball',3],['Cornetto Max',3],['Cornetto XXL',3],['Sándwich Dino',2.9],['Sándwich Filipinos',2.9],['Twister',2.2],['Frigopié',2.1],['Haribo',2.1],['Frigo Chuches',2.1],['Calippo',2],['Cornetto Normal',2],['Sándwich Original',1.6],['Donut Filipinos',1.6],['Frigurón',1.5],['Flash',0.5] ],
+    'Menú Desayunos': [ ['Menú Desayuno',3.5] ],
   }},
   bebidas: { label:'Bebidas', groups:{
     'Refrescos': [ ['Coca-Cola',2.5],['Fanta',2.5],['Fuze Tea',2.5],['Aquarius',2.5],['Zumo',2],['Tónica',2],['Agua',1.5] ],
-    'Cervezas': [ ['Caña',2.5],['Jarra de cerveza',3],['Jarra de tinto',3],['Megajarra',7],['Tercio',2.5],['Tinto de verano',2.5] ],
-    'Vinos': [ ['Vino semidulce',2.5],['Vino tinto',2.2],['Vino blanco',2.2],['Vermut',2] ],
-    'Cubatas y piedras': [ ['Cubata',5.5],['Piedra',3] ],
-    'Granizados': [ ['Granizado café',2.8],['Granizado café + Baileys',3.8],['Granizado limón',2.5],['Granizado fresa',2.5],['Granizado España',3] ],
-    'Café': [ ['Café solo',1.5],['Café con leche',1.8],['Americano',1.5],['Café del tiempo',1.8],['Bombón',1.8],['Café con licor',2],['Cortado',1.6],['Colocado',2] ],
+    'Cervezas': [ ['Caña',2.5],['Jarra de Cerveza',3],['Jarra de Tinto',3],['Megajarra',7],['Tercio',2.5],['Tinto de Verano',2.5] ],
+    'Vinos': [ ['Vino Semidulce',2.5],['Vino Tinto',2.2],['Vino Blanco',2.2],['Vermut',2] ],
+    'Cubatas y Piedras': [ ['Cubata',5.5],['Piedra',3] ],
+    'Granizados': [ ['Granizado de Café',2.8],['Granizado de Café + Baileys',3.8],['Granizado de Limón',2.5],['Granizado de Fresa',2.5],['Granizado de España',3] ],
+    'Café': [ ['Café Solo',1.5],['Café con Leche',1.8],['Americano',1.5],['Café del Tiempo',1.8],['Bombón',1.8],['Café con Licor',2],['Cortado',1.6],['Colocado',2] ],
   }},
 };
 
 const DEFAULT_TABLES=['Barra','Mesa 1','Mesa 2','Mesa 3','Mesa 4','Mesa 5','Mesa 6','Mesa 7','Mesa 8'];
 
+/* ---------------------------------------------------------------
+   NOMBRE CANÓNICO
+   Un mismo producto puede estar guardado con nombres antiguos
+   ("Bocadillo lomo", "Comb. lomo", "Doble"...). Esto los unifica
+   con el nombre actual para que el histórico y el ranking cuadren.
+   --------------------------------------------------------------- */
+const ALIAS={
+  'Comb. lomo':'Combinado de Lomo', 'Comb. magreta':'Combinado de Magreta',
+  'Comb. bacon':'Combinado de Bacon', 'Comb. pechuga plancha':'Combinado de Pechuga Plancha',
+  'Comb. pechuga rebozada':'Combinado de Pechuga Rebozada',
+  'Doble':'Jarra de Cerveza', 'Hamburguesa':'Hamburguesa de Vacuno',
+  'Tercio 0,33':'Tercio', 'Tercio 0,33cl':'Tercio',
+};
+/* clave normalizada: minúsculas, sin tildes, sin enlaces (de/con/y...), sin signos */
+const normKey = s => String(s).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+  .replace(/\b(de|del|la|el|los|las|un|una|y|con|al|a|en)\b/g,'').replace(/[^a-z0-9+]/g,'');
+const NKEY={};
+Object.keys(MENU).forEach(sec=>Object.values(MENU[sec].groups).forEach(items=>items.forEach(([n])=>{ NKEY[normKey(n)]=n; })));
+function canonical(name){
+  const base=String(name).split(' (')[0].trim();
+  if(ALIAS[base]) return ALIAS[base];
+  return NKEY[normKey(base)] || base;
+}
+
 /* Tipo y categoría de cada producto (para ordenar la cuenta y para la cocina) */
 const ITEM_TYPE={}, ITEM_CAT={};
 Object.keys(MENU).forEach(sec=>{ Object.entries(MENU[sec].groups).forEach(([grp,items])=>{ items.forEach(([name])=>{ ITEM_TYPE[name]=sec; ITEM_CAT[name]=grp; }); }); });
-function lineRank(name){ const t=ITEM_TYPE[name.split(' (')[0]]; return t==='bebidas'?0 : t==='comida'?1 : 2; }
+function lineRank(name){ const t=ITEM_TYPE[canonical(name)]; return t==='bebidas'?0 : t==='comida'?1 : 2; }
 /* Categorías que pasan por cocina (se cocinan). Chuches, helados, papas de bolsa y bebidas NO. */
-const KITCHEN_CATS=['Tapas','Burguers, sandwich y perrito','Bocadillos y montados','Combinados'];
-function isKitchen(name){ return KITCHEN_CATS.includes(ITEM_CAT[name.split(' (')[0]]); }
+const KITCHEN_CATS=['Tapas','Menú Desayunos','Burguers, Sándwich y Perrito','Bocadillos y Montados','Combinados'];
+function isKitchen(name){ return KITCHEN_CATS.includes(ITEM_CAT[canonical(name)]); }
 /* Kiosko: helados/polos, chuches y papas de bolsa (para el ranking de productos) */
-const KIOSKO_CATS=['Helados y polos','Chuches','Papas'];
+const KIOSKO_CATS=['Helados y Polos','Chuches','Papas'];
 
 /* Extras dentro de cada categoría.
    free:true -> el 1º de CADA uno de esos (bacon/queso/tomate) va gratis; el resto se cobra.
-   Patatas fritas: se cobra SIEMPRE desde la 1ª.
+   Patatas Fritas: se cobra SIEMPRE desde la 1ª.
    Perritos, burguers y combinados ya llevan patatas incluidas, por eso no la ofrecen. */
 const EXTRAS=[
   {name:'Bacon',price:0.5,free:true},
   {name:'Queso',price:0.5,free:true},
-  {name:'Tomate rallado',price:0.5,free:true},
-  {name:'Patatas fritas',price:1,free:false},
+  {name:'Tomate Rallado',price:0.5,free:true},
+  {name:'Patatas Fritas',price:1,free:false},
   {name:'Hielo',price:0.1,free:false},
 ];
 const EXTRAS_BY_CAT={
-  'Bocadillos y montados':['Bacon','Queso','Tomate rallado','Patatas fritas'],
-  'Combinados':['Bacon','Queso','Tomate rallado'],
-  'Burguers, sandwich y perrito':['Queso','Bacon'],
+  'Bocadillos y Montados':['Bacon','Queso','Tomate Rallado','Patatas Fritas'],
+  'Combinados':['Bacon','Queso','Tomate Rallado'],
+  'Burguers, Sándwich y Perrito':['Queso','Bacon'],
   'Café':['Hielo'],
 };
 const WITH_EXTRAS=Object.keys(EXTRAS_BY_CAT);
@@ -437,6 +485,7 @@ const LocalDB={
   async clearMesa(){ this.persist(); }, async setSub(){ this.persist(); }, async addMesa(){ this.persist(); },
   async deleteMesa(){ this.persist(); },
   async setKitchen(){ this.persist(); },
+  async deleteTicket(){ this.persist(); }, async restoreItems(){ this.persist(); },
   async addReserva(){ this.persist(); }, async deleteReserva(){ this.persist(); },
   async pay(){ this.persist(); }, async payPartial(){ this.persist(); }, async resetCaja(){ this.persist(); },
   subscribe(){},
@@ -454,13 +503,14 @@ const CloudDB={
       const orders = ordRes.data;
       const start=new Date(); start.setHours(0,0,0,0);
       // tickets del día (con items, subnombre y propina si las columnas existen)
-      let tkRes = await sb.from('tickets').select('mesa,total,items,sub,propina,closed_at').gte('closed_at', start.toISOString()).order('closed_at',{ascending:false});
-      if(tkRes.error) tkRes = await sb.from('tickets').select('mesa,total,items,sub,closed_at').gte('closed_at', start.toISOString()).order('closed_at',{ascending:false});
-      if(tkRes.error) tkRes = await sb.from('tickets').select('mesa,total,closed_at').gte('closed_at', start.toISOString()).order('closed_at',{ascending:false});
+      let tkRes = await sb.from('tickets').select('id,mesa,total,items,sub,propina,closed_at').gte('closed_at', start.toISOString()).order('closed_at',{ascending:false});
+      if(tkRes.error) tkRes = await sb.from('tickets').select('id,mesa,total,items,sub,closed_at').gte('closed_at', start.toISOString()).order('closed_at',{ascending:false});
+      if(tkRes.error) tkRes = await sb.from('tickets').select('id,mesa,total,closed_at').gte('closed_at', start.toISOString()).order('closed_at',{ascending:false});
       const tk=tkRes.data||[];
-      // reservas de hoy en adelante
-      const rr=await sb.from('reservas').select('id,fecha,nombre,personas,nota').gte('fecha', today()).order('fecha',{ascending:true});
-      state.reservas=(rr.data||[]).map(r=>({id:r.id,fecha:r.fecha,nombre:r.nombre||'',personas:r.personas||0,nota:r.nota||''}));
+      // reservas de hoy en adelante (si falla, se mantienen las que ya hay en pantalla)
+      let rr=await sb.from('reservas').select('id,fecha,hora,nombre,personas,nota').gte('fecha', today());
+      if(rr.error) rr=await sb.from('reservas').select('id,fecha,nombre,personas,nota').gte('fecha', today());
+      if(!rr.error && rr.data){ state.reservas=rr.data.map(r=>({id:r.id,fecha:r.fecha,hora:r.hora||'',nombre:r.nombre||'',personas:r.personas||0,nota:r.nota||''})); sortReservas(); }
       const names=mesas.map(m=>m.name).sort(sortNames);
       const tables={};
       names.forEach(n=>{ const r=mesas.find(x=>x.name===n); tables[n]={sub:(r&&r.sub)||'',lines:[]}; });
@@ -468,7 +518,7 @@ const CloudDB={
         tables[o.mesa].lines.push({name:o.item,price:Number(o.price),qty:o.qty,km:o.km||0,kl:o.kl||0,ks:o.ks||0,creada_en:o.creada_en||null}); });
       Object.values(tables).forEach(t=>t.lines.sort((a,b)=>a.name.localeCompare(b.name,'es')));
       state.tableList=names; state.tables=tables;
-      state.tickets = tk.map(r=>({mesa:r.mesa,sub:r.sub||'',total:Number(r.total),propina:Number(r.propina||0),items:r.items||[],at:r.closed_at}));
+      state.tickets = tk.map(r=>({id:r.id,mesa:r.mesa,sub:r.sub||'',total:Number(r.total),propina:Number(r.propina||0),items:r.items||[],at:r.closed_at}));
       state.caja={ count:state.tickets.length, total:state.tickets.reduce((s,t)=>s+t.total,0), date:today() };
       online=true;
     }catch(e){ online=false; }
@@ -481,7 +531,11 @@ const CloudDB={
   async addMesa(name){ flag((await sb.from('mesas').upsert({name,sub:''},{onConflict:'name',ignoreDuplicates:true})).error); },
   async deleteMesa(mesa){ await sb.from('orders').delete().eq('mesa',mesa); flag((await sb.from('mesas').delete().eq('name',mesa)).error); },
   async setKitchen(mesa,item,km,kl,ks){ flag((await sb.from('orders').update({km,kl,ks}).eq('mesa',mesa).eq('item',item)).error); },
-  async addReserva(r){ flag((await sb.from('reservas').insert({fecha:r.fecha,nombre:r.nombre,personas:r.personas,nota:r.nota})).error); },
+  async deleteTicket(id){ if(id==null) return; flag((await sb.from('tickets').delete().eq('id',id)).error); },
+  async restoreItems(mesa,items){ for(const i of (items||[])){ await sb.rpc('add_item',{_mesa:mesa,_item:i.name,_price:i.price});
+      if(i.qty>1) await sb.rpc('step_item',{_mesa:mesa,_item:i.name,_d:i.qty-1}); } flag(null); },
+  async addReserva(r){ let x=await sb.from('reservas').insert({fecha:r.fecha,hora:r.hora||null,nombre:r.nombre,personas:r.personas,nota:r.nota});
+    if(x.error) x=await sb.from('reservas').insert({fecha:r.fecha,nombre:r.nombre,personas:r.personas,nota:r.nota}); flag(x.error); },
   async deleteReserva(id){ flag((await sb.from('reservas').delete().eq('id',id)).error); },
   async pay(mesa,total,items,sub,propina){ let r=await sb.from('tickets').insert({mesa,total,items,sub,propina}); if(r.error) r=await sb.from('tickets').insert({mesa,total,items,sub}); if(r.error) await sb.from('tickets').insert({mesa,total});
     flag((await sb.from('orders').delete().eq('mesa',mesa)).error); },
@@ -574,7 +628,31 @@ function payTable(){
 function logTicket(mesa,total,items,sub,propina){
   if(state.caja.date!==today()){ state.caja={count:0,total:0,date:today()}; state.tickets=[]; }
   state.caja.count++; state.caja.total+=total;
-  state.tickets.unshift({mesa,sub:sub||'',total,propina:propina||0,items,at:new Date().toISOString()});
+  state.tickets.unshift({id:(CLOUD?null:Date.now()),mesa,sub:sub||'',total,propina:propina||0,items,at:new Date().toISOString()});
+}
+
+/* ---- corregir un cobro equivocado ---- */
+function removeTicketLocal(t){
+  const i=state.tickets.indexOf(t); if(i>=0) state.tickets.splice(i,1);
+  state.caja.count=Math.max(0,state.caja.count-1);
+  state.caja.total=Math.max(0,state.caja.total-t.total);
+}
+function undoTicket(t){
+  confirmDialog({ message:'¿Devolver a <b>'+t.mesa+'</b>?', sub:'Se anula el ticket de '+eur(t.total)+' y los productos vuelven a la mesa para cobrarlos bien.', okLabel:'Devolver',
+    onOk:async()=>{
+      const m=t.mesa, tb=ensure(m);
+      if(!state.tableList.includes(m)){ state.tableList.push(m); DB.addMesa(m); }
+      (t.items||[]).forEach(i=>{ const ex=tb.lines.find(l=>l.name===i.name);
+        if(ex) ex.qty+=i.qty; else tb.lines.push({name:i.name,price:i.price,qty:i.qty,km:0,kl:0,ks:0,creada_en:new Date().toISOString()}); });
+      if(t.sub && !tb.sub){ tb.sub=t.sub; DB.setSub(m,t.sub); }
+      removeTicketLocal(t); renderApp();
+      await DB.restoreItems(m,t.items||[]);
+      await DB.deleteTicket(t.id);
+    }});
+}
+function deleteTicket(t){
+  confirmDialog({ message:'¿Eliminar este ticket?', sub:eur(t.total)+' · se descuenta de la caja del día. Los productos NO vuelven a la mesa.', okLabel:'Eliminar', danger:true,
+    onOk:async()=>{ removeTicketLocal(t); renderApp(); await DB.deleteTicket(t.id); }});
 }
 function resetCaja(){
   confirmDialog({ message:'¿Cerrar caja del día?', sub:'El contador, el total y los tickets del día se ponen a cero.', okLabel:'Cerrar caja', danger:true,
@@ -599,10 +677,11 @@ function openCocina(){ state.view='cocina'; renderApp(); }
 function openReservas(){ state.view='reservas'; renderApp(); }
 
 function addReserva(r){
-  const rec={ id:(CLOUD?null:Date.now()), fecha:r.fecha, nombre:r.nombre, personas:r.personas, nota:r.nota };
-  state.reservas.push(rec); state.reservas.sort((a,b)=>(a.fecha||'').localeCompare(b.fecha||''));
+  const rec={ id:(CLOUD?null:Date.now()), fecha:r.fecha, hora:r.hora||'', nombre:r.nombre, personas:r.personas, nota:r.nota };
+  state.reservas.push(rec); sortReservas();
   renderApp(); DB.addReserva(rec);
 }
+function sortReservas(){ state.reservas.sort((a,b)=>((a.fecha||'')+' '+(a.hora||'')).localeCompare((b.fecha||'')+' '+(b.hora||''))); }
 function deleteReserva(id){
   confirmDialog({ message:'¿Eliminar esta reserva?', okLabel:'Eliminar', danger:true,
     onOk:async()=>{ state.reservas=state.reservas.filter(r=>r.id!==id); renderApp(); await DB.deleteReserva(id); } });
@@ -611,23 +690,31 @@ function openReservaModal(){
   const ov=el('div','overlay');
   ov.innerHTML='<div class="modal"><div class="m-msg">Nueva reserva</div>'+
     '<div class="rvform">'+
-      '<label class="rvf"><span>Fecha</span><input class="rv-fecha" type="date" value="'+today()+'"></label>'+
+      '<div class="rvrow"><label class="rvf"><span>Día</span><input class="rv-fecha" type="date" value="'+today()+'"></label>'+
+      '<label class="rvf"><span>Hora</span><input class="rv-hora" type="time" value="14:00"></label></div>'+
       '<label class="rvf"><span>Nombre</span><input class="rv-nombre" type="text" placeholder="Quién reserva"></label>'+
-      '<label class="rvf"><span>Personas</span><input class="rv-pers" type="number" inputmode="numeric" min="1" value="2"></label>'+
-      '<label class="rvf"><span>Nota</span><textarea class="rv-nota" rows="2" placeholder="Detalles (opcional)"></textarea></label>'+
+      '<div class="rvf"><span>Personas</span>'+
+        '<div class="perschips">'+[2,4,6,8,10,12].map(n=>'<button class="pchip'+(n===2?' on':'')+'" data-n="'+n+'">'+n+'</button>').join('')+'</div>'+
+        '<input class="rv-pers num" type="number" inputmode="numeric" min="1" value="2"></div>'+
+      '<label class="rvf"><span>Descripción</span><textarea class="rv-nota" rows="2" placeholder="Detalles (opcional)"></textarea></label>'+
     '</div>'+
     '<div class="m-actions"><button class="m-btn m-cancel">Cancelar</button><button class="m-btn m-ok rv-ok">Guardar</button></div></div>';
   document.body.appendChild(ov);
   const close=()=>ov.remove();
   ov.addEventListener('click',e=>{ if(e.target===ov) close(); });
   ov.querySelector('.m-cancel').onclick=close;
+  const pin=ov.querySelector('.rv-pers');
+  ov.querySelectorAll('.pchip').forEach(b=>{ b.onclick=()=>{ pin.value=b.dataset.n;
+    ov.querySelectorAll('.pchip').forEach(x=>x.classList.toggle('on',x===b)); }; });
+  pin.oninput=()=>{ ov.querySelectorAll('.pchip').forEach(x=>x.classList.toggle('on',x.dataset.n===pin.value)); };
   ov.querySelector('.rv-ok').onclick=()=>{
     const fecha=ov.querySelector('.rv-fecha').value||today();
+    const hora=ov.querySelector('.rv-hora').value||'';
     const nombre=ov.querySelector('.rv-nombre').value.trim();
     const personas=parseInt(ov.querySelector('.rv-pers').value)||0;
     const nota=ov.querySelector('.rv-nota').value.trim();
     if(!nombre){ ov.querySelector('.rv-nombre').focus(); return; }
-    close(); addReserva({fecha,nombre,personas,nota});
+    close(); addReserva({fecha,hora,nombre,personas,nota});
   };
 }
 function fmtFecha(f){ if(!f) return ''; const d=new Date(f+'T12:00:00'); return d.toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long'}); }
@@ -921,9 +1008,8 @@ function renderReservas(main){
   const list=el('div','rvlist');
   state.reservas.forEach(r=>{
     const card=el('div','rvcard',
-      '<div class="rv-top"><span class="rv-fch">'+fmtFecha(r.fecha)+'</span><button class="rv-del">✕</button></div>'+
-      '<div class="rv-nm">'+(r.nombre||'—')+'</div>'+
-      '<div class="rv-meta">'+(r.personas?(r.personas+' personas'):'')+'</div>'+
+      '<div class="rv-top"><span class="rv-fch">'+fmtFecha(r.fecha)+'</span>'+(r.hora?'<span class="rv-hora-b num">'+r.hora+'</span>':'')+'<button class="rv-del">✕</button></div>'+
+      '<div class="rv-mid"><span class="rv-nm">'+(r.nombre||'—')+'</span>'+(r.personas?'<span class="rv-pers-badge"><b>'+r.personas+'</b> pers.</span>':'')+'</div>'+
       (r.nota?'<div class="rv-note">'+r.nota+'</div>':''));
     card.querySelector('.rv-del').onclick=()=>deleteReserva(r.id);
     list.appendChild(card);
@@ -972,8 +1058,12 @@ function renderTickets(body){
     const card=el('div','tk');
     card.innerHTML=
       '<button class="tk-head"><span class="tk-m">'+title+'</span><span class="tk-h">'+hora+'</span><span class="tk-t num">'+eur(t.total)+'</span><span class="tk-chev">▶</span></button>'+
-      '<div class="tk-body">'+rows+'</div>';
+      '<div class="tk-body">'+rows+
+        '<div class="tk-acts"><button class="tka undo">↩ Devolver a la mesa</button><button class="tka del">✕ Eliminar</button></div>'+
+      '</div>';
     card.querySelector('.tk-head').onclick=()=>card.classList.toggle('open');
+    card.querySelector('.undo').onclick=()=>undoTicket(t);
+    card.querySelector('.del').onclick=()=>deleteTicket(t);
     wrap.appendChild(card);
   });
   body.appendChild(wrap);
@@ -1003,7 +1093,7 @@ async function loadProductos(list){
 }
 function renderProdList(list,tickets){
   const agg={};
-  tickets.forEach(t=>(t.items||[]).forEach(i=>{ const base=i.name.split(' (')[0]; agg[base]=(agg[base]||0)+i.qty; }));
+  tickets.forEach(t=>(t.items||[]).forEach(i=>{ const base=canonical(i.name); agg[base]=(agg[base]||0)+i.qty; }));
   const beb=[],com=[],kio=[];
   Object.keys(agg).forEach(name=>{
     const bucket = KIOSKO_CATS.includes(ITEM_CAT[name]) ? kio : (ITEM_TYPE[name]==='bebidas'?beb:com);
