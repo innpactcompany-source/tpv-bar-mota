@@ -283,8 +283,10 @@
   .rv-add{ width:100%; background:var(--blue); color:#fff; border-radius:13px; padding:15px; font-weight:800; font-size:16px; box-shadow:var(--shadow); }
   .rv-add:active{ background:var(--blue-dark); }
   .rvlist{ padding:10px 12px 24px; display:flex; flex-direction:column; gap:10px; }
-  .rvcard{ background:var(--blue-tint); border-radius:14px; padding:13px 14px; }
-  .rv-top{ display:flex; align-items:center; justify-content:space-between; }
+  .rvcard{ background:var(--blue-tint); border-radius:14px; padding:13px 14px; cursor:pointer; transition:transform .06s; }
+  .rvcard:active{ transform:scale(.98); }
+  .rv-edit{ margin-left:auto; font-size:11.5px; font-weight:700; color:var(--blue); opacity:.75; }
+  .rv-top{ display:flex; align-items:center; gap:6px; }
   .rv-fch{ font-size:13px; font-weight:800; color:var(--blue); text-transform:capitalize; }
   .rv-del{ width:26px; height:26px; color:var(--muted); font-size:15px; }
   .rv-del:active{ color:var(--danger); }
@@ -312,6 +314,24 @@
   .tiprow{ display:flex; align-items:center; gap:8px; margin-top:12px; font-weight:700; }
   .tiprow .tipinp{ margin-left:auto; width:90px; border:2px solid var(--blue-line); border-radius:10px; padding:9px 10px; font-size:15px; text-align:right; background:#fff; color:var(--ink); }
   .tiprow .tipinp:focus{ outline:none; border-color:var(--blue); }
+
+  /* ===== pantalla de acceso ===== */
+  .loginscr{ position:fixed; inset:0; background:#fff; z-index:500; display:flex; align-items:center; justify-content:center; padding:24px; }
+  .loginbox{ width:100%; max-width:340px; display:flex; flex-direction:column; }
+  .loginbox .lg-mill{ width:64px; height:64px; margin:0 auto 10px; }
+  .lg-t{ font-size:30px; color:var(--blue); text-align:center; line-height:1; }
+  .lg-s{ font-size:11px; letter-spacing:3px; color:var(--muted); text-align:center; margin-bottom:26px; font-weight:700; }
+  .lgf{ display:flex; flex-direction:column; gap:5px; margin-bottom:13px; }
+  .lgf span{ font-size:12.5px; font-weight:700; color:var(--muted); }
+  .lgf input{ border:2px solid var(--blue-line); border-radius:12px; padding:14px; font-size:16px; background:#fff; color:var(--ink); width:100%; }
+  .lgf input:focus{ outline:none; border-color:var(--blue); }
+  .lg-err{ color:var(--danger); font-size:13px; font-weight:700; min-height:19px; }
+  .lg-ok{ background:var(--blue); color:#fff; border-radius:13px; padding:16px; font-weight:800; font-size:16px; box-shadow:var(--shadow); margin-top:4px; }
+  .lg-ok:active{ background:var(--blue-dark); }
+  .lg-ok:disabled{ opacity:.6; }
+  .lg-note{ font-size:12px; color:var(--muted); text-align:center; margin-top:14px; }
+  .hublogout{ margin-top:8px; padding:15px; border-radius:14px; background:#fff; border:2px solid #f2cfcf; color:var(--danger); font-weight:800; font-size:15px; }
+  .hublogout:active{ background:#fdeaea; }
 
   /* ===== Tablet apaisada / ordenador ===== */
   @media (min-width:900px){
@@ -348,6 +368,17 @@
    ================================================================ */
 const SUPABASE_URL = "https://xgtheuslufmgvadrknkh.supabase.co";
 const SUPABASE_KEY = "sb_publishable_hwze_N-sgY7eCb2Jr7kHQw_xxsOJHWY";
+
+/* ── ACCESO ──────────────────────────────────────────────────────
+   Usuario: InnpactMota   ·   Contraseña: la que pusiste en Supabase
+   El usuario se completa solo con el dominio de abajo, así que en
+   Supabase el correo del usuario debe ser: innpactmota@mota.com
+   Si quieres que NO pida usuario (solo contraseña), escribe ese
+   correo en USUARIO_FIJO.
+   ──────────────────────────────────────────────────────────────── */
+const USUARIO_FIJO = "";
+const DOMINIO_USUARIO = "@mota.com";
+const USUARIO_SUGERIDO = "InnpactMota";
 
 /* ================================================================
    1) CARTA — edita precios / platos / bebidas aquí
@@ -456,6 +487,7 @@ const el=(t,c,h)=>{ const e=document.createElement(t); if(c)e.className=c; if(h!
 function sortNames(a,b){ const rk=n=> n==='Barra'?-1 : (/^Mesa \d+$/.test(n)? parseInt(n.slice(5),10) : 9999); return rk(a)-rk(b) || a.localeCompare(b,'es'); }
 
 const MILL='<svg class="mill" viewBox="0 0 100 100" fill="none"><g stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><line x1="50" y1="46" x2="22" y2="18"/><line x1="50" y1="46" x2="78" y2="18"/><line x1="50" y1="46" x2="22" y2="74"/><line x1="50" y1="46" x2="78" y2="74"/><path d="M41 60 L44 46 L56 46 L59 60"/><path d="M44 46 L50 39 L56 46"/></g><circle cx="50" cy="46" r="4" fill="#fff"/></svg>';
+const MILL_BLUE=MILL.replace(/class="mill"/,'class="mill lg-mill"').replace(/#fff/g,'#1E52D9');
 
 /* ================================================================
    3) Capa de datos: LOCAL (un móvil) o NUBE (sincronizado)
@@ -486,7 +518,7 @@ const LocalDB={
   async deleteMesa(){ this.persist(); },
   async setKitchen(){ this.persist(); },
   async deleteTicket(){ this.persist(); }, async restoreItems(){ this.persist(); },
-  async addReserva(){ this.persist(); }, async deleteReserva(){ this.persist(); },
+  async addReserva(){ this.persist(); }, async deleteReserva(){ this.persist(); }, async updateReserva(){ this.persist(); },
   async pay(){ this.persist(); }, async payPartial(){ this.persist(); }, async resetCaja(){ this.persist(); },
   subscribe(){},
 };
@@ -537,6 +569,8 @@ const CloudDB={
   async addReserva(r){ let x=await sb.from('reservas').insert({fecha:r.fecha,hora:r.hora||null,nombre:r.nombre,personas:r.personas,nota:r.nota});
     if(x.error) x=await sb.from('reservas').insert({fecha:r.fecha,nombre:r.nombre,personas:r.personas,nota:r.nota}); flag(x.error); },
   async deleteReserva(id){ flag((await sb.from('reservas').delete().eq('id',id)).error); },
+  async updateReserva(r){ if(r.id==null) return; let x=await sb.from('reservas').update({fecha:r.fecha,hora:r.hora||null,nombre:r.nombre,personas:r.personas,nota:r.nota}).eq('id',r.id);
+    if(x.error) x=await sb.from('reservas').update({fecha:r.fecha,nombre:r.nombre,personas:r.personas,nota:r.nota}).eq('id',r.id); flag(x.error); },
   async pay(mesa,total,items,sub,propina){ let r=await sb.from('tickets').insert({mesa,total,items,sub,propina}); if(r.error) r=await sb.from('tickets').insert({mesa,total,items,sub}); if(r.error) await sb.from('tickets').insert({mesa,total});
     flag((await sb.from('orders').delete().eq('mesa',mesa)).error); },
   async payPartial(mesa,total,items,sub){ let r=await sb.from('tickets').insert({mesa,total,items,sub}); if(r.error) await sb.from('tickets').insert({mesa,total});
@@ -682,23 +716,31 @@ function addReserva(r){
   renderApp(); DB.addReserva(rec);
 }
 function sortReservas(){ state.reservas.sort((a,b)=>((a.fecha||'')+' '+(a.hora||'')).localeCompare((b.fecha||'')+' '+(b.hora||''))); }
+function saveReserva(orig,r){
+  Object.assign(orig,{fecha:r.fecha,hora:r.hora||'',nombre:r.nombre,personas:r.personas,nota:r.nota});
+  sortReservas(); renderApp(); DB.updateReserva(orig);
+}
 function deleteReserva(id){
   confirmDialog({ message:'¿Eliminar esta reserva?', okLabel:'Eliminar', danger:true,
     onOk:async()=>{ state.reservas=state.reservas.filter(r=>r.id!==id); renderApp(); await DB.deleteReserva(id); } });
 }
-function openReservaModal(){
+function openReservaModal(edit){
+  const ed=!!edit;
+  const v={ fecha: ed?(edit.fecha||today()):today(), hora: ed?(edit.hora||''):'14:00',
+            nombre: ed?(edit.nombre||''):'', personas: ed?(edit.personas||2):2, nota: ed?(edit.nota||''):'' };
+  const esc=s=>String(s||'').replace(/"/g,'&quot;');
   const ov=el('div','overlay');
-  ov.innerHTML='<div class="modal"><div class="m-msg">Nueva reserva</div>'+
+  ov.innerHTML='<div class="modal"><div class="m-msg">'+(ed?'Editar reserva':'Nueva reserva')+'</div>'+
     '<div class="rvform">'+
-      '<div class="rvrow"><label class="rvf"><span>Día</span><input class="rv-fecha" type="date" value="'+today()+'"></label>'+
-      '<label class="rvf"><span>Hora</span><input class="rv-hora" type="time" value="14:00"></label></div>'+
-      '<label class="rvf"><span>Nombre</span><input class="rv-nombre" type="text" placeholder="Quién reserva"></label>'+
+      '<div class="rvrow"><label class="rvf"><span>Día</span><input class="rv-fecha" type="date" value="'+v.fecha+'"></label>'+
+      '<label class="rvf"><span>Hora</span><input class="rv-hora" type="time" value="'+v.hora+'"></label></div>'+
+      '<label class="rvf"><span>Nombre</span><input class="rv-nombre" type="text" placeholder="Quién reserva" value="'+esc(v.nombre)+'"></label>'+
       '<div class="rvf"><span>Personas</span>'+
-        '<div class="perschips">'+[2,4,6,8,10,12].map(n=>'<button class="pchip'+(n===2?' on':'')+'" data-n="'+n+'">'+n+'</button>').join('')+'</div>'+
-        '<input class="rv-pers num" type="number" inputmode="numeric" min="1" value="2"></div>'+
-      '<label class="rvf"><span>Descripción</span><textarea class="rv-nota" rows="2" placeholder="Detalles (opcional)"></textarea></label>'+
+        '<div class="perschips">'+[2,4,6,8,10,12].map(n=>'<button class="pchip'+(n===v.personas?' on':'')+'" data-n="'+n+'">'+n+'</button>').join('')+'</div>'+
+        '<input class="rv-pers num" type="number" inputmode="numeric" min="1" value="'+v.personas+'"></div>'+
+      '<label class="rvf"><span>Descripción</span><textarea class="rv-nota" rows="2" placeholder="Detalles (opcional)">'+String(v.nota||'')+'</textarea></label>'+
     '</div>'+
-    '<div class="m-actions"><button class="m-btn m-cancel">Cancelar</button><button class="m-btn m-ok rv-ok">Guardar</button></div></div>';
+    '<div class="m-actions"><button class="m-btn m-cancel">Cancelar</button><button class="m-btn m-ok rv-ok">'+(ed?'Guardar cambios':'Guardar')+'</button></div></div>';
   document.body.appendChild(ov);
   const close=()=>ov.remove();
   ov.addEventListener('click',e=>{ if(e.target===ov) close(); });
@@ -714,7 +756,9 @@ function openReservaModal(){
     const personas=parseInt(ov.querySelector('.rv-pers').value)||0;
     const nota=ov.querySelector('.rv-nota').value.trim();
     if(!nombre){ ov.querySelector('.rv-nombre').focus(); return; }
-    close(); addReserva({fecha,hora,nombre,personas,nota});
+    close();
+    if(ed) saveReserva(edit,{fecha,hora,nombre,personas,nota});
+    else addReserva({fecha,hora,nombre,personas,nota});
   };
 }
 function fmtFecha(f){ if(!f) return ''; const d=new Date(f+'T12:00:00'); return d.toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long'}); }
@@ -881,7 +925,12 @@ function renderMenuScreen(main){
   const mk=(title,desc,fn)=>{ const b=el('button','hubbtn','<span class="hubt display">'+title+'</span><span class="hubd">'+desc+'</span>'); b.onclick=fn; return b; };
   wrap.appendChild(mk('Cocina','Comandas de comida pendientes por mesa', openCocina));
   wrap.appendChild(mk('Reservas','Añade y consulta las reservas', openReservas));
+  if(CLOUD){ const out=el('button','hublogout','Cerrar sesión'); out.onclick=logout; wrap.appendChild(out); }
   main.appendChild(wrap);
+}
+function logout(){
+  confirmDialog({ message:'¿Cerrar sesión?', sub:'Habrá que volver a escribir la contraseña para entrar.', okLabel:'Cerrar sesión', danger:true,
+    onOk:async()=>{ try{ localStorage.removeItem(AUTH_KEY); await sb.auth.signOut(); }catch(e){} location.reload(); } });
 }
 
 /* ================================================================
@@ -1008,10 +1057,11 @@ function renderReservas(main){
   const list=el('div','rvlist');
   state.reservas.forEach(r=>{
     const card=el('div','rvcard',
-      '<div class="rv-top"><span class="rv-fch">'+fmtFecha(r.fecha)+'</span>'+(r.hora?'<span class="rv-hora-b num">'+r.hora+'</span>':'')+'<button class="rv-del">✕</button></div>'+
+      '<div class="rv-top"><span class="rv-fch">'+fmtFecha(r.fecha)+'</span>'+(r.hora?'<span class="rv-hora-b num">'+r.hora+'</span>':'')+'<span class="rv-edit">Editar ›</span><button class="rv-del">✕</button></div>'+
       '<div class="rv-mid"><span class="rv-nm">'+(r.nombre||'—')+'</span>'+(r.personas?'<span class="rv-pers-badge"><b>'+r.personas+'</b> pers.</span>':'')+'</div>'+
       (r.nota?'<div class="rv-note">'+r.nota+'</div>':''));
-    card.querySelector('.rv-del').onclick=()=>deleteReserva(r.id);
+    card.onclick=()=>openReservaModal(r);
+    card.querySelector('.rv-del').onclick=e=>{ e.stopPropagation(); deleteReserva(r.id); };
     list.appendChild(card);
   });
   main.appendChild(list);
@@ -1272,8 +1322,70 @@ function updateFoot(){
 /* ================================================================
    6) Arranque
    ================================================================ */
+/* ================================================================
+   ACCESO — usuario y contraseña (Supabase Auth)
+   La sesión dura hasta el día 1 del mes siguiente; entonces
+   vuelve a pedir la contraseña una sola vez.
+   ================================================================ */
+const AUTH_KEY='bar-mota-auth-mes', MAIL_KEY='bar-mota-usuario';
+const curMonth=()=>new Date().toISOString().slice(0,7);
+
+async function ensureAuth(){
+  if(!CLOUD || !sb) return true;                       // modo local: sin acceso
+  let session=null;
+  try{ session=(await sb.auth.getSession()).data.session; }catch(e){}
+  const mes=localStorage.getItem(AUTH_KEY);
+  if(session && mes===curMonth()) return true;         // sesión válida este mes
+  if(session){ try{ await sb.auth.signOut(); }catch(e){} }   // mes nuevo -> a pedir
+  return showLogin();
+}
+
+function showLogin(){
+  return new Promise(resolve=>{
+    const fijo=!!USUARIO_FIJO;
+    const mail=localStorage.getItem(MAIL_KEY)||USUARIO_SUGERIDO;
+    const scr=el('div','loginscr');
+    scr.innerHTML='<div class="loginbox">'+MILL_BLUE+
+      '<div class="lg-t display">BAR PISCINA</div><div class="lg-s">MOTA DEL CUERVO</div>'+
+      (fijo?'':'<label class="lgf"><span>Usuario</span><input class="lg-mail" type="text" autocapitalize="none" autocorrect="off" autocomplete="username" placeholder="tu usuario" value="'+mail.replace(/"/g,'&quot;')+'"></label>')+
+      '<label class="lgf"><span>Contraseña</span><input class="lg-pass" type="password" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" data-lpignore="true" placeholder="Escribe la contraseña"></label>'+
+      '<div class="lg-err" id="lgErr"></div>'+
+      '<button class="lg-ok">Entrar</button>'+
+      '<div class="lg-note">No se volverá a pedir hasta el mes que viene.</div></div>';
+    document.body.appendChild(scr);
+    const mailI=scr.querySelector('.lg-mail'), passI=scr.querySelector('.lg-pass'),
+          btn=scr.querySelector('.lg-ok'), err=scr.querySelector('#lgErr');
+    setTimeout(()=>{ passI.value=''; passI.focus(); },250);
+    const go=async()=>{
+      let email=USUARIO_FIJO;
+      if(!fijo){
+        const v=(mailI.value||'').trim();
+        if(!v){ err.textContent='Escribe tu usuario.'; return; }
+        email = (v.includes('@') ? v : v + DOMINIO_USUARIO).toLowerCase();   // sin @ -> se completa solo
+      }
+      const password=passI.value;
+      if(!password){ err.textContent='Escribe la contraseña.'; passI.focus(); return; }
+      btn.disabled=true; btn.textContent='Entrando…'; err.textContent='';
+      try{
+        const { error }=await sb.auth.signInWithPassword({ email, password });
+        if(error){ err.textContent=fijo?'Contraseña incorrecta.':'Usuario o contraseña incorrectos.';
+          btn.disabled=false; btn.textContent='Entrar'; passI.value=''; passI.focus(); return; }
+        localStorage.setItem(AUTH_KEY,curMonth());
+        if(!fijo) localStorage.setItem(MAIL_KEY,(mailI.value||'').trim());
+        scr.remove(); resolve(true);
+      }catch(e){ err.textContent='Sin conexión. Revisa el internet.'; btn.disabled=false; btn.textContent='Entrar'; }
+    };
+    btn.onclick=go;
+    [mailI,passI].forEach(i=>{ if(i) i.addEventListener('keydown',e=>{ if(e.key==='Enter') go(); }); });
+  });
+}
+
+/* ================================================================
+   6) Arranque
+   ================================================================ */
 (async function init(){
   if(CLOUD){ try{ sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY); }catch(e){} }
+  await ensureAuth();
   await DB.load();
   renderApp();
   DB.subscribe(scheduleSync);
