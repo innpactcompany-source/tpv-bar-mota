@@ -204,7 +204,7 @@
   .mesa.editing{ border-color:var(--danger); background:#fdeaea; }
   .mesa .mdel{ position:absolute; top:8px; right:10px; color:var(--danger); font-size:16px; font-weight:800; }
   /* caja clicable */
-  .hb .caja{ cursor:pointer; border:none; }
+  .hb .caja{ cursor:pointer; border:none; margin-left:0; }
   .hb .caja .cchev{ font-size:20px; opacity:.7; margin-left:2px; line-height:1; }
 
   /* menú del molino (hub) */
@@ -326,12 +326,35 @@
   .lgf input{ border:2px solid var(--blue-line); border-radius:12px; padding:14px; font-size:16px; background:#fff; color:var(--ink); width:100%; }
   .lgf input:focus{ outline:none; border-color:var(--blue); }
   .lg-err{ color:var(--danger); font-size:13px; font-weight:700; min-height:19px; }
+  .lg-hint{ display:block; font-weight:600; font-size:11.5px; color:var(--muted); margin-top:5px; line-height:1.35; }
   .lg-ok{ background:var(--blue); color:#fff; border-radius:13px; padding:16px; font-weight:800; font-size:16px; box-shadow:var(--shadow); margin-top:4px; }
   .lg-ok:active{ background:var(--blue-dark); }
   .lg-ok:disabled{ opacity:.6; }
   .lg-note{ font-size:12px; color:var(--muted); text-align:center; margin-top:14px; }
   .hublogout{ margin-top:8px; padding:15px; border-radius:14px; background:#fff; border:2px solid #f2cfcf; color:var(--danger); font-weight:800; font-size:15px; }
   .hublogout:active{ background:#fdeaea; }
+
+  /* botón refrescar (pequeño, discreto) */
+  .refresh-btn{ width:30px; height:30px; flex:0 0 auto; border-radius:50%; background:rgba(255,255,255,.16); color:#fff; font-size:16px; line-height:1; display:grid; place-items:center; opacity:.75; }
+  .refresh-btn:active{ opacity:1; background:rgba(255,255,255,.32); }
+  .refresh-btn.spin{ animation:spin .6s linear infinite; }
+  @keyframes spin{ to{ transform:rotate(360deg); } }
+  .hb .refresh-btn{ margin-left:auto; }
+  .ht .refresh-btn{ margin-left:4px; }
+
+  /* aviso de reservas de hoy */
+  .av-list{ margin-top:14px; max-height:46vh; overflow-y:auto; display:flex; flex-direction:column; gap:8px; }
+  .av-row{ display:flex; align-items:center; gap:10px; background:var(--blue-tint); border-radius:11px; padding:10px 12px; }
+  .av-h{ font-weight:800; color:var(--blue); font-size:15px; flex:0 0 auto; min-width:46px; }
+  .av-i{ flex:1 1 auto; display:flex; flex-direction:column; min-width:0; }
+  .av-n{ font-size:15px; font-weight:700; }
+  .av-note{ font-size:12px; color:var(--muted); }
+  .av-p{ flex:0 0 auto; background:var(--blue); color:#fff; border-radius:999px; padding:3px 10px; font-size:11px; font-weight:700; }
+  .av-p b{ font-size:14px; }
+  .rv-hoy{ width:100%; margin-top:8px; padding:12px; border-radius:12px; background:var(--blue-tint); color:var(--blue); font-weight:800; font-size:14px; }
+  .rv-hoy:active{ background:var(--blue-2); }
+
+  .errbox{ margin-top:14px; background:#fdeaea; border:1.5px solid #f2cfcf; border-radius:10px; padding:10px 12px; font-size:12.5px; color:#8a2d2d; line-height:1.4; word-break:break-word; max-height:30vh; overflow-y:auto; font-family:ui-monospace,Menlo,Consolas,monospace; }
 
   /* ===== Tablet apaisada / ordenador ===== */
   @media (min-width:900px){
@@ -370,15 +393,19 @@ const SUPABASE_URL = "https://xgtheuslufmgvadrknkh.supabase.co";
 const SUPABASE_KEY = "sb_publishable_hwze_N-sgY7eCb2Jr7kHQw_xxsOJHWY";
 
 /* ── ACCESO ──────────────────────────────────────────────────────
-   Usuario: InnpactMota   ·   Contraseña: la que pusiste en Supabase
-   El usuario se completa solo con el dominio de abajo, así que en
-   Supabase el correo del usuario debe ser: innpactmota@mota.com
-   Si quieres que NO pida usuario (solo contraseña), escribe ese
-   correo en USUARIO_FIJO.
+   PEDIR_CONTRASENA: ponlo en false y la app entra sin pedir nada
+   (úsalo solo si te quedas fuera y necesitas trabajar ya).
+
+   USUARIO_SUGERIDO: el que aparece ya escrito al entrar.
+   CUENTAS_ALTERNATIVAS: si ese falla, prueba también con estos.
+   Así funciona con cualquiera de los usuarios que tengas creados
+   en Supabase, sin tener que acertar cuál es.
    ──────────────────────────────────────────────────────────────── */
+const PEDIR_CONTRASENA = true;
 const USUARIO_FIJO = "";
 const DOMINIO_USUARIO = "@mota.com";
-const USUARIO_SUGERIDO = "InnpactMota";
+const USUARIO_SUGERIDO = "innpactcompany@gmail.com";
+const CUENTAS_ALTERNATIVAS = ["innpactmota@mota.com", "barpiscina@mota.com"];
 
 /* ================================================================
    1) CARTA — edita precios / platos / bebidas aquí
@@ -518,7 +545,7 @@ const LocalDB={
   async deleteMesa(){ this.persist(); },
   async setKitchen(){ this.persist(); },
   async deleteTicket(){ this.persist(); }, async restoreItems(){ this.persist(); },
-  async addReserva(){ this.persist(); }, async deleteReserva(){ this.persist(); }, async updateReserva(){ this.persist(); },
+  async addReserva(){ this.persist(); return {}; }, async deleteReserva(){ this.persist(); return {}; }, async updateReserva(){ this.persist(); return {}; },
   async pay(){ this.persist(); }, async payPartial(){ this.persist(); }, async resetCaja(){ this.persist(); },
   subscribe(){},
 };
@@ -539,10 +566,14 @@ const CloudDB={
       if(tkRes.error) tkRes = await sb.from('tickets').select('id,mesa,total,items,sub,closed_at').gte('closed_at', start.toISOString()).order('closed_at',{ascending:false});
       if(tkRes.error) tkRes = await sb.from('tickets').select('id,mesa,total,closed_at').gte('closed_at', start.toISOString()).order('closed_at',{ascending:false});
       const tk=tkRes.data||[];
-      // reservas de hoy en adelante (si falla, se mantienen las que ya hay en pantalla)
-      let rr=await sb.from('reservas').select('id,fecha,hora,nombre,personas,nota').gte('fecha', today());
-      if(rr.error) rr=await sb.from('reservas').select('id,fecha,nombre,personas,nota').gte('fecha', today());
-      if(!rr.error && rr.data){ state.reservas=rr.data.map(r=>({id:r.id,fecha:r.fecha,hora:r.hora||'',nombre:r.nombre||'',personas:r.personas||0,nota:r.nota||''})); sortReservas(); }
+      // reservas de hoy en adelante, en orden cronológico (sin límite de cantidad)
+      let rr=await sb.from('reservas').select('id,fecha,hora,nombre,personas,nota').gte('fecha', today()).order('fecha',{ascending:true}).order('hora',{ascending:true}).limit(5000);
+      if(rr.error) rr=await sb.from('reservas').select('id,fecha,nombre,personas,nota').gte('fecha', today()).order('fecha',{ascending:true}).limit(5000);
+      if(!rr.error && rr.data){
+        const pendientes=state.reservas.filter(x=>String(x.id||'').startsWith('tmp'));
+        state.reservas=rr.data.map(r=>({id:r.id,fecha:r.fecha,hora:r.hora||'',nombre:r.nombre||'',personas:r.personas||0,nota:r.nota||''})).concat(pendientes);
+        sortReservas();
+      }
       const names=mesas.map(m=>m.name).sort(sortNames);
       const tables={};
       names.forEach(n=>{ const r=mesas.find(x=>x.name===n); tables[n]={sub:(r&&r.sub)||'',lines:[]}; });
@@ -566,11 +597,17 @@ const CloudDB={
   async deleteTicket(id){ if(id==null) return; flag((await sb.from('tickets').delete().eq('id',id)).error); },
   async restoreItems(mesa,items){ for(const i of (items||[])){ await sb.rpc('add_item',{_mesa:mesa,_item:i.name,_price:i.price});
       if(i.qty>1) await sb.rpc('step_item',{_mesa:mesa,_item:i.name,_d:i.qty-1}); } flag(null); },
-  async addReserva(r){ let x=await sb.from('reservas').insert({fecha:r.fecha,hora:r.hora||null,nombre:r.nombre,personas:r.personas,nota:r.nota});
-    if(x.error) x=await sb.from('reservas').insert({fecha:r.fecha,nombre:r.nombre,personas:r.personas,nota:r.nota}); flag(x.error); },
-  async deleteReserva(id){ flag((await sb.from('reservas').delete().eq('id',id)).error); },
-  async updateReserva(r){ if(r.id==null) return; let x=await sb.from('reservas').update({fecha:r.fecha,hora:r.hora||null,nombre:r.nombre,personas:r.personas,nota:r.nota}).eq('id',r.id);
-    if(x.error) x=await sb.from('reservas').update({fecha:r.fecha,nombre:r.nombre,personas:r.personas,nota:r.nota}).eq('id',r.id); flag(x.error); },
+  async addReserva(r){
+    let x=await sb.from('reservas').insert({fecha:r.fecha,hora:r.hora||null,nombre:r.nombre,personas:r.personas,nota:r.nota}).select('id').single();
+    if(x.error) x=await sb.from('reservas').insert({fecha:r.fecha,nombre:r.nombre,personas:r.personas,nota:r.nota}).select('id').single();
+    flag(x.error);
+    return x.error ? {error:x.error} : {id:(x.data&&x.data.id)};
+  },
+  async deleteReserva(id){ if(id==null||String(id).startsWith('tmp')) return {}; const x=await sb.from('reservas').delete().eq('id',id); flag(x.error); return x.error?{error:x.error}:{}; },
+  async updateReserva(r){ if(r.id==null||String(r.id).startsWith('tmp')) return {error:{message:'La reserva aún se está guardando. Espera un segundo y vuelve a intentarlo.'}};
+    let x=await sb.from('reservas').update({fecha:r.fecha,hora:r.hora||null,nombre:r.nombre,personas:r.personas,nota:r.nota}).eq('id',r.id);
+    if(x.error) x=await sb.from('reservas').update({fecha:r.fecha,nombre:r.nombre,personas:r.personas,nota:r.nota}).eq('id',r.id);
+    flag(x.error); return x.error?{error:x.error}:{}; },
   async pay(mesa,total,items,sub,propina){ let r=await sb.from('tickets').insert({mesa,total,items,sub,propina}); if(r.error) r=await sb.from('tickets').insert({mesa,total,items,sub}); if(r.error) await sb.from('tickets').insert({mesa,total});
     flag((await sb.from('orders').delete().eq('mesa',mesa)).error); },
   async payPartial(mesa,total,items,sub){ let r=await sb.from('tickets').insert({mesa,total,items,sub}); if(r.error) await sb.from('tickets').insert({mesa,total});
@@ -710,19 +747,53 @@ function openMenu(){ state.view='menu'; renderApp(); }
 function openCocina(){ state.view='cocina'; renderApp(); }
 function openReservas(){ state.view='reservas'; renderApp(); }
 
-function addReserva(r){
-  const rec={ id:(CLOUD?null:Date.now()), fecha:r.fecha, hora:r.hora||'', nombre:r.nombre, personas:r.personas, nota:r.nota };
-  state.reservas.push(rec); sortReservas();
-  renderApp(); DB.addReserva(rec);
+async function addReserva(r){
+  const tmp='tmp'+Date.now()+Math.random().toString(36).slice(2,6);
+  const rec={ id:tmp, fecha:r.fecha, hora:r.hora||'', nombre:r.nombre, personas:r.personas, nota:r.nota };
+  state.reservas.push(rec); sortReservas(); renderApp();
+  const res=await DB.addReserva(rec) || {};
+  if(res.error){
+    state.reservas=state.reservas.filter(x=>x.id!==tmp); renderApp();
+    errorDialog('No se pudo guardar la reserva', res.error);
+  } else if(res.id!=null){
+    const it=state.reservas.find(x=>x.id===tmp); if(it) it.id=res.id;
+  }
 }
 function sortReservas(){ state.reservas.sort((a,b)=>((a.fecha||'')+' '+(a.hora||'')).localeCompare((b.fecha||'')+' '+(b.hora||''))); }
-function saveReserva(orig,r){
+async function saveReserva(orig,r){
+  const antes={fecha:orig.fecha,hora:orig.hora,nombre:orig.nombre,personas:orig.personas,nota:orig.nota};
   Object.assign(orig,{fecha:r.fecha,hora:r.hora||'',nombre:r.nombre,personas:r.personas,nota:r.nota});
-  sortReservas(); renderApp(); DB.updateReserva(orig);
+  sortReservas(); renderApp();
+  const res=await DB.updateReserva(orig) || {};
+  if(res.error){ Object.assign(orig,antes); sortReservas(); renderApp(); errorDialog('No se pudo guardar el cambio', res.error); }
 }
 function deleteReserva(id){
   confirmDialog({ message:'¿Eliminar esta reserva?', okLabel:'Eliminar', danger:true,
-    onOk:async()=>{ state.reservas=state.reservas.filter(r=>r.id!==id); renderApp(); await DB.deleteReserva(id); } });
+    onOk:async()=>{ const copia=state.reservas.find(r=>r.id===id);
+      state.reservas=state.reservas.filter(r=>r.id!==id); renderApp();
+      const res=await DB.deleteReserva(id) || {};
+      if(res.error && copia){ state.reservas.push(copia); sortReservas(); renderApp(); errorDialog('No se pudo eliminar', res.error); } } });
+}
+
+/* muestra el motivo real cuando algo no se guarda */
+function errorDialog(titulo, err){
+  const msg=(err && (err.message||err.hint||err.details)) || 'Error desconocido';
+  const ayuda = /row-level security|permission|denied|JWT|not authenticated/i.test(msg)
+      ? 'Parece un problema de permisos: cierra sesión y vuelve a entrar con la contraseña.'
+    : /does not exist|relation|column/i.test(msg)
+      ? 'Falta algo en la base de datos. Hay que ejecutar el SQL de reservas en Supabase.'
+    : /fetch|network|Failed/i.test(msg)
+      ? 'Parece que no hay conexión a internet.'
+    : 'Toca el botón ↻ para refrescar y vuelve a intentarlo.';
+  const ov=el('div','overlay');
+  ov.innerHTML='<div class="modal"><div class="m-msg">⚠️ '+titulo+'</div>'+
+    '<div class="m-sub">'+ayuda+'</div>'+
+    '<div class="errbox">'+String(msg).replace(/</g,'&lt;')+'</div>'+
+    '<div class="m-actions" style="grid-template-columns:1fr"><button class="m-btn m-ok">Entendido</button></div></div>';
+  document.body.appendChild(ov);
+  const close=()=>ov.remove();
+  ov.addEventListener('click',e=>{ if(e.target===ov) close(); });
+  ov.querySelector('.m-ok').onclick=close;
 }
 function openReservaModal(edit){
   const ed=!!edit;
@@ -762,6 +833,38 @@ function openReservaModal(edit){
   };
 }
 function fmtFecha(f){ if(!f) return ''; const d=new Date(f+'T12:00:00'); return d.toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long'}); }
+
+/* ---- aviso de las reservas de hoy (una vez al día por dispositivo) ---- */
+const AVISO_KEY='bar-mota-aviso-reservas';
+function avisoReservasHoy(force){
+  const hoy=state.reservas.filter(r=>r.fecha===today());
+  if(!hoy.length){ if(force) showToast('Hoy no hay reservas',true); return; }
+  if(!force && localStorage.getItem(AVISO_KEY)===today()) return;   // ya avisado hoy
+  try{ localStorage.setItem(AVISO_KEY,today()); }catch(e){}
+  const pers=hoy.reduce((s,r)=>s+(r.personas||0),0);
+  const rows=hoy.slice().sort((a,b)=>(a.hora||'').localeCompare(b.hora||'')).map(r=>
+    '<div class="av-row"><span class="av-h num">'+(r.hora||'—')+'</span>'+
+    '<div class="av-i"><span class="av-n">'+(r.nombre||'—')+'</span>'+(r.nota?'<span class="av-note">'+r.nota+'</span>':'')+'</div>'+
+    (r.personas?'<span class="av-p"><b>'+r.personas+'</b></span>':'')+'</div>').join('');
+  const ov=el('div','overlay');
+  ov.innerHTML='<div class="modal"><div class="m-msg">📅 Hoy hay '+hoy.length+' reserva'+(hoy.length===1?'':'s')+'</div>'+
+    '<div class="m-sub">'+(pers?pers+' personas en total':'')+'</div>'+
+    '<div class="av-list">'+rows+'</div>'+
+    '<div class="m-actions" style="grid-template-columns:1fr 1fr"><button class="m-btn m-cancel av-ver">Ver reservas</button><button class="m-btn m-ok av-ok">Entendido</button></div></div>';
+  document.body.appendChild(ov);
+  const close=()=>ov.remove();
+  ov.addEventListener('click',e=>{ if(e.target===ov) close(); });
+  ov.querySelector('.av-ok').onclick=close;
+  ov.querySelector('.av-ver').onclick=()=>{ close(); openReservas(); };
+}
+
+/* ---- refrescar la app (recarga y trae la última versión) ---- */
+function refrescarApp(){
+  const b=document.querySelector('.refresh-btn'); if(b) b.classList.add('spin');
+  setTimeout(()=>location.reload(true),150);
+}
+const REFRESH_BTN='<button class="refresh-btn" title="Refrescar">↻</button>';
+document.addEventListener('click',e=>{ const b=e.target.closest && e.target.closest('.refresh-btn'); if(b){ e.stopPropagation(); refrescarApp(); } },true);
 
 /* ---- cobro parcial (cada uno paga lo suyo) ---- */
 function openSplitModal(){
@@ -914,7 +1017,7 @@ function renderApp(){
 }
 
 function renderHeaderSimple(hdr, title, onBack){
-  const h=el('div','ht','<button class="back">←</button><div class="thead"><span class="tname display" style="font-size:20px">'+title+'</span></div>'+dotHTML());
+  const h=el('div','ht','<button class="back">←</button><div class="thead"><span class="tname display" style="font-size:20px">'+title+'</span></div>'+REFRESH_BTN+dotHTML());
   h.querySelector('.back').onclick=onBack;
   hdr.appendChild(h);
 }
@@ -1052,7 +1155,12 @@ setInterval(()=>{ if(state.view==='cocina') kRenderBoard(); },20000);
 
 /* reservas */
 function renderReservas(main){
-  const w=el('div','rv-addwrap'); const add=el('button','rv-add','+  Añadir reserva'); add.onclick=openReservaModal; w.appendChild(add); main.appendChild(w);
+  const w=el('div','rv-addwrap');
+  const add=el('button','rv-add','+  Añadir reserva'); add.onclick=()=>openReservaModal(); w.appendChild(add);
+  const hoyN=state.reservas.filter(r=>r.fecha===today()).length;
+  const hoyB=el('button','rv-hoy', hoyN?('📅 Ver las '+hoyN+' de hoy'):'📅 Hoy no hay reservas');
+  hoyB.onclick=()=>avisoReservasHoy(true); w.appendChild(hoyB);
+  main.appendChild(w);
   if(!state.reservas.length){ main.appendChild(el('div','empty','No hay reservas próximas.<br>Toca «Añadir reserva» para crear una.')); return; }
   const list=el('div','rvlist');
   state.reservas.forEach(r=>{
@@ -1069,7 +1177,7 @@ function renderReservas(main){
 
 /* ---- Recuento del día ---- */
 function renderHeaderReport(hdr){
-  const h=el('div','ht','<button class="back">←</button><div class="thead"><span class="tname display" style="font-size:20px">Recuento del día</span></div>'+dotHTML());
+  const h=el('div','ht','<button class="back">←</button><div class="thead"><span class="tname display" style="font-size:20px">Recuento del día</span></div>'+REFRESH_BTN+dotHTML());
   h.querySelector('.back').onclick=back;
   hdr.appendChild(h);
 }
@@ -1184,6 +1292,7 @@ function renderTableDesktop(main){
 function renderHeaderBoard(hdr){
   const h=el('div','hb', '<button class="logo">'+MILL+
     '<div class="brand"><span class="t1 display">BAR PISCINA</span><span class="t2 display">MOTA DEL CUERVO</span></div></button>'+
+    REFRESH_BTN+
     '<button class="caja">'+dotHTML()+'<div style="display:flex;flex-direction:column;line-height:1.1"><span class="cl">CAJA HOY</span><span class="cv num">'+eur(state.caja.total)+'</span></div>'+
     '<span class="cc">'+state.caja.count+' tickets</span><span class="cchev">›</span></button>');
   h.querySelector('.logo').onclick=openMenu;
@@ -1332,6 +1441,7 @@ const curMonth=()=>new Date().toISOString().slice(0,7);
 
 async function ensureAuth(){
   if(!CLOUD || !sb) return true;                       // modo local: sin acceso
+  if(!PEDIR_CONTRASENA) return true;                   // interruptor de emergencia
   let session=null;
   try{ session=(await sb.auth.getSession()).data.session; }catch(e){}
   const mes=localStorage.getItem(AUTH_KEY);
@@ -1357,23 +1467,33 @@ function showLogin(){
           btn=scr.querySelector('.lg-ok'), err=scr.querySelector('#lgErr');
     setTimeout(()=>{ passI.value=''; passI.focus(); },250);
     const go=async()=>{
-      let email=USUARIO_FIJO;
+      let escrito=USUARIO_FIJO;
       if(!fijo){
         const v=(mailI.value||'').trim();
         if(!v){ err.textContent='Escribe tu usuario.'; return; }
-        email = (v.includes('@') ? v : v + DOMINIO_USUARIO).toLowerCase();   // sin @ -> se completa solo
+        escrito = (v.includes('@') ? v : v + DOMINIO_USUARIO).toLowerCase();
       }
       const password=passI.value;
       if(!password){ err.textContent='Escribe la contraseña.'; passI.focus(); return; }
       btn.disabled=true; btn.textContent='Entrando…'; err.textContent='';
-      try{
-        const { error }=await sb.auth.signInWithPassword({ email, password });
-        if(error){ err.textContent=fijo?'Contraseña incorrecta.':'Usuario o contraseña incorrectos.';
-          btn.disabled=false; btn.textContent='Entrar'; passI.value=''; passI.focus(); return; }
-        localStorage.setItem(AUTH_KEY,curMonth());
-        if(!fijo) localStorage.setItem(MAIL_KEY,(mailI.value||'').trim());
-        scr.remove(); resolve(true);
-      }catch(e){ err.textContent='Sin conexión. Revisa el internet.'; btn.disabled=false; btn.textContent='Entrar'; }
+      const intentos=[escrito].concat(CUENTAS_ALTERNATIVAS.map(c=>c.toLowerCase()).filter(c=>c!==escrito));
+      let ultimo=null;
+      for(const email of intentos){
+        try{
+          const { error }=await sb.auth.signInWithPassword({ email, password });
+          if(!error){
+            localStorage.setItem(AUTH_KEY,curMonth());
+            if(!fijo) localStorage.setItem(MAIL_KEY,(mailI.value||'').trim());
+            scr.remove(); resolve(true); return;
+          }
+          ultimo=error;
+        }catch(e){ ultimo={message:'sin conexion'}; break; }
+      }
+      const msg=(ultimo&&ultimo.message)||'';
+      err.innerHTML = /sin conexion|fetch|network|Failed/i.test(msg)
+        ? 'Sin conexión. Revisa el internet.'
+        : 'Usuario o contraseña incorrectos.<br><span class="lg-hint">Revisa en Supabase → Authentication → Users que el usuario existe y está confirmado.</span>';
+      btn.disabled=false; btn.textContent='Entrar'; passI.value=''; passI.focus();
     };
     btn.onclick=go;
     [mailI,passI].forEach(i=>{ if(i) i.addEventListener('keydown',e=>{ if(e.key==='Enter') go(); }); });
@@ -1389,6 +1509,7 @@ function showLogin(){
   await DB.load();
   renderApp();
   DB.subscribe(scheduleSync);
+  setTimeout(()=>avisoReservasHoy(false),600);   // recordatorio de las reservas de hoy
 })();
 
 /* si se redimensiona la ventana y cambia móvil<->escritorio, re-render */
