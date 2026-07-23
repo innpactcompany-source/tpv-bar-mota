@@ -356,6 +356,60 @@
 
   .errbox{ margin-top:14px; background:#fdeaea; border:1.5px solid #f2cfcf; border-radius:10px; padding:10px 12px; font-size:12.5px; color:#8a2d2d; line-height:1.4; word-break:break-word; max-height:30vh; overflow-y:auto; font-family:ui-monospace,Menlo,Consolas,monospace; }
 
+  /* ===== MODO BARRA (venta rápida) ===== */
+  .barra{ display:flex; flex-direction:column; height:100%; min-height:0; }
+  .bmodo{ display:flex; gap:6px; padding:10px 12px 4px; flex:0 0 auto; }
+  .bmodo .bm{ flex:1; padding:10px; border-radius:11px; background:var(--blue-tint); color:var(--blue); font-weight:800; font-size:14px; }
+  .bmodo .bm.on{ background:var(--blue); color:#fff; }
+  .bbody{ flex:1 1 auto; overflow-y:auto; min-height:0; padding:8px 12px 4px; }
+  .bgrid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(96px,1fr)); gap:8px; }
+  .bprod{ position:relative; background:#fff; border:2px solid var(--blue-line); border-radius:12px; padding:12px 8px; min-height:74px;
+          display:flex; flex-direction:column; align-items:center; justify-content:center; gap:5px; text-align:center; transition:transform .05s; }
+  .bprod:active{ transform:scale(.94); border-color:var(--blue); }
+  .bprod.in{ border-color:var(--blue); background:var(--blue-tint); }
+  .bprod .bpn{ font-size:13px; font-weight:600; line-height:1.15; }
+  .bprod .bpp{ font-size:14px; font-weight:800; color:var(--blue); }
+  .bprod .bbadge{ position:absolute; top:-8px; right:-6px; min-width:24px; height:24px; padding:0 7px; background:var(--blue); color:#fff;
+                  border-radius:12px; font-size:13px; font-weight:800; display:none; align-items:center; justify-content:center; box-shadow:0 2px 6px rgba(30,82,217,.35); }
+  .bprod.in .bbadge{ display:flex; }
+  .bfoot{ flex:0 0 auto; }
+  .blista{ display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px; max-height:80px; overflow-y:auto; }
+  .blista:empty{ display:none; }
+  .bchip{ background:var(--blue-tint); border-radius:999px; padding:6px 11px; font-size:12.5px; color:var(--ink); }
+  .bchip b{ color:var(--blue); font-weight:800; }
+  .bchip .bx{ color:var(--muted); margin-left:3px; }
+  .bchip:active{ background:var(--blue-2); }
+  .btot{ display:flex; align-items:flex-end; justify-content:space-between; gap:12px; margin-bottom:10px; }
+  .btl{ font-size:13px; font-weight:700; color:var(--muted); }
+  .btv{ font-size:34px; font-weight:800; color:var(--blue); line-height:1; }
+  .bvuelta{ text-align:right; }
+  .bvuelta:empty{ display:none; }
+  .bvl{ display:block; font-size:12px; color:var(--muted); font-weight:700; }
+  .bvv{ font-size:24px; font-weight:800; color:var(--ok,#1E9E6A); line-height:1.1; }
+  .bcash{ display:grid; grid-template-columns:repeat(4,1fr); gap:7px; margin-bottom:7px; }
+  .bcashb{ padding:11px 2px; border-radius:10px; background:var(--blue-tint); color:var(--blue); font-weight:800; font-size:14px; border:2px solid transparent; }
+  .bcashb.on{ background:#fff; border-color:var(--blue); }
+  .cashother{ display:flex; align-items:center; gap:9px; background:var(--blue-tint); border-radius:10px; padding:6px 12px; margin-bottom:10px; }
+  .cashother .col{ font-size:13px; font-weight:700; color:var(--muted); flex:0 0 auto; }
+  .cashother .coe{ font-size:15px; font-weight:800; color:var(--blue); flex:0 0 auto; }
+  .cashinp{ flex:1 1 auto; min-width:0; border:none; background:transparent; font-size:19px; font-weight:800; color:var(--ink); text-align:right; padding:6px 0; }
+  .cashinp:focus{ outline:none; }
+  .cashinp::placeholder{ color:var(--muted); font-weight:600; }
+  .cashwrap{ margin-top:14px; padding-top:13px; border-top:1px solid var(--blue-line); }
+  .cashlbl{ font-size:12.5px; font-weight:700; color:var(--muted); margin-bottom:7px; }
+  .cashwrap .bvuelta{ text-align:center; }
+  .cashwrap .bvuelta .bvl{ display:inline; margin-right:8px; }
+  .cashwrap .bvuelta .bvv{ font-size:26px; }
+  .bvuelta .falta{ color:var(--danger); }
+  /* secciones de barra */
+  .bnav{ display:flex; gap:6px; overflow-x:auto; scrollbar-width:none; padding:2px 0 10px; position:sticky; top:0; background:var(--white); z-index:4; }
+  .bnav::-webkit-scrollbar{ display:none; }
+  .bnavc{ flex:0 0 auto; padding:8px 15px; border-radius:999px; background:var(--blue-tint); color:var(--blue); font-weight:800; font-size:13px; white-space:nowrap; }
+  .bnavc:active{ background:var(--blue); color:#fff; }
+  .bsec{ margin-bottom:18px; scroll-margin-top:46px; }
+  .bsech{ font-size:19px; color:var(--blue); margin-bottom:8px; display:flex; align-items:center; gap:9px; }
+  .bsech::after{ content:""; flex:1; height:3px; background:var(--blue-line); border-radius:2px; }
+
   /* ===== Tablet apaisada / ordenador ===== */
   @media (min-width:900px){
     #main{ max-width:1120px; margin:0 auto; width:100%; }
@@ -458,12 +512,26 @@ function canonical(name){
 }
 
 /* Tipo y categoría de cada producto (para ordenar la cuenta y para la cocina) */
-const ITEM_TYPE={}, ITEM_CAT={};
-Object.keys(MENU).forEach(sec=>{ Object.entries(MENU[sec].groups).forEach(([grp,items])=>{ items.forEach(([name])=>{ ITEM_TYPE[name]=sec; ITEM_CAT[name]=grp; }); }); });
+const ITEM_TYPE={}, ITEM_CAT={}, PRICE_OF={};
+Object.keys(MENU).forEach(sec=>{ Object.entries(MENU[sec].groups).forEach(([grp,items])=>{ items.forEach(([name,price])=>{ ITEM_TYPE[name]=sec; ITEM_CAT[name]=grp; PRICE_OF[name]=price; }); }); });
 function lineRank(name){ const t=ITEM_TYPE[canonical(name)]; return t==='bebidas'?0 : t==='comida'?1 : 2; }
 /* Categorías que pasan por cocina (se cocinan). Chuches, helados, papas de bolsa y bebidas NO. */
 const KITCHEN_CATS=['Tapas','Menú Desayunos','Burguers, Sándwich y Perrito','Bocadillos y Montados','Combinados'];
 function isKitchen(name){ return KITCHEN_CATS.includes(ITEM_CAT[canonical(name)]); }
+/* Barra: secciones en el orden en que más se piden. Nombre corto entre
+   corchetes para leerlo de un vistazo (la sección ya dice de qué es). */
+const BARRA_SECCIONES=[
+  {t:'Cervezas', items:[['Caña','Caña'],['Jarra de Cerveza','Jarra'],['Tercio','Tercio'],['Tinto de Verano','Tinto verano'],['Jarra de Tinto','Jarra tinto'],['Megajarra','MEGAJARRA']]},
+  {t:'Refrescos', items:[['Coca-Cola','Coca-Cola'],['Fanta','Fanta'],['Aquarius','Aquarius'],['Fuze Tea','Fuze Tea'],['Agua','Agua'],['Zumo','Zumo'],['Tónica','Tónica']]},
+  {t:'Granizados', items:[['Granizado de Limón','Limón'],['Granizado de Fresa','Fresa'],['Granizado de Café','Café'],['Granizado de España','España'],['Granizado de Café + Baileys','Café + Baileys']]},
+  {t:'Helados', items:[['Magnum','Magnum'],['Calippo','Calippo'],['Frigopié','Frigopié'],['Frigo Chuches','Frigo Chuches'],['Haribo','Haribo'],['Twister','Twister'],['Flash','Flash'],['Frigurón','Frigurón'],['Cornetto Normal','Cornetto'],['Cornetto Max','Cornetto Max'],['Cornetto XXL','Cornetto XXL'],['Chock and Ball','Chock and Ball'],['Sándwich Original','Sánd. Original'],['Sándwich Dino','Sánd. Dino'],['Sándwich Filipinos','Sánd. Filipinos'],['Donut Filipinos','Donut Filip.']]},
+  {t:'Chuches', items:[['Bolsa de Chuches','Bolsa'],['Chupachups','Chupachups'],['Regaliz','Regaliz'],['Chicle','Chicle'],['Gofre','Gofre']]},
+  {t:'Papas', items:[['Campesinas','Campesinas'],['Jamón','Jamón'],['Palomitas','Palomitas'],['Originales Vidal','Originales'],['Jumpers Ketchup','Jumpers Ketchup'],['Jumpers Mantequilla','Jumpers Manteq.']]},
+  {t:'Copas', items:[['Cubata','Cubata'],['Piedra','Piedra']]},
+  {t:'Café', items:[['Café Solo','Solo'],['Café con Leche','Con leche'],['Cortado','Cortado'],['Café del Tiempo','Del tiempo'],['Americano','Americano'],['Bombón','Bombón'],['Café con Licor','Con licor'],['Colocado','Colocado']]},
+  {t:'Vinos', items:[['Vino Tinto','Tinto'],['Vino Blanco','Blanco'],['Vino Semidulce','Semidulce'],['Vermut','Vermut']]},
+];
+
 /* Kiosko: helados/polos, chuches y papas de bolsa (para el ranking de productos) */
 const KIOSKO_CATS=['Helados y Polos','Chuches','Papas'];
 
@@ -503,7 +571,8 @@ let state = {
   reportTab:'resumen',       // resumen | tickets | productos
   prodPeriod:'dia',          // dia | semana | mes
   editMesas:false,
-  reservas:[],               // {id,fecha,nombre,personas,nota}
+  reservas:[],               // {id,fecha,hora,nombre,personas,nota}
+  barra:{ cart:[], recibido:0, todo:false, openCat:null, fb:'bebidas' },
 };
 const eur=n=>n.toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2})+' €';
 const tbl =n=>state.tables[n]||{sub:'',lines:[]};
@@ -546,7 +615,7 @@ const LocalDB={
   async setKitchen(){ this.persist(); },
   async deleteTicket(){ this.persist(); }, async restoreItems(){ this.persist(); },
   async addReserva(){ this.persist(); return {}; }, async deleteReserva(){ this.persist(); return {}; }, async updateReserva(){ this.persist(); return {}; },
-  async pay(){ this.persist(); }, async payPartial(){ this.persist(); }, async resetCaja(){ this.persist(); },
+  async pay(){ this.persist(); }, async payPartial(){ this.persist(); }, async payQuick(){ this.persist(); return {}; }, async resetCaja(){ this.persist(); },
   subscribe(){},
 };
 
@@ -612,6 +681,8 @@ const CloudDB={
     flag((await sb.from('orders').delete().eq('mesa',mesa)).error); },
   async payPartial(mesa,total,items,sub){ let r=await sb.from('tickets').insert({mesa,total,items,sub}); if(r.error) await sb.from('tickets').insert({mesa,total});
     for(const it of items){ await sb.rpc('step_item',{_mesa:mesa,_item:it.name,_d:-it.qty}); } flag(null); },
+  async payQuick(mesa,total,items){ let r=await sb.from('tickets').insert({mesa,total,items});
+    if(r.error) r=await sb.from('tickets').insert({mesa,total}); flag(r.error); return r.error?{error:r.error}:{}; },
   async resetCaja(){},
   subscribe(cb){
     sb.channel('bar-piscina')
@@ -637,6 +708,7 @@ function back(){ state.view='board'; renderApp(); }
 function goHome(){ state.view='board'; renderApp(); }
 
 async function addItem(name,price){
+  if(state.view==='barra'){ barraAdd(name,price); return; }
   const t=ensure(state.active); const ex=t.lines.find(l=>l.name===name);
   if(ex) ex.qty++; else t.lines.push({name,price,qty:1,km:0,kl:0,ks:0,creada_en:new Date().toISOString()});
   commit();
@@ -676,12 +748,14 @@ function payTable(){
     '<div class="tipchips">'+chips.map((c,i)=>'<button class="tipchip'+(i===0?' on':'')+'" data-t="'+c[1]+'">'+c[0]+'</button>').join('')+'</div>'+
     '<div class="tiprow"><span class="exl">Propina</span><input class="tipinp num" type="number" inputmode="decimal" step="0.10" min="0" value="0"> €</div>'+
     '<div class="ex-total"><span class="exl">Total a cobrar</span><span class="ex-tv num" id="pm-tot">'+eur(subt)+'</span></div>'+
+    cashHTML()+
     '<div class="m-actions"><button class="m-btn m-cancel">Cancelar</button><button class="m-btn m-ok pm-ok">Cobrado</button></div></div>';
   document.body.appendChild(ov);
   const close=()=>ov.remove();
   const inp=ov.querySelector('.tipinp');
+  const paintCash=wireCash(ov,()=>subt+tip);
   const paint=()=>{ ov.querySelector('#pm-tot').textContent=eur(subt+tip);
-    ov.querySelectorAll('.tipchip').forEach(b=>b.classList.toggle('on', parseFloat(b.dataset.t)===tip)); };
+    ov.querySelectorAll('.tipchip').forEach(b=>b.classList.toggle('on', parseFloat(b.dataset.t)===tip)); paintCash(); };
   ov.querySelectorAll('.tipchip').forEach(b=>{ b.onclick=()=>{ tip=parseFloat(b.dataset.t); inp.value=tip.toFixed(2); paint(); }; });
   inp.oninput=()=>{ tip=Math.max(0, parseFloat(inp.value)||0); paint(); };
   ov.addEventListener('click',e=>{ if(e.target===ov) close(); });
@@ -742,10 +816,164 @@ function askDeleteMesa(n){
 function openReport(){ state.view='report'; state.reportTab='resumen'; renderApp(); }
 function setReportTab(t){ state.reportTab=t; renderApp(); }
 
-/* ---- menú del molino: Cocina / Reservas ---- */
+/* ---- menú del molino: Barra / Cocina / Reservas ---- */
 function openMenu(){ state.view='menu'; renderApp(); }
 function openCocina(){ state.view='cocina'; renderApp(); }
 function openReservas(){ state.view='reservas'; renderApp(); }
+function openBarra(){ state.view='barra'; state.barra.todo=false; state.barra.openCat=null; renderApp(); }
+
+/* ================================================================
+   MODO BARRA — venta rápida: se pide, se cobra y se registra.
+   No abre mesa: cada cobro genera su ticket al momento.
+   ================================================================ */
+const bTotal=()=>state.barra.cart.reduce((s,l)=>s+l.price*l.qty,0);
+function buzz(ms){ try{ if(navigator.vibrate) navigator.vibrate(ms||12); }catch(e){} }
+function barraAdd(name,price){
+  const c=state.barra.cart, ex=c.find(l=>l.name===name);
+  if(ex) ex.qty++; else c.push({name,price,qty:1});
+  state.barra.recibido=0; buzz(); paintBarra();
+}
+function barraLess(name){
+  const c=state.barra.cart, l=c.find(x=>x.name===name); if(!l) return;
+  l.qty--; if(l.qty<=0) state.barra.cart=c.filter(x=>x.name!==name);
+  state.barra.recibido=0; paintBarra();
+}
+function barraClear(){ state.barra.cart=[]; state.barra.recibido=0; paintBarra(); }
+function barraRecibido(v){ state.barra.recibido=(state.barra.recibido===v?0:v); paintBarra(); }
+async function barraPay(){
+  const tot=bTotal(); if(tot<=0) return;
+  const items=state.barra.cart.map(l=>({name:l.name,qty:l.qty,price:l.price}));
+  logTicket('Barra',tot,items,'',0);
+  barraClear(); buzz(25);
+  showToast('Cobrado '+eur(tot),true);
+  renderApp();
+  const res=await DB.payQuick('Barra',tot,items) || {};
+  if(res.error) errorDialog('No se pudo registrar la venta',res.error);
+}
+
+function renderBarra(main){
+  const wrap=el('div','barra');
+  wrap.innerHTML=
+    '<div class="bmodo"><button class="bm on" data-m="rapida">Barra</button><button class="bm" data-m="todo">Toda la carta</button></div>'+
+    '<div class="bbody" id="b-body"></div>'+
+    '<div class="foot bfoot">'+
+      '<div id="b-lista" class="blista"></div>'+
+      '<div class="btot"><div><span class="btl">Total</span><div class="btv num" id="b-total">0,00 €</div></div>'+
+        '<div class="bvuelta" id="b-vuelta"></div></div>'+
+      '<div id="b-cash">'+cashChipsHTML()+'</div>'+
+      '<div class="actions"><button class="btn btn-clear" id="b-del">Borrar</button><button class="btn btn-pay" id="b-pay">Cobrar</button></div>'+
+    '</div>';
+  main.appendChild(wrap);
+  wrap.querySelectorAll('.bm').forEach(b=>{ b.onclick=()=>{ state.barra.todo=(b.dataset.m==='todo'); renderApp(); }; });
+  wrap.querySelectorAll('.bm').forEach(b=>b.classList.toggle('on',(b.dataset.m==='todo')===state.barra.todo));
+  wrap.querySelector('#b-del').onclick=barraClear;
+  wrap.querySelector('#b-pay').onclick=barraPay;
+  wrap.querySelectorAll('#b-cash .bcashb').forEach(b=>{ b.onclick=()=>{
+    const v=parseFloat(b.dataset.v); barraRecibido(v);
+    const i=document.querySelector('#b-cash .cashinp'); if(i) i.value = state.barra.recibido?String(state.barra.recibido):'';
+  }; });
+  const bi=wrap.querySelector('#b-cash .cashinp');
+  if(bi) bi.oninput=()=>{ const n=parseFloat((bi.value||'').replace(',','.'));
+    state.barra.recibido=(isFinite(n)&&n>0)?n:0; paintBarra(); };
+  renderBarraBody(); paintBarra();
+}
+/* ---- cuánto pagan y cuánto devolver (se usa en todos los cobros) ---- */
+const CASH_VALORES=[5,10,20,50];
+function cashChipsHTML(){
+  return '<div class="bcash">'+CASH_VALORES.map(v=>'<button class="bcashb" data-v="'+v+'">'+v+' €</button>').join('')+'</div>'+
+    '<div class="cashother"><span class="col">Otro</span><input class="cashinp num" type="number" inputmode="decimal" step="0.01" min="0" placeholder="0,00"><span class="coe">€</span></div>';
+}
+function cashHTML(){
+  return '<div class="cashwrap"><div class="cashlbl">¿Con cuánto pagan?</div>'+cashChipsHTML()+'<div class="bvuelta" data-vuelta></div></div>';
+}
+function vueltaHTML(recibido,total){
+  if(!(recibido>0)) return '';
+  return recibido>=total
+    ? '<span class="bvl">Vuelta de '+eur(recibido)+'</span><span class="bvv num">'+eur(recibido-total)+'</span>'
+    : '<span class="bvl falta">Faltan</span><span class="bvv num falta">'+eur(total-recibido)+'</span>';
+}
+function wireCash(ov,getTotal){
+  let recibido=0;
+  const inp=ov.querySelector('.cashinp');
+  const paint=()=>{
+    const v=ov.querySelector('[data-vuelta]');
+    if(v) v.innerHTML=vueltaHTML(recibido,getTotal());
+    ov.querySelectorAll('.bcashb').forEach(b=>b.classList.toggle('on', parseFloat(b.dataset.v)===recibido));
+  };
+  ov.querySelectorAll('.bcashb').forEach(b=>{ b.onclick=()=>{
+    const v=parseFloat(b.dataset.v); recibido=(recibido===v?0:v);
+    if(inp) inp.value = recibido?String(recibido):'';
+    paint(); }; });
+  if(inp) inp.oninput=()=>{ const n=parseFloat((inp.value||'').replace(',','.')); recibido=(isFinite(n)&&n>0)?n:0; paint(); };
+  return paint;
+}
+
+function renderBarraBody(){
+  const body=document.getElementById('b-body'); if(!body) return; body.innerHTML='';
+  if(!state.barra.todo){
+    const nav=el('div','bnav');
+    BARRA_SECCIONES.forEach((s,i)=>{ const c=el('button','bnavc',s.t);
+      c.onclick=()=>{ const sec=document.getElementById('bsec'+i); if(sec) sec.scrollIntoView({behavior:'smooth',block:'start'}); };
+      nav.appendChild(c); });
+    body.appendChild(nav);
+    BARRA_SECCIONES.forEach((s,i)=>{
+      const sec=el('div','bsec'); sec.id='bsec'+i;
+      sec.appendChild(el('div','bsech display',s.t));
+      const g=el('div','bgrid');
+      s.items.forEach(it=>{
+        const name=Array.isArray(it)?it[0]:it, corto=Array.isArray(it)?it[1]:it;
+        const price=PRICE_OF[name]; if(price==null) return;
+        const b=el('button','bprod','<span class="bpn">'+corto+'</span><span class="bpp num">'+eur(price)+'</span><span class="bbadge num">0</span>');
+        b.dataset.name=name; b.onclick=()=>barraAdd(name,price); g.appendChild(b);
+      });
+      sec.appendChild(g); body.appendChild(sec);
+    });
+  } else {
+    const fb=el('div','fb','<button data-fb="comida">Comida</button><button data-fb="bebidas">Bebidas</button>');
+    fb.querySelectorAll('button').forEach(b=>{ b.classList.toggle('on',b.dataset.fb===state.barra.fb);
+      b.onclick=()=>{ state.barra.fb=b.dataset.fb; state.barra.openCat=null; renderBarraBody(); paintBarra(); }; });
+    body.appendChild(fb);
+    const list=el('div','acc-wrap');
+    const groups=MENU[state.barra.fb].groups;
+    Object.keys(groups).forEach(cat=>{
+      const acc=el('div','acc'+(state.barra.openCat===cat?' open':'')); acc.dataset.cat=cat;
+      const head=el('button','acc-h','<span>'+cat+'</span><span class="chev">▶</span>');
+      head.onclick=()=>{ state.barra.openCat=(state.barra.openCat===cat?null:cat); renderBarraBody(); paintBarra(); };
+      const bd=el('div','acc-body');
+      groups[cat].forEach(([name,price])=>{
+        const it=el('button','acc-item','<span class="ain">'+name+'</span><span class="aip num">'+eur(price)+'</span><span class="badge num">0</span>');
+        it.dataset.name=name;
+        it.onclick = WITH_EXTRAS.includes(cat) ? (()=>openExtrasModal(name,price,cat)) : (()=>barraAdd(name,price));
+        bd.appendChild(it);
+      });
+      acc.appendChild(head); acc.appendChild(bd); list.appendChild(acc);
+    });
+    body.appendChild(list);
+  }
+}
+function paintBarra(){
+  const tot=bTotal();
+  const t=document.getElementById('b-total'); if(t) t.textContent=eur(tot);
+  const pay=document.getElementById('b-pay'); if(pay) pay.disabled=tot<=0;
+  const del=document.getElementById('b-del'); if(del) del.disabled=tot<=0;
+  // cantidades sobre los botones
+  const qty={}; state.barra.cart.forEach(l=>qty[l.name]=l.qty);
+  document.querySelectorAll('.bprod').forEach(b=>{ const q=qty[b.dataset.name]||0;
+    b.classList.toggle('in',q>0); const g=b.querySelector('.bbadge'); if(g) g.textContent=q; });
+  document.querySelectorAll('#b-body .acc-item').forEach(b=>{ const q=qty[b.dataset.name]||0;
+    b.classList.toggle('in',q>0); const g=b.querySelector('.badge'); if(g) g.textContent=q; });
+  // lista de lo añadido
+  const lis=document.getElementById('b-lista');
+  if(lis){ lis.innerHTML=state.barra.cart.map(l=>
+    '<button class="bchip" data-n="'+l.name.replace(/"/g,'&quot;')+'"><b>'+l.qty+'×</b> '+l.name+' <span class="bx">✕</span></button>').join('');
+    lis.querySelectorAll('.bchip').forEach(c=>{ c.onclick=()=>barraLess(c.dataset.n); }); }
+  // vuelta
+  const v=document.getElementById('b-vuelta');
+  if(v) v.innerHTML=vueltaHTML(state.barra.recibido,tot);
+  document.querySelectorAll('#b-cash .bcashb').forEach(b=>b.classList.toggle('on', parseFloat(b.dataset.v)===state.barra.recibido));
+  const bi=document.querySelector('#b-cash .cashinp');
+  if(bi && document.activeElement!==bi){ const q=state.barra.recibido?String(state.barra.recibido):''; if(bi.value!==q) bi.value=q; }
+}
 
 async function addReserva(r){
   const tmp='tmp'+Date.now()+Math.random().toString(36).slice(2,6);
@@ -879,15 +1107,17 @@ function openSplitModal(){
     '<div class="m-sub">Marca lo que te pagan ahora</div>'+
     '<div class="ex-list">'+rows+'</div>'+
     '<div class="ex-total"><span class="exl">A cobrar</span><span class="ex-tv num" id="sp-tot">'+eur(0)+'</span></div>'+
+    cashHTML()+
     '<div class="m-actions"><button class="m-btn m-cancel">Cancelar</button>'+
     '<button class="m-btn m-ok sp-add" disabled>Cobrado</button></div></div>';
   document.body.appendChild(ov);
   const close=()=>ov.remove();
   const lineOf=name=>lines.find(l=>l.name===name);
   const total=()=>lines.reduce((s,l)=>s+l.price*sel[l.name],0);
+  const paintCash=wireCash(ov,total);
   const paint=()=>{ const t=total(); ov.querySelector('#sp-tot').textContent=eur(t);
     ov.querySelector('.sp-add').disabled=t<=0;
-    ov.querySelectorAll('.ex-row').forEach(r=>{ r.querySelector('.q').textContent=sel[r.dataset.ex]; }); };
+    ov.querySelectorAll('.ex-row').forEach(r=>{ r.querySelector('.q').textContent=sel[r.dataset.ex]; }); paintCash(); };
   ov.querySelectorAll('.ex-row').forEach(row=>{
     const name=row.dataset.ex;
     row.querySelector('[data-a=m]').onclick=()=>{ if(sel[name]>0){ sel[name]--; paint(); } };
@@ -996,6 +1226,7 @@ function setDot(){ document.querySelectorAll('.dot').forEach(d=>{ d.classList.to
 let isDesktop = window.matchMedia('(min-width:900px)').matches;
 
 function refresh(){
+  if(state.view==='barra'){ setDot(); return; }   // no tocar la venta en curso
   if(['board','report','menu','cocina','reservas'].includes(state.view)){ renderApp(); return; }
   const ht=document.getElementById('ht-tot'); if(ht) ht.textContent=eur(tTotal(state.active));
   if(isDesktop){ renderCuenta(); refreshBadges(); }
@@ -1009,6 +1240,7 @@ function renderApp(){
   if(state.view==='report'){ renderHeaderReport(hdr); renderReport(main); }
   else if(state.view==='menu'){ renderHeaderSimple(hdr,'Bar Piscina',goHome); renderMenuScreen(main); }
   else if(state.view==='cocina'){ renderHeaderSimple(hdr,'Cocina',openMenu); renderCocina(main); }
+  else if(state.view==='barra'){ renderHeaderSimple(hdr,'Barra',openMenu); renderBarra(main); }
   else if(state.view==='reservas'){ renderHeaderSimple(hdr,'Reservas',openMenu); renderReservas(main); }
   else if(state.view==='board'){ renderHeaderBoard(hdr); renderBoard(main); }
   else if(isDesktop){ renderHeaderTable(hdr); renderTableDesktop(main); }
@@ -1026,6 +1258,7 @@ function renderHeaderSimple(hdr, title, onBack){
 function renderMenuScreen(main){
   const wrap=el('div','hub');
   const mk=(title,desc,fn)=>{ const b=el('button','hubbtn','<span class="hubt display">'+title+'</span><span class="hubd">'+desc+'</span>'); b.onclick=fn; return b; };
+  wrap.appendChild(mk('Barra','Venta rápida: se pide, se cobra', openBarra));
   wrap.appendChild(mk('Cocina','Comandas de comida pendientes por mesa', openCocina));
   wrap.appendChild(mk('Reservas','Añade y consulta las reservas', openReservas));
   if(CLOUD){ const out=el('button','hublogout','Cerrar sesión'); out.onclick=logout; wrap.appendChild(out); }
