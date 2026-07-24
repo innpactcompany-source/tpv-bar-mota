@@ -169,7 +169,14 @@
   .rcard .rk{ font-size:13px; color:var(--muted); font-weight:700; }
   .rcard .rv{ font-size:30px; font-weight:800; color:var(--blue); }
   .rcard .rd{ font-size:12px; color:var(--muted); }
-  .rcard.big{ background:var(--blue); } .rcard.big .rk{ color:#cfe0ff; } .rcard.big .rv{ color:#fff; }
+  .rcard.big{ background:var(--blue); } .rcard.big .rk{ color:#cfe0ff; } .rcard.big .rv{ color:#fff; } .rcard.big .rd{ color:#cfe0ff; }
+  .rrow{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .rcard.half{ padding:14px; } .rcard.half .rv{ font-size:22px; }
+  .rcard.tot{ background:#fff; border:2px solid var(--blue-line); }
+  /* tarjeta Barra Kiosko en el tablero */
+  .mesa.kiosko{ background:var(--blue); border-color:var(--blue); }
+  .mesa.kiosko .mname{ color:#fff; }
+  .mesa.kiosko .ksub{ font-size:11.5px; color:#cfe0ff; margin-top:6px; line-height:1.3; font-weight:600; }
   .tlist{ display:flex; flex-direction:column; gap:8px; }
   .tk{ background:var(--blue-tint); border-radius:12px; overflow:hidden; }
   .tk-head{ width:100%; display:flex; align-items:baseline; gap:10px; padding:11px 13px; text-align:left; }
@@ -409,6 +416,22 @@
   .bsec{ margin-bottom:18px; scroll-margin-top:46px; }
   .bsech{ font-size:19px; color:var(--blue); margin-bottom:8px; display:flex; align-items:center; gap:9px; }
   .bsech::after{ content:""; flex:1; height:3px; background:var(--blue-line); border-radius:2px; }
+
+  /* historial */
+  .histnav{ display:flex; align-items:center; justify-content:space-between; gap:10px; padding:16px 14px 10px; }
+  .hnm{ font-size:22px; color:var(--blue); text-transform:capitalize; text-align:center; flex:1 1 auto; }
+  .hnb{ width:42px; height:42px; border-radius:12px; background:var(--blue-tint); color:var(--blue); font-size:24px; font-weight:800; flex:0 0 auto; line-height:1; }
+  .hnb:active{ background:var(--blue-2); }
+  .hnb.off{ opacity:.25; pointer-events:none; }
+  .histbody{ padding:0 14px 24px; }
+  .hlist{ display:flex; flex-direction:column; gap:8px; }
+  .hrow{ display:flex; align-items:center; gap:12px; background:var(--blue-tint); border-radius:12px; padding:11px 14px; }
+  .hrow.top{ background:#fff; border:2px solid var(--blue); }
+  .hi{ flex:1 1 auto; display:flex; flex-direction:column; min-width:0; }
+  .hd{ font-size:15.5px; font-weight:700; text-transform:capitalize; }
+  .hstar{ color:var(--blue); font-size:13px; }
+  .hs{ font-size:12px; color:var(--muted); margin-top:2px; }
+  .hv{ font-size:19px; font-weight:800; color:var(--blue); flex:0 0 auto; }
 
   /* ===== Tablet apaisada / ordenador ===== */
   @media (min-width:900px){
@@ -820,6 +843,19 @@ function setReportTab(t){ state.reportTab=t; renderApp(); }
 function openMenu(){ state.view='menu'; renderApp(); }
 function openCocina(){ state.view='cocina'; renderApp(); }
 function openReservas(){ state.view='reservas'; renderApp(); }
+function openHistorial(){ state.view='historial'; state.histMes=today().slice(0,7); state.histData=null; renderApp(); }
+function histMover(d){
+  const [y,m]=state.histMes.split('-').map(Number);
+  const nd=new Date(y,m-1+d,1);
+  const nuevo=nd.getFullYear()+'-'+String(nd.getMonth()+1).padStart(2,'0');
+  if(nuevo>today().slice(0,7)) return;          // no ir al futuro
+  state.histMes=nuevo; state.histData=null; renderApp();
+}
+const diaLocal=iso=>{ const d=new Date(iso); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); };
+const nombreMes=ym=>{ const [y,m]=ym.split('-').map(Number);
+  return new Date(y,m-1,1).toLocaleDateString('es-ES',{month:'long',year:'numeric'}); };
+const nombreDia=f=>{ const d=new Date(f+'T12:00:00');
+  return d.toLocaleDateString('es-ES',{weekday:'long'})+' '+d.getDate(); };
 function openBarra(){ state.view='barra'; state.barra.todo=false; state.barra.openCat=null; renderApp(); }
 
 /* ================================================================
@@ -924,7 +960,10 @@ function renderBarraBody(){
         const name=Array.isArray(it)?it[0]:it, corto=Array.isArray(it)?it[1]:it;
         const price=PRICE_OF[name]; if(price==null) return;
         const b=el('button','bprod','<span class="bpn">'+corto+'</span><span class="bpp num">'+eur(price)+'</span><span class="bbadge num">0</span>');
-        b.dataset.name=name; b.onclick=()=>barraAdd(name,price); g.appendChild(b);
+        b.dataset.name=name;
+        const cat=ITEM_CAT[name];
+        b.onclick = EXTRAS_BY_CAT[cat] ? (()=>openExtrasModal(name,price,cat)) : (()=>barraAdd(name,price));
+        g.appendChild(b);
       });
       sec.appendChild(g); body.appendChild(sec);
     });
@@ -1227,7 +1266,7 @@ let isDesktop = window.matchMedia('(min-width:900px)').matches;
 
 function refresh(){
   if(state.view==='barra'){ setDot(); return; }   // no tocar la venta en curso
-  if(['board','report','menu','cocina','reservas'].includes(state.view)){ renderApp(); return; }
+  if(['board','report','menu','cocina','reservas','historial'].includes(state.view)){ renderApp(); return; }
   const ht=document.getElementById('ht-tot'); if(ht) ht.textContent=eur(tTotal(state.active));
   if(isDesktop){ renderCuenta(); refreshBadges(); }
   else if(state.tab==='cuenta') renderCuenta(); else renderAddPane();
@@ -1240,8 +1279,9 @@ function renderApp(){
   if(state.view==='report'){ renderHeaderReport(hdr); renderReport(main); }
   else if(state.view==='menu'){ renderHeaderSimple(hdr,'Bar Piscina',goHome); renderMenuScreen(main); }
   else if(state.view==='cocina'){ renderHeaderSimple(hdr,'Cocina',openMenu); renderCocina(main); }
-  else if(state.view==='barra'){ renderHeaderSimple(hdr,'Barra',openMenu); renderBarra(main); }
+  else if(state.view==='barra'){ renderHeaderSimple(hdr,'Barra Kiosko',goHome); renderBarra(main); }
   else if(state.view==='reservas'){ renderHeaderSimple(hdr,'Reservas',openMenu); renderReservas(main); }
+  else if(state.view==='historial'){ renderHeaderSimple(hdr,'Historial',openMenu); renderHistorial(main); }
   else if(state.view==='board'){ renderHeaderBoard(hdr); renderBoard(main); }
   else if(isDesktop){ renderHeaderTable(hdr); renderTableDesktop(main); }
   else { renderHeaderTable(hdr); renderTableShell(main); renderTableBody(); }
@@ -1258,9 +1298,9 @@ function renderHeaderSimple(hdr, title, onBack){
 function renderMenuScreen(main){
   const wrap=el('div','hub');
   const mk=(title,desc,fn)=>{ const b=el('button','hubbtn','<span class="hubt display">'+title+'</span><span class="hubd">'+desc+'</span>'); b.onclick=fn; return b; };
-  wrap.appendChild(mk('Barra','Venta rápida: se pide, se cobra', openBarra));
   wrap.appendChild(mk('Cocina','Comandas de comida pendientes por mesa', openCocina));
   wrap.appendChild(mk('Reservas','Añade y consulta las reservas', openReservas));
+  wrap.appendChild(mk('Historial','Lo facturado cada día, mes a mes', openHistorial));
   if(CLOUD){ const out=el('button','hublogout','Cerrar sesión'); out.onclick=logout; wrap.appendChild(out); }
   main.appendChild(wrap);
 }
@@ -1386,6 +1426,56 @@ setInterval(()=>{ document.querySelectorAll('.o-timer').forEach(e=>{ const age=D
   const c=document.getElementById('kClock'); if(c) c.textContent=kClockTxt(); },1000);
 setInterval(()=>{ if(state.view==='cocina') kRenderBoard(); },20000);
 
+/* ---- historial: lo facturado cada día del mes ---- */
+function renderHistorial(main){
+  const nav=el('div','histnav');
+  const esActual = state.histMes>=today().slice(0,7);
+  nav.innerHTML='<button class="hnb" data-d="-1">‹</button>'+
+    '<span class="hnm display">'+nombreMes(state.histMes)+'</span>'+
+    '<button class="hnb'+(esActual?' off':'')+'" data-d="1">›</button>';
+  nav.querySelectorAll('.hnb').forEach(b=>{ b.onclick=()=>histMover(parseInt(b.dataset.d)); });
+  main.appendChild(nav);
+  const cont=el('div','histbody','<div class="empty">Cargando…</div>');
+  main.appendChild(cont);
+  cargarHistorial(cont);
+}
+async function cargarHistorial(cont){
+  const [y,m]=state.histMes.split('-').map(Number);
+  const desde=new Date(y,m-1,1,0,0,0), hasta=new Date(y,m,1,0,0,0);
+  let filas=[];
+  if(CLOUD && sb){
+    const r=await sb.from('tickets').select('mesa,total,closed_at')
+      .gte('closed_at',desde.toISOString()).lt('closed_at',hasta.toISOString()).limit(20000);
+    if(r.error){ cont.innerHTML='<div class="empty">No se pudo cargar el historial.<br>Toca ↻ para reintentar.</div>'; return; }
+    filas=r.data||[];
+  } else {
+    filas=state.tickets.map(t=>({mesa:t.mesa,total:t.total,closed_at:t.at}));
+  }
+  pintarHistorial(cont,filas);
+}
+function pintarHistorial(cont,filas){
+  const dias={};
+  filas.forEach(f=>{ const d=diaLocal(f.closed_at); if(!dias[d]) dias[d]={total:0,barra:0,mesas:0,n:0};
+    const v=Number(f.total)||0; dias[d].total+=v; dias[d].n++;
+    if(f.mesa==='Barra') dias[d].barra+=v; else dias[d].mesas+=v; });
+  const claves=Object.keys(dias).sort().reverse();
+  if(!claves.length){ cont.innerHTML='<div class="empty">Sin ventas registradas este mes.</div>'; return; }
+  const totalMes=claves.reduce((s,k)=>s+dias[k].total,0);
+  const media=totalMes/claves.length;
+  const mejor=claves.reduce((a,b)=>dias[a].total>=dias[b].total?a:b);
+  cont.innerHTML=
+    '<div class="rcard big" style="margin-bottom:14px"><span class="rk">Total del mes</span>'+
+      '<span class="rv num">'+eur(totalMes)+'</span>'+
+      '<span class="rd">'+claves.length+' día'+(claves.length===1?'':'s')+' · media '+eur(media)+'</span></div>'+
+    '<div class="hlist">'+claves.map(k=>{
+      const d=dias[k], top=(k===mejor && claves.length>1);
+      return '<div class="hrow'+(top?' top':'')+'">'+
+        '<div class="hi"><span class="hd">'+nombreDia(k)+(top?' <span class="hstar">★</span>':'')+'</span>'+
+        '<span class="hs">Mesas '+eur(d.mesas)+' · Barra '+eur(d.barra)+'</span></div>'+
+        '<span class="hv num">'+eur(d.total)+'</span></div>';
+    }).join('')+'</div>';
+}
+
 /* reservas */
 function renderReservas(main){
   const w=el('div','rv-addwrap');
@@ -1424,14 +1514,23 @@ function renderReport(main){
   else renderProductos(body);
 }
 function renderResumen(body){
-  const cobrado=state.caja.total, nT=state.caja.count;
+  const esBarra=t=>t.mesa==='Barra';
+  const tkBarra=state.tickets.filter(esBarra), tkMesas=state.tickets.filter(t=>!esBarra(t));
+  const cBarra=tkBarra.reduce((s,t)=>s+t.total,0), cMesas=tkMesas.reduce((s,t)=>s+t.total,0);
+  const cobrado=cBarra+cMesas;
   const propinas=state.tickets.reduce((s,t)=>s+(t.propina||0),0);
   const pend=state.tableList.reduce((s,n)=>s+tTotal(n),0);
   const openN=state.tableList.filter(n=>tTotal(n)>0).length;
+  const pct=v=>cobrado>0?Math.round(v*100/cobrado)+'%':'—';
   body.innerHTML='<div class="rsum">'+
-    '<div class="rcard"><span class="rk">Cobrado hoy</span><span class="rv num">'+eur(cobrado)+'</span><span class="rd">'+nT+' ticket'+(nT===1?'':'s')+(propinas>0?(' · '+eur(propinas)+' en propinas'):'')+'</span></div>'+
+    '<div class="rrow">'+
+      '<div class="rcard half"><span class="rk">Mesas</span><span class="rv num">'+eur(cMesas)+'</span><span class="rd">'+tkMesas.length+' ticket'+(tkMesas.length===1?'':'s')+' · '+pct(cMesas)+'</span></div>'+
+      '<div class="rcard half"><span class="rk">Barra Kiosko</span><span class="rv num">'+eur(cBarra)+'</span><span class="rd">'+tkBarra.length+' venta'+(tkBarra.length===1?'':'s')+' · '+pct(cBarra)+'</span></div>'+
+    '</div>'+
+    '<div class="rcard big"><span class="rk">Cobrado hoy</span><span class="rv num">'+eur(cobrado)+'</span>'+
+      '<span class="rd">'+state.caja.count+' tickets'+(propinas>0?(' · '+eur(propinas)+' en propinas'):'')+'</span></div>'+
     '<div class="rcard"><span class="rk">Pendiente de cobrar</span><span class="rv num">'+eur(pend)+'</span><span class="rd">'+openN+' mesa'+(openN===1?'':'s')+' abierta'+(openN===1?'':'s')+'</span></div>'+
-    '<div class="rcard big"><span class="rk">Total (cobrado + pendiente)</span><span class="rv num">'+eur(cobrado+pend)+'</span></div>'+
+    '<div class="rcard tot"><span class="rk">Total del día (cobrado + pendiente)</span><span class="rv num">'+eur(cobrado+pend)+'</span></div>'+
   '</div>';
   if(!CLOUD){ const b=el('button','btn btn-clear','Cerrar caja del día'); b.style.margin='18px 0 0'; b.onclick=resetCaja; body.appendChild(b); }
 }
@@ -1538,6 +1637,10 @@ function renderBoard(main){
   et.onclick=toggleEditMesas; head.appendChild(et);
   main.appendChild(head);
   const g=el('div','grid');
+  const kiosko=()=>{ const k=el('button','mesa kiosko',
+      '<div class="mtop"><span class="mname display">Barra Kiosko</span></div><div class="ksub">Venta rápida: se pide, se paga</div>');
+    k.onclick=openBarra; return k; };
+  let puesto=false;
   state.tableList.forEach(n=>{
     const tot=tTotal(n), sub=tbl(n).sub;
     const b=el('button','mesa'+(tot>0?' has':'')+(state.editMesas?' editing':''),
@@ -1546,7 +1649,9 @@ function renderBoard(main){
       (sub?'<div class="msub">'+sub+'</div>':''));
     b.onclick = state.editMesas ? (()=>askDeleteMesa(n)) : (()=>openTable(n));
     g.appendChild(b);
+    if(n==='Barra' && !puesto){ g.appendChild(kiosko()); puesto=true; }
   });
+  if(!puesto) g.insertBefore(kiosko(), g.firstChild);
   if(!state.editMesas){ const add=el('button','mesa add','<span class="plus">+</span><span class="al">Añadir mesa</span>'); add.onclick=addTable; g.appendChild(add); }
   main.appendChild(g);
 }
