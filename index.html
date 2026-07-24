@@ -174,7 +174,9 @@
   .rcard.half{ padding:14px; } .rcard.half .rv{ font-size:22px; }
   .rcard.tot{ background:#fff; border:2px solid var(--blue-line); }
   /* tarjeta Barra Kiosko en el tablero */
-  .mesa.kiosko .ksub{ font-size:11.5px; color:var(--muted); margin-top:6px; line-height:1.3; font-weight:600; }
+  .mesa.kiosko{ background:#DCEBFF; border-color:#A9CDF7; }
+  .mesa.kiosko .mname{ color:#15499E; }
+  .mesa.kiosko .ksub{ font-size:11.5px; color:#4E7BC4; margin-top:6px; line-height:1.3; font-weight:600; }
   .tlist{ display:flex; flex-direction:column; gap:8px; }
   .tk{ background:var(--blue-tint); border-radius:12px; overflow:hidden; }
   .tk-head{ width:100%; display:flex; align-items:baseline; gap:10px; padding:11px 13px; text-align:left; }
@@ -450,8 +452,11 @@
   .strow.warn{ background:#FFF6E5; } .strow.bad{ background:#FDEAEA; }
   .strow.bad .stu{ color:var(--danger); }
   .strow:active{ filter:brightness(.97); }
-  .strow.rc{ gap:10px; }
-  .rcinp{ width:82px; flex:0 0 auto; border:2px solid var(--blue-line); border-radius:10px; padding:10px; font-size:17px; font-weight:800;
+  .strow.rc{ gap:10px; align-items:flex-start; }
+  .rcbox{ display:flex; gap:6px; flex:0 0 auto; }
+  .rcf{ display:flex; flex-direction:column; align-items:center; gap:3px; }
+  .rcl{ font-size:9.5px; color:var(--muted); font-weight:700; text-transform:uppercase; letter-spacing:.4px; }
+  .rcinp{ width:66px; flex:0 0 auto; border:2px solid var(--blue-line); border-radius:10px; padding:9px 4px; font-size:16px; font-weight:800;
           text-align:center; background:#fff; color:var(--ink); }
   .rcinp:focus{ outline:none; border-color:var(--blue); }
   .stnota{ font-size:12.5px; color:var(--muted); line-height:1.4; margin-top:12px; }
@@ -461,6 +466,14 @@
   .pkg{ font-size:11px; letter-spacing:1.5px; color:var(--muted); font-weight:800; margin:12px 0 6px; text-transform:uppercase; }
   .pki{ display:block; width:100%; text-align:left; padding:11px 13px; border-radius:10px; background:var(--blue-tint); margin-bottom:6px; font-size:14.5px; font-weight:600; }
   .pki:active{ background:var(--blue-2); }
+  .minrow{ display:flex; gap:7px; align-items:stretch; }
+  .minrow input{ flex:1 1 auto; min-width:0; }
+  .minsel{ display:flex; gap:4px; flex:0 0 auto; background:var(--blue-tint); border-radius:11px; padding:3px; }
+  .mnb{ padding:0 11px; border-radius:9px; color:var(--blue); font-weight:800; font-size:12.5px; white-space:nowrap; }
+  .mnb.on{ background:var(--blue); color:#fff; }
+  .modosel{ display:grid; grid-template-columns:1fr 1fr; gap:7px; margin-top:12px; }
+  .mos{ padding:12px 6px; border-radius:11px; background:var(--blue-tint); color:var(--blue); font-weight:800; font-size:13.5px; border:2px solid transparent; }
+  .mos.on{ background:var(--blue); color:#fff; border-color:var(--blue); }
   .fmtchips{ display:grid; grid-template-columns:repeat(3,1fr); gap:6px; }
   .fchip{ padding:10px 4px; border-radius:10px; background:var(--blue-tint); color:var(--blue); font-weight:700; font-size:13px; border:2px solid transparent; }
   .fchip.on{ background:var(--blue); color:#fff; border-color:var(--blue); }
@@ -758,13 +771,15 @@ const CloudDB={
   async deleteMesa(mesa){ await sb.from('orders').delete().eq('mesa',mesa); flag((await sb.from('mesas').delete().eq('name',mesa)).error); },
   async setKitchen(mesa,item,km,kl,ks){ flag((await sb.from('orders').update({km,kl,ks}).eq('mesa',mesa).eq('item',item)).error); },
   async loadStock(){
-    let r=await sb.from('stock').select('item,unidades,minimo,caja,formato,proveedor');
+    let r=await sb.from('stock').select('item,unidades,minimo,caja,formato,min_uds,proveedor');
+    if(r.error) r=await sb.from('stock').select('item,unidades,minimo,caja,formato,proveedor');
     if(r.error) r=await sb.from('stock').select('item,unidades,minimo,caja,proveedor');
     if(r.error) return {error:r.error};
-    const st={}; (r.data||[]).forEach(x=>{ st[x.item]={unidades:Number(x.unidades)||0,minimo:Number(x.minimo)||0,caja:Number(x.caja)||1,formato:x.formato||'caja',proveedor:x.proveedor||''}; });
+    const st={}; (r.data||[]).forEach(x=>{ st[x.item]={unidades:Number(x.unidades)||0,minimo:Number(x.minimo)||0,caja:Number(x.caja)||1,formato:x.formato||'caja',minUds:!!x.min_uds,proveedor:x.proveedor||''}; });
     state.stock=st; return {};
   },
-  async setStock(item,d){ let x=await sb.from('stock').upsert({item,unidades:d.unidades,minimo:d.minimo,caja:d.caja,formato:d.formato,proveedor:d.proveedor},{onConflict:'item'});
+  async setStock(item,d){ let x=await sb.from('stock').upsert({item,unidades:d.unidades,minimo:d.minimo,caja:d.caja,formato:d.formato,min_uds:!!d.minUds,proveedor:d.proveedor},{onConflict:'item'});
+    if(x.error) x=await sb.from('stock').upsert({item,unidades:d.unidades,minimo:d.minimo,caja:d.caja,formato:d.formato,proveedor:d.proveedor},{onConflict:'item'});
     if(x.error) x=await sb.from('stock').upsert({item,unidades:d.unidades,minimo:d.minimo,caja:d.caja,proveedor:d.proveedor},{onConflict:'item'});
     flag(x.error); return x.error?{error:x.error}:{}; },
   async delStock(item){ const x=await sb.from('stock').delete().eq('item',item); flag(x.error); return x.error?{error:x.error}:{}; },
@@ -1600,6 +1615,7 @@ function setStockTab(t){ state.stockTab=t; if(t==='recuento') state.recuento={};
 
 /* Formatos de compra. rinde = cuántas raciones/unidades salen de cada uno. */
 const FORMATOS=['bolsa','caja','paquete','botella','barril','unidad'];
+const May=t=>String(t).charAt(0).toUpperCase()+String(t).slice(1);
 const plural=(f,n)=>{ if(n===1) return f;
   return /[ldrnzj]$/.test(f) ? f+'es' : f+'s'; };
 /* raciones para lo que se sirve a granel, unidades para lo que va contado */
@@ -1615,11 +1631,16 @@ function textoStock(s){
 const formatosDe=s=>{ const r=s.caja||1; return Math.round((s.unidades/r)*100)/100; };
 const stockLista=()=>Object.keys(state.stock).sort((a,b)=>{
   const A=state.stock[a],B=state.stock[b];
-  const fa=A.minimo>0?formatosDe(A)/A.minimo:99, fb=B.minimo>0?formatosDe(B)/B.minimo:99;
+  const fa=A.minimo>0?actualPara(A)/A.minimo:99, fb=B.minimo>0?actualPara(B)/B.minimo:99;
   return fa-fb || a.localeCompare(b,'es');
 });
-const nivel=s=>{ if(s.minimo<=0) return 'ok'; const f=formatosDe(s);
-  if(f<=s.minimo*0.5) return 'bad'; if(f<=s.minimo) return 'warn'; return 'ok'; };
+/* el mínimo puede estar puesto en cajas (por defecto) o en unidades sueltas */
+const minEnUds=s=>!!s.minUds || (s.caja||1)<=1;
+const actualPara=s=>minEnUds(s)?s.unidades:formatosDe(s);
+const nivel=s=>{ if(s.minimo<=0) return 'ok'; const a=actualPara(s);
+  if(a<=s.minimo*0.5) return 'bad'; if(a<=s.minimo) return 'warn'; return 'ok'; };
+const textoMinimo=s=>{ const fmt=s.formato||'unidad';
+  return s.minimo+' '+(minEnUds(s)?palabraVenta(fmt,s.minimo):plural(fmt,s.minimo)); };
 
 function renderStock(main){
   const seg=el('div','seg seg4','<button data-s="existencias">Existencias</button><button data-s="entrada">Entrada</button>'+
@@ -1642,7 +1663,7 @@ function stExistencias(body){
     const row=el('button','strow '+nivel(s),
       '<span class="stdot"></span>'+
       '<div class="sti"><span class="stn">'+n+'</span><span class="sts">'+textoStock(s)+
-        (s.minimo>0?' · avisa a '+s.minimo+' '+plural(s.formato||'caja',s.minimo):'')+'</span></div>'+
+        (s.minimo>0?' · avisa a '+textoMinimo(s):'')+'</span></div>'+
       '<div class="stq"><span class="stu num">'+(r>1?formatosDe(s):s.unidades)+'</span>'+
         '<span class="stul">'+plural(s.formato||'unidad',2)+'</span></div>');
     row.onclick=()=>stEditar(n); list.appendChild(row);
@@ -1674,60 +1695,76 @@ function stPicker(){
 
 /* alta o edición de un producto del control */
 function stEditar(item,nuevo){
-  const s=state.stock[item]||{unidades:0,minimo:2,caja:1,formato:'caja',proveedor:''};
+  const s=state.stock[item]||{unidades:0,minimo:5,caja:1,formato:'unidad',minUds:true,proveedor:''};
+  let minUds = (s.minUds!=null) ? !!s.minUds : ((s.caja||1)<=1);
   const r0=s.caja||1, f0=Math.round((s.unidades/r0)*100)/100;
+  let modo=(r0>1||(s.formato&&s.formato!=='unidad'))?'fmt':'uds';
+  let fmt=(s.formato&&s.formato!=='unidad')?s.formato:'caja';
+  const provSel=state.proveedores.length
+    ? '<select class="e-p rvsel"><option value="">— Sin proveedor —</option>'+
+      state.proveedores.slice().sort((a,b)=>a.empresa.localeCompare(b.empresa,'es'))
+        .map(p=>'<option value="'+String(p.empresa).replace(/"/g,'&quot;')+'"'+(p.empresa===s.proveedor?' selected':'')+'>'+p.empresa+'</option>').join('')+
+      (s.proveedor && !state.proveedores.some(p=>p.empresa===s.proveedor)
+        ? '<option value="'+String(s.proveedor).replace(/"/g,'&quot;')+'" selected>'+s.proveedor+'</option>':'')+'</select>'
+    : '<input class="e-p" type="text" placeholder="Créalos en Proveedores" value="'+String(s.proveedor||'').replace(/"/g,'&quot;')+'">';
   const ov=el('div','overlay');
   ov.innerHTML='<div class="modal"><div class="m-msg">'+item+'</div>'+
-    '<div class="m-sub">Dime cómo lo compras y cuánto da cada uno</div>'+
+    '<div class="m-sub">¿Cómo lo cuentas tú?</div>'+
+    '<div class="modosel"><button class="mos" data-m="uds">Por unidades</button><button class="mos" data-m="fmt">Por cajas o bolsas</button></div>'+
     '<div class="rvform">'+
-      '<div class="rvf"><span>¿Cómo lo compras?</span>'+
-        '<div class="fmtchips">'+FORMATOS.map(f=>'<button class="fchip'+(f===(s.formato||'caja')?' on':'')+'" data-f="'+f+'">'+f+'</button>').join('')+'</div></div>'+
-      '<label class="rvf"><span class="e-rl">¿Cuántas '+palabraVenta(s.formato||'caja',2)+' salen de cada <b>'+(s.formato||'caja')+'</b>?</span>'+
-        '<input class="e-r num" type="number" inputmode="numeric" min="1" value="'+r0+'"></label>'+
-      '<label class="rvf"><span class="e-ul">¿Cuántas <b>'+plural(s.formato||'caja',2)+'</b> tienes ahora?</span>'+
-        '<input class="e-u num" type="number" inputmode="decimal" step="0.5" min="0" value="'+f0+'"></label>'+
-      '<label class="rvf"><span class="e-ml">Avisar cuando queden <b>'+plural(s.formato||'caja',2)+'</b></span>'+
-        '<input class="e-m num" type="number" inputmode="decimal" step="0.5" min="0" value="'+s.minimo+'"></label>'+
-      '<label class="rvf"><span>Proveedor</span>'+
-        (state.proveedores.length
-          ? '<select class="e-p rvsel">'+
-              '<option value="">— Sin proveedor —</option>'+
-              state.proveedores.slice().sort((a,b)=>a.empresa.localeCompare(b.empresa,'es'))
-                .map(p=>'<option value="'+String(p.empresa).replace(/"/g,'&quot;')+'"'+(p.empresa===s.proveedor?' selected':'')+'>'+p.empresa+'</option>').join('')+
-              (s.proveedor && !state.proveedores.some(p=>p.empresa===s.proveedor)
-                ? '<option value="'+String(s.proveedor).replace(/"/g,'&quot;')+'" selected>'+s.proveedor+'</option>' : '')+
-            '</select>'
-          : '<input class="e-p" type="text" placeholder="Créalos en Proveedores" value="'+String(s.proveedor||'').replace(/"/g,'&quot;')+'">')+
-      '</label>'+
+      '<div class="rvf soloFmt"><span>¿Cómo lo compras?</span>'+
+        '<div class="fmtchips">'+FORMATOS.filter(f=>f!=='unidad').map(f=>'<button class="fchip" data-f="'+f+'">'+May(f)+'</button>').join('')+'</div></div>'+
+      '<label class="rvf soloFmt"><span class="e-rl"></span><input class="e-r num" type="number" inputmode="numeric" min="1" value="'+r0+'"></label>'+
+      '<label class="rvf"><span class="e-ul"></span><input class="e-u num" type="number" inputmode="numeric" step="1" min="0" value="'+(modo==='uds'?s.unidades:Math.floor(s.unidades/r0))+'"></label>'+
+      '<label class="rvf soloFmt"><span class="e-sl"></span><input class="e-s num" type="number" inputmode="numeric" step="1" min="0" value="'+(s.unidades-Math.floor(s.unidades/r0)*r0)+'"></label>'+
+      '<div class="rvf"><span class="e-ml"></span>'+
+        '<div class="minrow"><input class="e-m num" type="number" inputmode="numeric" step="1" min="0" value="'+s.minimo+'">'+
+        '<div class="minsel soloFmt"><button class="mnb" data-u="0">cajas</button><button class="mnb" data-u="1">uds.</button></div></div></div>'+
+      '<label class="rvf"><span>Proveedor</span>'+provSel+'</label>'+
     '</div>'+
     '<div class="stcalc" id="e-calc"></div>'+
     '<div class="m-actions">'+(nuevo?'<button class="m-btn m-cancel">Cancelar</button>':'<button class="m-btn m-danger e-del">Quitar</button>')+
     '<button class="m-btn m-ok e-ok">Guardar</button></div></div>';
   document.body.appendChild(ov);
   const close=()=>ov.remove();
-  let fmt=s.formato||'caja';
-  const rI=ov.querySelector('.e-r'), uI=ov.querySelector('.e-u'), mI=ov.querySelector('.e-m');
+  const rI=ov.querySelector('.e-r'), uI=ov.querySelector('.e-u'), sI=ov.querySelector('.e-s'), mI=ov.querySelector('.e-m');
   const paint=()=>{
-    const r=Math.max(1,parseInt(rI.value)||1), f=parseFloat(uI.value)||0;
-    ov.querySelector('.e-rl').innerHTML='¿Cuántas '+palabraVenta(fmt,2)+' salen de cada <b>'+fmt+'</b>?';
-    ov.querySelector('.e-ul').innerHTML='¿Cuántas <b>'+plural(fmt,2)+'</b> tienes ahora?';
-    ov.querySelector('.e-ml').innerHTML='Avisar cuando queden <b>'+plural(fmt,2)+'</b>';
-    ov.querySelector('#e-calc').innerHTML = r>1
-      ? '<b>'+f+' '+plural(fmt,f)+'</b> = '+Math.round(f*r*100)/100+' '+palabraVenta(fmt,2)+' para vender'
-      : '<b>'+f+' '+plural(fmt,f)+'</b> para vender';
+    const esFmt=modo==='fmt';
+    ov.querySelectorAll('.soloFmt').forEach(e=>e.style.display=esFmt?'':'none');
+    ov.querySelectorAll('.mos').forEach(b=>b.classList.toggle('on',b.dataset.m===modo));
     ov.querySelectorAll('.fchip').forEach(b=>b.classList.toggle('on',b.dataset.f===fmt));
+    const r=esFmt?Math.max(1,parseInt(rI.value)||1):1;
+    const cant=parseFloat(uI.value)||0, suelt=esFmt?(parseFloat(sI.value)||0):0;
+    if(esFmt){
+      const tot=Math.round((cant*r+suelt)*100)/100;
+      ov.querySelector('.e-rl').innerHTML='¿Cuántas '+palabraVenta(fmt,2)+' salen de cada <b>'+fmt+'</b>?';
+      ov.querySelector('.e-ul').innerHTML='¿Cuántas <b>'+plural(fmt,2)+'</b> enteras tienes?';
+      ov.querySelector('.e-sl').innerHTML='¿Y <b>'+palabraVenta(fmt,2)+'</b> sueltas?';
+      ov.querySelector('.e-ml').innerHTML='Avisar cuando queden <b>'+(minUds?palabraVenta(fmt,2):plural(fmt,2))+'</b>';
+      ov.querySelectorAll('.minsel .mnb').forEach(b=>{ b.textContent=(b.dataset.u==='1')?palabraVenta(fmt,2):plural(fmt,2);
+        b.classList.toggle('on', (b.dataset.u==='1')===minUds); });
+      ov.querySelector('#e-calc').innerHTML='<b>'+cant+' '+plural(fmt,cant)+(suelt>0?' y '+suelt+' suelt'+(suelt===1?'a':'as'):'')+'</b> = '+tot+' '+palabraVenta(fmt,2)+' para vender';
+    } else {
+      ov.querySelector('.e-ul').innerHTML='¿Cuántas <b>unidades</b> tienes ahora?';
+      ov.querySelector('.e-ml').innerHTML='Avisar cuando queden <b>unidades</b>';
+      ov.querySelector('#e-calc').innerHTML='<b>'+cant+' '+(cant===1?'unidad':'unidades')+'</b> para vender';
+    }
   };
+  ov.querySelectorAll('.mos').forEach(b=>{ b.onclick=()=>{ modo=b.dataset.m; paint(); }; });
   ov.querySelectorAll('.fchip').forEach(b=>{ b.onclick=()=>{ fmt=b.dataset.f; paint(); }; });
-  [rI,uI].forEach(i=>i.oninput=paint); paint();
+  ov.querySelectorAll('.minsel .mnb').forEach(b=>{ b.onclick=()=>{ minUds=(b.dataset.u==='1'); paint(); }; });
+  [rI,uI,sI].forEach(i=>i.oninput=paint); paint();
   ov.addEventListener('click',e=>{ if(e.target===ov) close(); });
   const c=ov.querySelector('.m-cancel'); if(c) c.onclick=close;
   const d=ov.querySelector('.e-del'); if(d) d.onclick=()=>{ close();
     confirmDialog({message:'¿Dejar de controlar <b>'+item+'</b>?',sub:'Se quita del stock. Las ventas ya no lo descontarán.',okLabel:'Quitar',danger:true,
       onOk:async()=>{ delete state.stock[item]; renderApp(); await DB.delStock(item); }}); };
   ov.querySelector('.e-ok').onclick=async()=>{
-    const r=Math.max(1,parseInt(rI.value)||1);
-    const d2={ unidades:Math.round((parseFloat(uI.value)||0)*r*100)/100,
-               minimo:parseFloat(mI.value)||0, caja:r, formato:fmt,
+    const esFmt=modo==='fmt';
+    const r=esFmt?Math.max(1,parseInt(rI.value)||1):1;
+    const suelt=esFmt?(parseFloat(sI.value)||0):0;
+    const d2={ unidades:Math.round(((parseFloat(uI.value)||0)*r+suelt)*100)/100,
+               minimo:parseFloat(mI.value)||0, caja:r, formato:esFmt?fmt:'unidad', minUds:(esFmt?minUds:true),
                proveedor:ov.querySelector('.e-p').value.trim() };
     state.stock[item]=d2; close(); renderApp();
     const res=await DB.setStock(item,d2) || {};
@@ -1750,30 +1787,33 @@ function stEntrada(body){
   body.appendChild(list);
 }
 function stMeter(item){
-  const s=state.stock[item], r=s.caja||1, fmt=s.formato||'caja';
+  const s=state.stock[item], r=s.caja||1, fmt=s.formato||'caja', esFmt=r>1;
   const ov=el('div','overlay');
   ov.innerHTML='<div class="modal"><div class="m-msg">Entrada · '+item+'</div>'+
     '<div class="m-sub">Ahora hay '+textoStock(s)+'</div>'+
-    '<div class="rvform"><label class="rvf"><span>¿Cuántas <b>'+plural(fmt,2)+'</b> entran?</span>'+
-      '<input class="en-c num" type="number" inputmode="decimal" step="0.5" min="0" value="1"></label></div>'+
+    '<div class="rvform">'+
+      '<label class="rvf"><span>¿Cuántas <b>'+(esFmt?plural(fmt,2):'unidades')+'</b> entran?</span>'+
+        '<input class="en-c num" type="number" inputmode="numeric" step="1" min="0" value="1"></label>'+
+      (esFmt?'<label class="rvf"><span>¿Y <b>'+palabraVenta(fmt,2)+'</b> sueltas?</span>'+
+        '<input class="en-s num" type="number" inputmode="numeric" step="1" min="0" value="0"></label>':'')+
+    '</div>'+
     '<div class="stcalc" id="en-res"></div>'+
     '<div class="m-actions"><button class="m-btn m-cancel">Cancelar</button><button class="m-btn m-ok en-ok">Añadir</button></div></div>';
   document.body.appendChild(ov);
   const close=()=>ov.remove();
-  const cI=ov.querySelector('.en-c');
-  const paint=()=>{ const f=parseFloat(cI.value)||0;
-    const nuevo={...s,unidades:Math.round((s.unidades+f*r)*100)/100};
+  const cI=ov.querySelector('.en-c'), sI=ov.querySelector('.en-s');
+  const suma=()=>Math.round(((parseFloat(cI.value)||0)*r + (sI?(parseFloat(sI.value)||0):0))*100)/100;
+  const paint=()=>{ const nuevo={...s,unidades:Math.round((s.unidades+suma())*100)/100};
     ov.querySelector('#en-res').innerHTML='Quedarán <b>'+textoStock(nuevo)+'</b>'; };
-  cI.oninput=paint; paint();
+  [cI,sI].forEach(i=>{ if(i) i.oninput=paint; }); paint();
   ov.addEventListener('click',e=>{ if(e.target===ov) close(); });
   ov.querySelector('.m-cancel').onclick=close;
   ov.querySelector('.en-ok').onclick=async()=>{
-    const f=parseFloat(cI.value)||0; if(f<=0){ close(); return; }
-    const n=Math.round(f*r*100)/100;
+    const n=suma(); if(n<=0){ close(); return; }
     s.unidades=Math.round((s.unidades+n)*100)/100; close(); renderApp();
-    await DB.movStock(item,n); DB.logMov(item,'entrada',n,f+' '+plural(fmt,f));
+    await DB.movStock(item,n); DB.logMov(item,'entrada',n,'');
     if(!CLOUD) DB.setStock(item,s);
-    showToast('Entrada: +'+f+' '+plural(fmt,f)+' de '+item,true);
+    showToast('Entrada registrada en '+item,true);
   };
 }
 
@@ -1781,15 +1821,23 @@ function stMeter(item){
 function stRecuento(body){
   const items=stockLista();
   if(!items.length){ body.appendChild(el('div','empty','Primero añade productos en «Existencias».')); return; }
-  body.appendChild(el('div','stnota','Cuenta las bolsas o cajas que hay de verdad y escríbelo. Al guardar te dirá lo que falta.'));
+  body.appendChild(el('div','stnota','Cuenta lo que hay de verdad. Si algo va por cajas, puedes poner las cajas enteras y aparte las sueltas.'));
   const list=el('div','stlist');
   items.slice().sort((a,b)=>a.localeCompare(b,'es')).forEach(n=>{
-    const s=state.stock[n], fmt=s.formato||'caja';
+    const s=state.stock[n], r=s.caja||1, fmt=s.formato||'unidad', esFmt=r>1;
+    const g=state.recuento[n]||{};
     const row=el('div','strow rc');
     row.innerHTML='<div class="sti"><span class="stn">'+n+'</span>'+
-      '<span class="sts">Debería haber '+formatosDe(s)+' '+plural(fmt,formatosDe(s))+'</span></div>'+
-      '<input class="rcinp num" type="number" inputmode="decimal" step="0.5" min="0" placeholder="—" value="'+(state.recuento[n]!=null?state.recuento[n]:'')+'">';
-    row.querySelector('.rcinp').oninput=e=>{ const v=e.target.value; state.recuento[n]=(v===''?null:parseFloat(v)); };
+      '<span class="sts">Debería haber '+textoStock(s)+'</span></div>'+
+      '<div class="rcbox">'+
+        '<div class="rcf"><input class="rcinp rc-c num" type="number" inputmode="numeric" step="1" min="0" placeholder="—" value="'+(g.c!=null?g.c:'')+'"><span class="rcl">'+(esFmt?plural(fmt,2):'uds')+'</span></div>'+
+        (esFmt?'<div class="rcf"><input class="rcinp rc-s num" type="number" inputmode="numeric" step="1" min="0" placeholder="—" value="'+(g.s!=null?g.s:'')+'"><span class="rcl">sueltas</span></div>':'')+
+      '</div>';
+    const set=()=>{ const c=row.querySelector('.rc-c').value, sx=row.querySelector('.rc-s');
+      const cv=(c===''?null:parseFloat(c)), sv=(sx&&sx.value!==''?parseFloat(sx.value):null);
+      if(cv==null && sv==null) delete state.recuento[n];
+      else state.recuento[n]={c:cv||0, s:sv||0}; };
+    row.querySelectorAll('.rcinp').forEach(i=>i.oninput=set);
     list.appendChild(row);
   });
   body.appendChild(list);
@@ -1797,17 +1845,17 @@ function stRecuento(body){
   ok.onclick=stCerrarRecuento; body.appendChild(ok);
 }
 async function stCerrarRecuento(){
-  const cambios=Object.keys(state.recuento).filter(n=>state.recuento[n]!=null && state.stock[n]);
+  const cambios=Object.keys(state.recuento).filter(n=>state.stock[n]);
   if(!cambios.length){ showToast('No has contado nada todavía',true); return; }
-  const filas=cambios.map(n=>{ const s=state.stock[n], fmt=s.formato||'caja';
-    const tenia=formatosDe(s), hay=state.recuento[n];
-    return {n, fmt, tenia, hay, dif:Math.round((hay-tenia)*100)/100}; });
+  const filas=cambios.map(n=>{ const s=state.stock[n], r=s.caja||1, g=state.recuento[n];
+    const hayU=Math.round(((g.c||0)*r+(g.s||0))*100)/100;
+    return {n, s, r, hayU, teniaU:s.unidades, dif:Math.round((hayU-s.unidades)*100)/100}; });
   const faltan=filas.filter(f=>f.dif<0).length;
   const ov=el('div','overlay');
   ov.innerHTML='<div class="modal"><div class="m-msg">Resultado del recuento</div>'+
     '<div class="m-sub">'+(faltan?('Faltan cosas en '+faltan+' producto'+(faltan===1?'':'s')):'Todo cuadra')+'</div>'+
     '<div class="ex-list">'+filas.map(f=>'<div class="ex-row"><div class="ex-i"><span class="ex-n">'+f.n+'</span>'+
-      '<span class="ex-p">Debía haber '+f.tenia+' · contadas '+f.hay+' '+plural(f.fmt,f.hay)+'</span></div>'+
+      '<span class="ex-p">Debía haber '+f.teniaU+' · contadas '+f.hayU+'</span></div>'+
       '<span class="rcdif '+(f.dif<0?'neg':(f.dif>0?'pos':''))+'">'+(f.dif>0?'+':'')+f.dif+'</span></div>').join('')+'</div>'+
     '<div class="m-actions"><button class="m-btn m-cancel">Cancelar</button><button class="m-btn m-ok rc-ok">Confirmar</button></div></div>';
   document.body.appendChild(ov);
@@ -1816,9 +1864,8 @@ async function stCerrarRecuento(){
   ov.querySelector('.m-cancel').onclick=close;
   ov.querySelector('.rc-ok').onclick=async()=>{
     close();
-    for(const f of filas){ const s=state.stock[f.n];
-      s.unidades=Math.round(f.hay*(s.caja||1)*100)/100;
-      await DB.setStock(f.n,s); DB.logMov(f.n,'recuento',f.dif,'en '+plural(f.fmt,2)); }
+    for(const f of filas){ f.s.unidades=f.hayU;
+      await DB.setStock(f.n,f.s); DB.logMov(f.n,'recuento',f.dif,''); }
     state.recuento={}; state.stockTab='existencias'; renderApp();
     showToast('Recuento guardado',true);
   };
@@ -1826,7 +1873,7 @@ async function stCerrarRecuento(){
 
 /* ---- 4. Lista de compra ---- */
 function stCompra(body){
-  const bajos=stockLista().filter(n=>{ const s=state.stock[n]; return s.minimo>0 && formatosDe(s)<=s.minimo; });
+  const bajos=stockLista().filter(n=>{ const s=state.stock[n]; return s.minimo>0 && actualPara(s)<=s.minimo; });
   if(!bajos.length){ body.appendChild(el('div','empty','No hace falta pedir nada.<br>Todo está por encima del mínimo.')); return; }
   const porProv={}; bajos.forEach(n=>{ const p=state.stock[n].proveedor||'Sin proveedor'; (porProv[p]=porProv[p]||[]).push(n); });
   let texto='PEDIDO — Bar Piscina\n';
@@ -1835,7 +1882,8 @@ function stCompra(body){
     texto+='\n'+p+'\n';
     const sec=el('div','psec','<h3 class="display">'+p+'</h3>');
     porProv[p].forEach(n=>{ const s=state.stock[n], fmt=s.formato||'caja';
-      const pedir=Math.max(1, Math.ceil(s.minimo*2 - formatosDe(s)));
+      const objetivoUd = minEnUds(s) ? s.minimo*2 : s.minimo*2*(s.caja||1);
+      const pedir=Math.max(1, Math.ceil((objetivoUd - s.unidades)/(s.caja||1)));
       texto+='· '+n+': '+pedir+' '+plural(fmt,pedir)+'\n';
       sec.appendChild(el('div','prow','<span class="pn">'+n+'<br><span class="sts">quedan '+formatosDe(s)+' · mínimo '+s.minimo+'</span></span>'+
         '<span class="pq num">'+pedir+' '+plural(fmt,pedir)+'</span>'));
