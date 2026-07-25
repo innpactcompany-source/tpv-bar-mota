@@ -441,6 +441,14 @@
   /* stock */
   .seg4 button{ font-size:13px; padding:11px 4px; }
   .stlist{ display:flex; flex-direction:column; gap:8px; margin-top:12px; }
+  .stgrp{ display:grid; grid-template-columns:1fr 1fr; gap:5px; margin-top:12px; background:var(--blue-tint); border-radius:12px; padding:4px; }
+  .stgrp button{ padding:9px 4px; border-radius:9px; font-weight:800; font-size:13px; color:var(--blue); }
+  .stgrp button.on{ background:var(--blue); color:#fff; }
+  .sthead{ display:flex; align-items:baseline; justify-content:space-between; gap:8px; margin:18px 2px 0; }
+  .sthead .sthn{ font-size:14.5px; color:var(--ink); letter-spacing:.3px; }
+  .sthead .sthc{ font-size:11.5px; color:var(--muted); font-weight:600; white-space:nowrap; }
+  .sthead .sthlow{ color:var(--danger); }
+  .sthead + .stlist{ margin-top:7px; }
   .strow{ display:flex; align-items:center; gap:11px; background:var(--blue-tint); border-radius:12px; padding:12px 14px; text-align:left; width:100%; }
   .strow .sti{ flex:1 1 auto; display:flex; flex-direction:column; min-width:0; }
   .strow .stn{ font-size:15px; font-weight:700; }
@@ -477,6 +485,10 @@
   .fmtchips{ display:grid; grid-template-columns:repeat(3,1fr); gap:6px; }
   .fchip{ padding:10px 4px; border-radius:10px; background:var(--blue-tint); color:var(--blue); font-weight:700; font-size:13px; border:2px solid transparent; }
   .fchip.on{ background:var(--blue); color:#fff; border-color:var(--blue); }
+  /* selector de sabores */
+  .vgrid{ display:grid; grid-template-columns:repeat(2,1fr); gap:8px; margin-top:14px; }
+  .vchip{ padding:16px 8px; border-radius:12px; background:var(--blue-tint); color:var(--blue); font-weight:800; font-size:15px; border:2px solid var(--blue-line); }
+  .vchip:active{ background:var(--blue); color:#fff; border-color:var(--blue); transform:scale(.97); }
   .stcalc{ margin-top:13px; background:var(--blue-tint); border-radius:11px; padding:12px; text-align:center; font-size:14px; color:var(--ink); }
   .stcalc b{ color:var(--blue); }
   .stq{ display:flex; flex-direction:column; align-items:flex-end; flex:0 0 auto; line-height:1.05; }
@@ -493,9 +505,14 @@
   .pv-d.rep{ background:var(--blue); color:#fff; border-color:var(--blue); }
   .pv-d.rep b{ color:#cfe0ff; }
   .pv-tel{ display:inline-block; margin-top:9px; font-size:14px; font-weight:700; color:var(--blue); text-decoration:none; }
-  .pv-prods{ display:flex; flex-wrap:wrap; gap:5px; margin-top:10px; padding-top:9px; border-top:1px solid var(--blue-line); }
+  .pv-toggle{ display:flex; align-items:center; justify-content:space-between; gap:8px; width:100%; text-align:left; margin-top:11px; padding:10px 12px; border-radius:10px; background:#fff; border:1.5px solid var(--blue-line); color:var(--blue); font-weight:800; font-size:13px; }
+  .pv-toggle:active{ background:var(--blue-tint); }
+  .pv-cev{ font-size:12px; transition:transform .15s; flex:0 0 auto; }
+  .provcard.prods-open .pv-cev{ transform:rotate(180deg); }
+  .pv-prods{ display:none; flex-wrap:wrap; gap:5px; margin-top:8px; }
+  .provcard.prods-open .pv-prods{ display:flex; }
   .pv-chip{ font-size:11.5px; background:#fff; border-radius:999px; padding:3px 9px; color:var(--ink); }
-  .pv-none{ font-size:12px; color:var(--muted); }
+  .pv-none{ font-size:12px; color:var(--muted); margin-top:11px; }
   .pv-link{ width:100%; margin-top:12px; padding:13px; border-radius:11px; background:var(--blue-tint); color:var(--blue); font-weight:800; font-size:14px; text-align:center; }
   .pv-link:active{ background:var(--blue-2); }
   .dchips{ display:grid; grid-template-columns:repeat(7,1fr); gap:5px; }
@@ -553,7 +570,7 @@ const SUPABASE_KEY = "sb_publishable_hwze_N-sgY7eCb2Jr7kHQw_xxsOJHWY";
    Así funciona con cualquiera de los usuarios que tengas creados
    en Supabase, sin tener que acertar cuál es.
    ──────────────────────────────────────────────────────────────── */
-const PEDIR_CONTRASENA = true;
+const PEDIR_CONTRASENA = true;   // PRODUCCIÓN: pide login · PRUEBAS: poner en false
 const USUARIO_FIJO = "";
 const DOMINIO_USUARIO = "@mota.com";
 const USUARIO_SUGERIDO = "innpactcompany@gmail.com";
@@ -653,6 +670,27 @@ const EXTRAS_BY_CAT={
 const WITH_EXTRAS=Object.keys(EXTRAS_BY_CAT);
 function extrasFor(cat){ return (EXTRAS_BY_CAT[cat]||[]).map(n=>EXTRAS.find(e=>e.name===n)).filter(Boolean); }
 
+/* ----------------------------------------------------------------
+   VARIANTES / SABORES
+   Un solo botón (el producto base de la carta) que al tocarlo despliega
+   los sabores. Se añade "Base (Sabor)". Como el nombre canónico corta en
+   " (", en Existencias, Recuento e Histórico cuenta bajo el producto base
+   (Calippo, Coca-Cola, Magnum...). El sabor SÍ se ve en el ticket y la cocina.
+   Formato: 'Nombre base de la carta': [ [etiqueta, sufijo], ... ]
+   sufijo '' -> se añade el base tal cual, sin paréntesis.
+   ---------------------------------------------------------------- */
+const VARIANTS={
+  'Coca-Cola':      [['Normal',''],['Zero','Zero'],['Zero Zero','Zero Zero']],
+  'Fanta':          [['Naranja','Naranja'],['Limón','Limón']],
+  'Fuze Tea':       [['Limón','Limón'],['Maracuyá','Maracuyá']],
+  'Calippo':        [['Coca-Cola','Coca-Cola'],['Fresa','Fresa'],['Lima','Lima']],
+  'Cornetto Normal':[['Nata','Nata'],['Vainilla','Vainilla']],
+  'Magnum':         [['Blanco','Blanco'],['Almendrado','Almendrado']],
+  'Regaliz':        [['Con pica','Con pica'],['Sin pica','Sin pica']],
+  'Chicle':         [['Melón','Melón'],['Explosión','Explosión']],
+  'Chupachups':     [['Rojo','Rojo'],['Azul','Azul']],
+};
+
 /* ================================================================
    2) Estado + utilidades
    ================================================================ */
@@ -673,6 +711,7 @@ let state = {
   barra:{ cart:[], recibido:0, todo:false, openCat:null, fb:'bebidas' },
   stock:{},                  // item -> {unidades, minimo, caja, proveedor}
   stockTab:'existencias',    // existencias | entrada | recuento | compra
+  stockGroup:'cat',          // agrupar existencias: cat (categoría) | prov (proveedor)
   recuento:{},               // borrador del recuento en curso
   proveedores:[],            // {id,empresa,comercial,pedido,reparto,telefono}
 };
@@ -1085,10 +1124,12 @@ function renderBarraBody(){
       s.items.forEach(it=>{
         const name=Array.isArray(it)?it[0]:it, corto=Array.isArray(it)?it[1]:it;
         const price=PRICE_OF[name]; if(price==null) return;
-        const b=el('button','bprod','<span class="bpn">'+corto+'</span><span class="bpp num">'+eur(price)+'</span><span class="bbadge num">0</span>');
+        const b=el('button','bprod','<span class="bpn">'+corto+(VARIANTS[name]?' ▾':'')+'</span><span class="bpp num">'+eur(price)+'</span><span class="bbadge num">0</span>');
         b.dataset.name=name;
         const cat=ITEM_CAT[name];
-        b.onclick = EXTRAS_BY_CAT[cat] ? (()=>openExtrasModal(name,price,cat)) : (()=>barraAdd(name,price));
+        b.onclick = VARIANTS[name] ? (()=>openVariantModal(name,price))
+                  : EXTRAS_BY_CAT[cat] ? (()=>openExtrasModal(name,price,cat))
+                  : (()=>barraAdd(name,price));
         g.appendChild(b);
       });
       sec.appendChild(g); body.appendChild(sec);
@@ -1106,9 +1147,11 @@ function renderBarraBody(){
       head.onclick=()=>{ state.barra.openCat=(state.barra.openCat===cat?null:cat); renderBarraBody(); paintBarra(); };
       const bd=el('div','acc-body');
       groups[cat].forEach(([name,price])=>{
-        const it=el('button','acc-item','<span class="ain">'+name+'</span><span class="aip num">'+eur(price)+'</span><span class="badge num">0</span>');
+        const it=el('button','acc-item','<span class="ain">'+name+(VARIANTS[name]?' ▾':'')+'</span><span class="aip num">'+eur(price)+'</span><span class="badge num">0</span>');
         it.dataset.name=name;
-        it.onclick = WITH_EXTRAS.includes(cat) ? (()=>openExtrasModal(name,price,cat)) : (()=>barraAdd(name,price));
+        it.onclick = VARIANTS[name] ? (()=>openVariantModal(name,price))
+                   : WITH_EXTRAS.includes(cat) ? (()=>openExtrasModal(name,price,cat))
+                   : (()=>barraAdd(name,price));
         bd.appendChild(it);
       });
       acc.appendChild(head); acc.appendChild(bd); list.appendChild(acc);
@@ -1375,6 +1418,25 @@ function openExtrasModal(baseName, basePrice, cat){
   };
 }
 
+/* elegir sabor: un toque añade "Base (Sabor)" y cierra */
+function openVariantModal(baseName, basePrice){
+  const vars=VARIANTS[baseName]||[];
+  const ov=el('div','overlay');
+  ov.innerHTML='<div class="modal"><div class="m-msg">'+baseName+'</div>'+
+    '<div class="m-sub">Elige el sabor · '+eur(basePrice)+'</div>'+
+    '<div class="vgrid">'+vars.map((v,i)=>'<button class="vchip" data-i="'+i+'">'+v[0]+'</button>').join('')+'</div>'+
+    '<div class="m-actions" style="grid-template-columns:1fr"><button class="m-btn m-cancel">Cancelar</button></div></div>';
+  document.body.appendChild(ov);
+  const close=()=>ov.remove();
+  ov.addEventListener('click',e=>{ if(e.target===ov) close(); });
+  ov.querySelector('.m-cancel').onclick=close;
+  ov.querySelectorAll('.vchip').forEach(b=>{ b.onclick=()=>{
+    const v=vars[+b.dataset.i], suf=v[1];
+    const name=suf?baseName+' ('+suf+')':baseName;
+    close(); addItem(name, basePrice);
+  }; });
+}
+
 function setTab(t){ state.tab=t; renderTableBody(); }
 function setFb(fb){ state.fb=fb; state.openCat=null; renderAddPane(); }
 function toggleCat(cat){
@@ -1639,6 +1701,7 @@ const minEnUds=s=>!!s.minUds || (s.caja||1)<=1;
 const actualPara=s=>minEnUds(s)?s.unidades:formatosDe(s);
 const nivel=s=>{ if(s.minimo<=0) return 'ok'; const a=actualPara(s);
   if(a<=s.minimo*0.5) return 'bad'; if(a<=s.minimo) return 'warn'; return 'ok'; };
+const nivelRank=s=>{ const n=nivel(s); return n==='bad'?0 : n==='warn'?1 : 2; };
 const textoMinimo=s=>{ const fmt=s.formato||'unidad';
   return s.minimo+' '+(minEnUds(s)?palabraVenta(fmt,s.minimo):plural(fmt,s.minimo)); };
 
@@ -1657,18 +1720,47 @@ function stExistencias(body){
   body.appendChild(add);
   const items=stockLista();
   if(!items.length){ body.appendChild(el('div','empty','Todavía no controlas ningún producto.<br>Toca «Añadir producto» y elige los que quieras vigilar.')); return; }
-  const list=el('div','stlist');
-  items.forEach(n=>{
-    const s=state.stock[n], r=s.caja||1;
-    const row=el('button','strow '+nivel(s),
-      '<span class="stdot"></span>'+
-      '<div class="sti"><span class="stn">'+n+'</span><span class="sts">'+textoStock(s)+
-        (s.minimo>0?' · avisa a '+textoMinimo(s):'')+'</span></div>'+
-      '<div class="stq"><span class="stu num">'+(r>1?formatosDe(s):s.unidades)+'</span>'+
-        '<span class="stul">'+plural(s.formato||'unidad',2)+'</span></div>');
-    row.onclick=()=>stEditar(n); list.appendChild(row);
+
+  /* agrupar: por categoría de la carta o por proveedor */
+  const grp=state.stockGroup||'cat';
+  const seg=el('div','stgrp','<button data-g="cat">Por categoría</button><button data-g="prov">Por proveedor</button>');
+  seg.querySelectorAll('button').forEach(b=>{ b.classList.toggle('on',b.dataset.g===grp);
+    b.onclick=()=>{ state.stockGroup=b.dataset.g; renderApp(); }; });
+  body.appendChild(seg);
+
+  const secciones=[];   // {titulo, prods:[nombres]}
+  if(grp==='prov'){
+    const porProv={};
+    items.forEach(n=>{ const p=state.stock[n].proveedor||'Sin proveedor'; (porProv[p]=porProv[p]||[]).push(n); });
+    Object.keys(porProv).sort((a,b)=>{
+      if(a==='Sin proveedor') return 1; if(b==='Sin proveedor') return -1;
+      return a.localeCompare(b,'es');
+    }).forEach(p=>secciones.push({titulo:p, prods:porProv[p]}));
+  } else {
+    const orden=[]; Object.keys(MENU).forEach(sec=>Object.keys(MENU[sec].groups).forEach(g=>orden.push(g)));
+    const porCat={};
+    items.forEach(n=>{ const c=ITEM_CAT[canonical(n)]||'Otros'; (porCat[c]=porCat[c]||[]).push(n); });
+    orden.forEach(c=>{ if(porCat[c]){ secciones.push({titulo:c, prods:porCat[c]}); delete porCat[c]; } });
+    Object.keys(porCat).sort((a,b)=>a.localeCompare(b,'es')).forEach(c=>secciones.push({titulo:c, prods:porCat[c]}));
+  }
+
+  secciones.forEach(sec=>{
+    const bajos=sec.prods.filter(n=>nivel(state.stock[n])!=='ok').length;
+    body.appendChild(el('div','sthead','<span class="sthn display">'+sec.titulo+'</span>'+
+      '<span class="sthc">'+sec.prods.length+' art.'+(bajos?' · <b class="sthlow">'+bajos+' bajo'+(bajos===1?'':'s')+'</b>':'')+'</span>'));
+    const list=el('div','stlist');
+    sec.prods.slice().sort((a,b)=>nivelRank(state.stock[a])-nivelRank(state.stock[b]) || a.localeCompare(b,'es')).forEach(n=>{
+      const s=state.stock[n], r=s.caja||1;
+      const row=el('button','strow '+nivel(s),
+        '<span class="stdot"></span>'+
+        '<div class="sti"><span class="stn">'+n+'</span><span class="sts">'+textoStock(s)+
+          (s.minimo>0?' · avisa a '+textoMinimo(s):'')+'</span></div>'+
+        '<div class="stq"><span class="stu num">'+(r>1?formatosDe(s):s.unidades)+'</span>'+
+          '<span class="stul">'+plural(s.formato||'unidad',2)+'</span></div>');
+      row.onclick=()=>stEditar(n); list.appendChild(row);
+    });
+    body.appendChild(list);
   });
-  body.appendChild(list);
   body.appendChild(el('div','stnota','El stock baja solo con cada venta. Toca un producto para cambiar sus datos o corregir lo que hay.'));
 }
 
@@ -1913,6 +2005,10 @@ function renderProveedores(main){
   const list=el('div','rvlist');
   state.proveedores.slice().sort((a,b)=>a.empresa.localeCompare(b.empresa,'es')).forEach(p=>{
     const prods=productosDe(p.empresa);
+    const prodBloque = prods.length
+      ? '<button class="pv-toggle" type="button"><span>🧾 Productos que se le piden ('+prods.length+')</span><span class="pv-cev">▾</span></button>'+
+        '<div class="pv-prods">'+prods.map(n=>'<span class="pv-chip">'+n+'</span>').join('')+'</div>'
+      : '<div class="pv-none">Sin productos vinculados</div>';
     const card=el('div','provcard',
       '<div class="rv-top"><span class="pv-emp">'+(p.empresa||'—')+'</span><span class="rv-edit">Editar ›</span><button class="rv-del">✕</button></div>'+
       (p.comercial?'<div class="pv-com">'+p.comercial+'</div>':'')+
@@ -1920,12 +2016,11 @@ function renderProveedores(main){
         (p.pedido?'<span class="pv-d"><b>Pedido</b> '+p.pedido+'</span>':'')+
         (p.reparto?'<span class="pv-d rep"><b>Reparte</b> '+p.reparto+'</span>':'')+'</div>'+
       (p.telefono?'<a class="pv-tel" href="tel:'+String(p.telefono).replace(/\s/g,'')+'">📞 '+p.telefono+'</a>':'')+
-      '<div class="pv-prods">'+(prods.length
-        ? prods.map(n=>'<span class="pv-chip">'+n+'</span>').join('')
-        : '<span class="pv-none">Sin productos vinculados</span>')+'</div>');
+      prodBloque);
     card.onclick=()=>provEditar(p);
     card.querySelector('.rv-del').onclick=e=>{ e.stopPropagation(); provBorrar(p); };
     const tel=card.querySelector('.pv-tel'); if(tel) tel.onclick=e=>e.stopPropagation();
+    const tg=card.querySelector('.pv-toggle'); if(tg) tg.onclick=e=>{ e.stopPropagation(); card.classList.toggle('prods-open'); };
     list.appendChild(card);
   });
   main.appendChild(list);
@@ -2294,9 +2389,11 @@ function renderAddPane(){
     groups[cat].forEach(([name,price])=>{
       const q=qtyOf(name);
       const it=el('button','acc-item'+(q>0?' in':''),
-        '<span class="ain">'+name+'</span><span class="aip num">'+eur(price)+'</span><span class="badge num">'+q+'</span>');
+        '<span class="ain">'+name+(VARIANTS[name]?' ▾':'')+'</span><span class="aip num">'+eur(price)+'</span><span class="badge num">'+q+'</span>');
       it.dataset.name=name;
-      it.onclick = WITH_EXTRAS.includes(cat) ? (()=>openExtrasModal(name,price,cat)) : (()=>addItem(name,price));
+      it.onclick = VARIANTS[name] ? (()=>openVariantModal(name,price))
+                 : WITH_EXTRAS.includes(cat) ? (()=>openExtrasModal(name,price,cat))
+                 : (()=>addItem(name,price));
       bodyEl.appendChild(it);
     });
     acc.appendChild(head); acc.appendChild(bodyEl); list.appendChild(acc);
