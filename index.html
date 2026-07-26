@@ -592,7 +592,7 @@ const MENU = {
   }},
   bebidas: { label:'Bebidas', groups:{
     'Refrescos': [ ['Coca-Cola',2.5],['Fanta',2.5],['Fuze Tea',2.5],['Aquarius',2.5],['Zumo',2],['Tónica',2],['Agua',1.5] ],
-    'Cervezas': [ ['Caña',2.5],['Jarra de Cerveza',3],['Jarra de Tinto',3],['Megajarra',7],['Tercio',2.5],['Tinto de Verano',2.5] ],
+    'Cervezas': [ ['Caña',2.5],['Jarra',3],['Megajarra',7],['Tercio',2.5],['Tinto de Verano',2.5] ],
     'Vinos': [ ['Vino Semidulce',2.5],['Vino Tinto',2.2],['Vino Blanco',2.2],['Vermut',2] ],
     'Cubatas y Piedras': [ ['Cubata',5.5],['Piedra',3] ],
     'Granizados': [ ['Granizado de Café',2.8],['Granizado de Café + Baileys',3.8],['Granizado de Limón',2.5],['Granizado de Fresa',2.5],['Granizado de España',3] ],
@@ -612,7 +612,8 @@ const ALIAS={
   'Comb. lomo':'Combinado de Lomo', 'Comb. magreta':'Combinado de Magreta',
   'Comb. bacon':'Combinado de Bacon', 'Comb. pechuga plancha':'Combinado de Pechuga Plancha',
   'Comb. pechuga rebozada':'Combinado de Pechuga Rebozada',
-  'Doble':'Jarra de Cerveza', 'Hamburguesa':'Hamburguesa de Vacuno',
+  'Doble':'Jarra', 'Jarra de Cerveza':'Jarra', 'Jarra de Tinto':'Jarra',
+  'Hamburguesa':'Hamburguesa de Vacuno',
   'Tercio 0,33':'Tercio', 'Tercio 0,33cl':'Tercio',
 };
 /* clave normalizada: minúsculas, sin tildes, sin enlaces (de/con/y...), sin signos */
@@ -636,7 +637,7 @@ function isKitchen(name){ return KITCHEN_CATS.includes(ITEM_CAT[canonical(name)]
 /* Barra: secciones en el orden en que más se piden. Nombre corto entre
    corchetes para leerlo de un vistazo (la sección ya dice de qué es). */
 const BARRA_SECCIONES=[
-  {t:'Cervezas', items:[['Caña','Caña'],['Jarra de Cerveza','Jarra'],['Tercio','Tercio'],['Tinto de Verano','Tinto verano'],['Jarra de Tinto','Jarra tinto'],['Megajarra','MEGAJARRA']]},
+  {t:'Cervezas', items:[['Caña','Caña'],['Jarra','Jarra'],['Tercio','Tercio'],['Tinto de Verano','Tinto verano'],['Megajarra','MEGAJARRA']]},
   {t:'Refrescos', items:[['Coca-Cola','Coca-Cola'],['Fanta','Fanta'],['Aquarius','Aquarius'],['Fuze Tea','Fuze Tea'],['Agua','Agua'],['Zumo','Zumo'],['Tónica','Tónica']]},
   {t:'Granizados', items:[['Granizado de Limón','Limón'],['Granizado de Fresa','Fresa'],['Granizado de Café','Café'],['Granizado de España','España'],['Granizado de Café + Baileys','Café + Baileys']]},
   {t:'Helados', items:[['Magnum','Magnum'],['Calippo','Calippo'],['Frigopié','Frigopié'],['Frigo Chuches','Frigo Chuches'],['Haribo','Haribo'],['Twister','Twister'],['Flash','Flash'],['Frigurón','Frigurón'],['Cornetto Normal','Cornetto'],['Cornetto Max','Cornetto Max'],['Cornetto XXL','Cornetto XXL'],['Chock and Ball','Chock and Ball'],['Sándwich Original','Sánd. Original'],['Sándwich Dino','Sánd. Dino'],['Sándwich Filipinos','Sánd. Filipinos'],['Donut Filipinos','Donut Filip.']]},
@@ -686,9 +687,11 @@ const VARIANTS={
   'Calippo':        [['Coca-Cola','Coca-Cola'],['Fresa','Fresa'],['Lima','Lima']],
   'Cornetto Normal':[['Nata','Nata'],['Vainilla','Vainilla']],
   'Magnum':         [['Blanco','Blanco'],['Almendrado','Almendrado']],
-  'Regaliz':        [['Con pica','Con pica'],['Sin pica','Sin pica']],
+  'Regaliz':        [['Con pica','Con pica'],['Sin pica','Sin pica'],['Nata','Nata']],
   'Chicle':         [['Melón','Melón'],['Explosión','Explosión']],
   'Chupachups':     [['Rojo','Rojo'],['Azul','Azul']],
+  'Jarra':          [['Cerveza','Cerveza'],['Tinto','Tinto'],['Clara','Clara']],
+  'Tercio':         [['Normal',''],['00 Tostada','00 Tostada']],
 };
 
 /* ================================================================
