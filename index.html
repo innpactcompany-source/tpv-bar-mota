@@ -108,12 +108,13 @@
   /* ================= TABLERO ================= */
   .board-title{ padding:16px 16px 6px; font-size:15px; color:var(--muted); font-weight:700; letter-spacing:.3px; }
   .grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:11px; padding:6px 16px 24px; }
-  .mesa{ position:relative; background:var(--white); border:2px solid var(--blue-line); border-radius:16px; padding:14px; min-height:92px; display:flex; flex-direction:column; justify-content:space-between; text-align:left; transition:transform .06s,border-color .12s; }
+  .mesa{ position:relative; overflow:hidden; background:var(--white); border:2px solid var(--blue-line); border-radius:16px; padding:14px; min-height:92px; display:flex; flex-direction:column; justify-content:space-between; text-align:left; transition:transform .06s,border-color .12s; }
   .mesa:active{ transform:scale(.97); }
   .mesa .mtop{ display:flex; align-items:baseline; justify-content:space-between; gap:6px; }
   .mesa .mname{ font-size:19px; }
   .mesa .mtot{ font-size:15px; font-weight:800; color:var(--blue); }
-  .mesa .msub{ font-size:12px; color:var(--muted); margin-top:6px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .mesa .msub{ font-size:12px; color:var(--muted); margin-top:6px; overflow:hidden; overflow-wrap:anywhere; word-break:break-word; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; }
+  .mesa .mname{ overflow-wrap:anywhere; min-width:0; }
   .mesa.has{ border-color:var(--blue); background:var(--blue-tint); }
   .mesa.has .mname{ color:var(--blue); }
   .mesa.add{ border-style:dashed; color:var(--blue); align-items:center; justify-content:center; min-height:92px; }
@@ -225,6 +226,37 @@
   .board-head{ display:flex; align-items:center; justify-content:space-between; padding:16px 16px 6px; }
   .board-head .board-title{ padding:0; }
   .edit-toggle{ font-size:13px; font-weight:700; color:var(--blue); background:var(--blue-tint); padding:7px 14px; border-radius:20px; }
+  .board-acts{ display:flex; gap:7px; }
+  .edit-toggle.ghost{ background:var(--white); border:1.5px solid var(--blue-line); }
+  /* croquis de sala */
+  .board-seg{ display:grid; grid-template-columns:1fr 1fr; gap:6px; background:var(--blue-tint); border-radius:12px; padding:4px; margin:2px 16px 12px; }
+  .board-seg button{ padding:10px; border-radius:9px; font-weight:800; font-size:14px; color:var(--blue); }
+  .board-seg button.on{ background:var(--blue); color:#fff; }
+  .plano{ position:relative; width:calc(100% - 32px); max-width:460px; margin:0 auto; aspect-ratio:3/4.4; background:linear-gradient(180deg,#eef3ff,#fbfcff); border:2px solid var(--blue-line); border-radius:16px; overflow:hidden; }
+  .plano.editing{ touch-action:none; border-color:var(--blue); border-style:dashed; }
+  .ref{ position:absolute; font-size:9px; font-weight:800; letter-spacing:.1em; color:var(--muted); text-transform:uppercase; pointer-events:none; z-index:2; white-space:nowrap; }
+  .ref-top{ top:5px; left:50%; transform:translateX(-50%); color:#2F9E44; }
+  .ref-bot{ bottom:0; left:50%; transform:translateX(-50%); color:#fff; background:var(--blue); padding:3px 14px; border-radius:10px 10px 0 0; letter-spacing:.12em; }
+  .ref-left{ left:2px; top:50%; transform:translateY(-50%); writing-mode:vertical-rl; color:#2F9E44; }
+  .ref-right{ right:2px; top:66%; transform:translateY(-50%); writing-mode:vertical-rl; color:var(--muted); }
+  .plano-links{ position:absolute; inset:0; width:100%; height:100%; pointer-events:none; z-index:0; }
+  .plano-links line{ stroke:#E8890C; stroke-width:3; stroke-linecap:round; }
+  .pmesa{ position:absolute; z-index:1; transform:translate(-50%,-50%); min-width:52px; min-height:52px; padding:7px 6px; border-radius:13px; background:#fff; border:2px solid var(--blue-line); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; box-shadow:0 3px 10px rgba(30,82,217,.12); }
+  .pmesa.has{ background:var(--blue); border-color:var(--blue); box-shadow:0 4px 14px rgba(30,82,217,.32); }
+  .pmesa .pm-n{ font-size:18px; color:var(--blue); line-height:1; }
+  .pmesa.has .pm-n{ color:#fff; }
+  .pmesa .pm-t{ font-size:11px; font-weight:800; color:var(--blue); }
+  .pmesa.has .pm-t{ color:#fff; }
+  .pmesa.grouped{ border-color:#E8890C; }
+  .pmesa.grouped .pm-t{ color:#E8890C; }
+  .pmesa.grouped.has{ background:var(--blue); border-color:#E8890C; }
+  .pmesa.grouped.has .pm-t{ color:#fff; }
+  .pmesa.editing{ border-style:dashed; cursor:grab; }
+  .pmesa.dragging{ z-index:10; box-shadow:0 10px 26px rgba(30,82,217,.4); opacity:.96; cursor:grabbing; }
+  .pmesa.sel{ outline:3px solid var(--blue); outline-offset:2px; z-index:9; }
+  .plano-hint{ font-size:12.5px; color:var(--muted); text-align:center; margin:11px 16px 24px; line-height:1.4; }
+  .plano-reset{ display:block; margin:0 auto 24px; padding:8px 16px; border-radius:10px; background:var(--blue-tint); color:var(--blue); font-weight:800; font-size:13px; border:1.5px solid var(--blue-line); }
+  .plano-reset:active{ background:var(--blue-2); transform:scale(.98); }
   .edit-toggle:active{ background:var(--blue-2); }
   .mesa.editing{ border-color:var(--danger); background:#fdeaea; }
   .mesa .mdel{ position:absolute; top:8px; right:10px; color:var(--danger); font-size:16px; font-weight:800; }
@@ -297,10 +329,27 @@
   #kds-toast{ position:fixed; bottom:18px; left:50%; transform:translateX(-50%) translateY(140%); background:var(--klis); color:#fff; font-weight:800; padding:12px 20px; border-radius:12px; font-size:14px; transition:transform .3s ease; z-index:200; box-shadow:0 6px 20px rgba(16,35,90,.25); text-align:center; max-width:90vw; }
   #kds-toast.brand{ background:var(--blue); }
   #kds-toast.on{ transform:translateX(-50%) translateY(0); }
-  @media (max-width:820px){
-    .kboard{ grid-template-columns:repeat(3,86vw); overflow-x:auto; scroll-snap-type:x mandatory; }
-    .kcol{ scroll-snap-align:start; }
+  .kds-tabs{ display:none; }
+  @media (max-width:900px){
+    .kds-tabs{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px; padding:8px 12px; background:#fff; border-bottom:1px solid var(--blue-line); flex:0 0 auto; }
+    .ktab{ display:flex; flex-direction:column; align-items:center; gap:2px; padding:9px 4px; border-radius:11px; background:var(--blue-tint); font-weight:800; font-size:10px; letter-spacing:.03em; color:var(--muted); line-height:1.1; }
+    .ktab .kt-n{ font-size:18px; font-weight:800; font-variant-numeric:tabular-nums; }
+    .ktab.p.active{ background:var(--kpend); color:#fff; }
+    .ktab.m.active{ background:var(--kmar); color:#fff; }
+    .ktab.l.active{ background:var(--klis); color:#fff; }
+    .ktab.active .kt-n{ color:#fff; }
+    .kboard{ grid-template-columns:1fr; overflow:hidden; }
+    .kcol{ display:none; border-right:none; }
+    .kcol.active{ display:flex; }
+    .kcol .col-h{ display:none; }
     .kds-stat{ display:none; }
+    .kds-bar{ gap:10px; padding:7px 12px; }
+    .kds-clock{ font-size:16px; }
+    .korder .o-timer{ font-size:22px; }
+    .korder .o-mesa{ font-size:17px; }
+    .it-head .nm{ font-size:16px; }
+    .uchip{ font-size:12px; min-height:46px; padding:8px 14px; }
+    .uchip b{ font-size:20px; }
   }
 
   /* reservas */
@@ -542,7 +591,7 @@
   .ln-nota{ font-size:12px; color:var(--blue); font-style:italic; margin-top:2px; }
   .lp-inv{ color:#2f9e44; font-weight:800; }
   /* herramientas de la cuenta (repetir/mover) */
-  .linetools{ display:flex; margin-bottom:9px; }
+  .linetools{ display:flex; gap:8px; margin-bottom:9px; }
   .lt-b{ padding:10px 16px; border-radius:11px; background:var(--blue-tint); color:var(--blue); font-weight:800; font-size:13px; border:1.5px solid var(--blue-line); }
   .lt-b:active{ background:var(--blue-2); transform:scale(.98); }
   .lt-b:disabled{ opacity:.4; }
@@ -636,7 +685,7 @@ const SUPABASE_KEY = "sb_publishable_hwze_N-sgY7eCb2Jr7kHQw_xxsOJHWY";
    Así funciona con cualquiera de los usuarios que tengas creados
    en Supabase, sin tener que acertar cuál es.
    ──────────────────────────────────────────────────────────────── */
-const PEDIR_CONTRASENA = false;   // PRUEBAS: entra sin pedir nada · PRODUCCIÓN: poner en true
+const PEDIR_CONTRASENA = true;   // PRODUCCIÓN: pide login · PRUEBAS: poner en false
 const USUARIO_FIJO = "";
 const DOMINIO_USUARIO = "@mota.com";
 const USUARIO_SUGERIDO = "innpactcompany@gmail.com";
@@ -666,7 +715,14 @@ const MENU = {
   }},
 };
 
-const DEFAULT_TABLES=['Barra','Mesa 1','Mesa 2','Mesa 3','Mesa 4','Mesa 5','Mesa 6','Mesa 7','Mesa 8'];
+const DEFAULT_TABLES=['Barra','Mesa 1','Mesa 2','Mesa 3','Mesa 4','Mesa 5','Mesa 6','Mesa 7','Mesa 8','Mesa 9','Mesa 10','Mesa 11','Mesa 12','Mesa 13','Mesa 14','Mesa 15','Mesa 16'];
+/* croquis real de la terraza (3 columnas). x,y en %; se usa como posición
+   inicial mientras la mesa no tenga una guardada a mano. */
+const LAYOUT_DEFAULT={
+  'Mesa 6':{x:22,y:12},'Mesa 5':{x:22,y:28},'Mesa 4':{x:22,y:44},'Mesa 3':{x:22,y:60},'Mesa 2':{x:22,y:76},'Mesa 1':{x:22,y:90},
+  'Mesa 7':{x:50,y:12},'Mesa 8':{x:50,y:28},'Mesa 9':{x:50,y:44},'Mesa 10':{x:50,y:60},'Mesa 11':{x:50,y:76},'Mesa 12':{x:50,y:90},
+  'Mesa 16':{x:78,y:44},'Mesa 15':{x:78,y:60},'Mesa 14':{x:78,y:76},'Mesa 13':{x:78,y:90},
+};
 
 /* ---------------------------------------------------------------
    NOMBRE CANÓNICO
@@ -777,7 +833,7 @@ const today=()=>new Date().toISOString().slice(0,10);
 let state = {
   tableList:[...DEFAULT_TABLES],
   tables:{},                 // name -> { sub:'', lines:[{name,price,qty}] }
-  view:'board', active:null, tab:'add', fb:'comida', openCat:null, addSearch:'',
+  view:'board', active:null, tab:'add', fb:'comida', openCat:null, addSearch:'', boardView:'list', planEdit:false, planUnir:false, unirSel:null, kTab:'pendiente',
   caja:{ count:0, total:0, date:today() },
   tickets:[],                // tickets cobrados de hoy: {mesa,total,items:[{name,qty,price}],at}
   reportTab:'resumen',       // resumen | tickets | productos
@@ -830,6 +886,8 @@ const LocalDB={
   persist(){ Store.save(KEY,{tableList:state.tableList,tables:state.tables,caja:state.caja,tickets:state.tickets,reservas:state.reservas,stock:state.stock,proveedores:state.proveedores}); },
   async addItem(){ this.persist(); }, async stepItem(){ this.persist(); }, async removeItem(){ this.persist(); },
   async clearMesa(){ this.persist(); }, async setSub(){ this.persist(); }, async addMesa(){ this.persist(); },
+  async setPos(){ this.persist(); },
+  async setUnion(){ this.persist(); },
   async deleteMesa(){ this.persist(); },
   async setKitchen(){ this.persist(); },
   async setPrice(){ this.persist(); }, async setNota(){ this.persist(); return {}; },
@@ -845,7 +903,10 @@ const LocalDB={
 const CloudDB={
   async load(){
     try{
-      let { data:mesas, error } = await sb.from('mesas').select('name,sub');
+      let mm = await sb.from('mesas').select('name,sub,x,y,unida_a');
+      if(mm.error) mm = await sb.from('mesas').select('name,sub,x,y');
+      if(mm.error) mm = await sb.from('mesas').select('name,sub');
+      let mesas = mm.data; const error = mm.error;
       if(error) throw error;
       if(!mesas || !mesas.length){ const seed=DEFAULT_TABLES.map(n=>({name:n,sub:''}));
         await sb.from('mesas').upsert(seed,{onConflict:'name',ignoreDuplicates:true}); mesas=seed; }
@@ -869,7 +930,7 @@ const CloudDB={
       }
       const names=mesas.map(m=>m.name).sort(sortNames);
       const tables={};
-      names.forEach(n=>{ const r=mesas.find(x=>x.name===n); tables[n]={sub:(r&&r.sub)||'',lines:[]}; });
+      names.forEach(n=>{ const r=mesas.find(x=>x.name===n); tables[n]={sub:(r&&r.sub)||'',lines:[], x:(r&&r.x!=null?Number(r.x):null), y:(r&&r.y!=null?Number(r.y):null), unida:(r&&r.unida_a)||null}; });
       (orders||[]).forEach(o=>{ if(!tables[o.mesa]) tables[o.mesa]={sub:'',lines:[]};
         tables[o.mesa].lines.push({name:o.item,price:Number(o.price),qty:o.qty,km:o.km||0,kl:o.kl||0,ks:o.ks||0,creada_en:o.creada_en||null,nota:o.nota||''}); });
       Object.values(tables).forEach(t=>t.lines.sort((a,b)=>a.name.localeCompare(b.name,'es')));
@@ -885,6 +946,8 @@ const CloudDB={
   async removeItem(mesa,item){ flag((await sb.from('orders').delete().eq('mesa',mesa).eq('item',item)).error); },
   async clearMesa(mesa){ flag((await sb.from('orders').delete().eq('mesa',mesa)).error); },
   async setSub(mesa,sub){ flag((await sb.from('mesas').upsert({name:mesa,sub},{onConflict:'name'})).error); },
+  async setPos(mesa,x,y){ flag((await sb.from('mesas').update({x,y}).eq('name',mesa)).error); },
+  async setUnion(mesa,principal){ flag((await sb.from('mesas').update({unida_a:principal}).eq('name',mesa)).error); },
   async addMesa(name){ flag((await sb.from('mesas').upsert({name,sub:''},{onConflict:'name',ignoreDuplicates:true})).error); },
   async deleteMesa(mesa){ await sb.from('orders').delete().eq('mesa',mesa); flag((await sb.from('mesas').delete().eq('name',mesa)).error); },
   async setKitchen(mesa,item,km,kl,ks){ flag((await sb.from('orders').update({km,kl,ks}).eq('mesa',mesa).eq('item',item)).error); },
@@ -954,7 +1017,11 @@ function scheduleSync(){ clearTimeout(syncTimer); syncTimer=setTimeout(async()=>
 /* ================================================================
    4) Acciones  (optimista: se ve al instante, luego sincroniza)
    ================================================================ */
-function openTable(n){ state.active=n; state.view='table'; state.fb='comida'; state.openCat=null; state.tab = tbl(n).lines.length?'cuenta':'add'; renderApp(); }
+/* mesas unidas: la 'principal' lleva la cuenta; las demás apuntan a ella */
+function mainOf(n){ return (state.tables[n] && state.tables[n].unida) || n; }
+function groupMembers(main){ return state.tableList.filter(x=>mainOf(x)===main); }
+function isUnida(n){ return mainOf(n)!==n; }
+function openTable(n){ const main=mainOf(n); state.active=main; state.view='table'; state.fb='comida'; state.openCat=null; state.tab = tbl(main).lines.length?'cuenta':'add'; renderApp(); }
 function back(){ state.view='board'; renderApp(); }
 function goHome(){ state.view='board'; renderApp(); }
 
@@ -1069,6 +1136,62 @@ async function moverMesa(orig,dest){
   showToast('Cuenta movida a '+dest,true);
 }
 
+/* --- unir / separar mesas (cuenta compartida) --- */
+function openUnionModal(){
+  const principal=mainOf(state.active);
+  const grupo=groupMembers(principal);                 // incluye la principal
+  const otras=state.tableList.filter(n=>mainOf(n)!==principal); // candidatas a unir
+  const ov=el('div','overlay');
+  const unidas = grupo.filter(n=>n!==principal);
+  ov.innerHTML='<div class="modal"><div class="m-msg">Unir mesas</div>'+
+    '<div class="m-sub">La cuenta será única. Da igual en qué mesa entres: sale la misma.</div>'+
+    (unidas.length?'<div class="uni-now">Unidas a '+principal+': <b>'+unidas.join(', ')+'</b></div>'+
+       '<button class="lactb" data-a="sep" style="margin-bottom:4px">Separar las mesas</button>':'')+
+    '<div class="uni-lbl">Unir con otra mesa</div>'+
+    '<div class="movegrid">'+(otras.length?otras.map(n=>'<button class="moveb" data-n="'+esc(n)+'">'+n+'</button>').join(''):'<div class="as-empty">No hay más mesas.</div>')+'</div>'+
+    '<div class="m-actions" style="grid-template-columns:1fr"><button class="m-btn m-cancel">Cerrar</button></div></div>';
+  document.body.appendChild(ov);
+  const close=()=>ov.remove();
+  ov.addEventListener('click',e=>{ if(e.target===ov) close(); });
+  ov.querySelector('.m-cancel').onclick=close;
+  const sep=ov.querySelector('[data-a=sep]'); if(sep) sep.onclick=()=>{ close(); separarMesas(); };
+  ov.querySelectorAll('.moveb').forEach(b=>b.onclick=()=>{ close(); unirMesa(b.dataset.n); });
+}
+async function unirMesas(a,x){
+  const principal=mainOf(a);
+  if(!x || x===principal) return;
+  const xMain=mainOf(x); if(xMain===principal) return;
+  const snap=tbl(xMain).lines.map(l=>({name:l.name,price:l.price,qty:l.qty}));
+  if(snap.length){ const tp=ensure(principal);
+    snap.forEach(s=>{ const ex=tp.lines.find(l=>l.name===s.name); if(ex) ex.qty+=s.qty;
+      else tp.lines.push({name:s.name,price:s.price,qty:s.qty,km:0,kl:0,ks:0,nota:'',creada_en:new Date().toISOString()}); });
+    if(state.tables[xMain]) state.tables[xMain].lines=[]; }
+  const grupoX=state.tableList.filter(n=>mainOf(n)===xMain);
+  grupoX.forEach(n=>{ ensure(n).unida=principal; });
+  renderApp();
+  if(snap.length){ await DB.restoreItems(principal,snap); await DB.clearMesa(xMain); }
+  for(const n of grupoX) await DB.setUnion(n,principal);
+  showToast('Mesas unidas · cuenta en '+principal,true);
+}
+async function unirMesa(x){ return unirMesas(state.active,x); }
+async function separarGrupo(mesa){
+  const main=mainOf(mesa);
+  const secun=state.tableList.filter(n=>n!==main && mainOf(n)===main);
+  if(!secun.length) return;
+  secun.forEach(n=>{ ensure(n).unida=null; });
+  renderApp();
+  for(const n of secun) await DB.setUnion(n,null);
+  showToast('Mesas separadas',true);
+}
+async function separarMesas(){ return separarGrupo(state.active); }
+/* en el croquis, modo Unir: 1ª mesa selecciona, 2ª une (o separa si ya estaban juntas) */
+function tapUnir(n){
+  if(!state.unirSel){ state.unirSel=n; renderApp(); return; }
+  if(state.unirSel===n){ state.unirSel=null; renderApp(); return; }
+  const a=state.unirSel; state.unirSel=null;
+  if(mainOf(a)===mainOf(n)) separarGrupo(a); else unirMesas(a,n);
+}
+
 /* --- acciones de una línea: nota + invitar --- */
 function openLineActions(l){
   const inv=(l.price===0);
@@ -1150,10 +1273,13 @@ function payTable(){
   ov.querySelector('.pm-ok').onclick=async()=>{
     const items=tbl(m).lines.map(l=>({name:l.name,qty:l.qty,price:l.price}));
     const sub=tbl(m).sub||''; const total=subt+tip;
+    const secun=state.tableList.filter(n=>n!==m && mainOf(n)===m);   // mesas unidas a esta
     logTicket(m,total,items,sub,tip);
     if(state.tables[m]){ state.tables[m].lines=[]; state.tables[m].sub=''; }
+    secun.forEach(n=>{ if(state.tables[n]) state.tables[n].unida=null; });   // al cobrar, se separan
     close(); back();
     DB.setSub(m,''); await DB.pay(m,total,items,sub,tip);
+    for(const n of secun) DB.setUnion(n,null);
   };
 }
 /* guarda el ticket cobrado en memoria (caja + lista) */
@@ -1811,6 +1937,11 @@ function renderCocina(main){
       '<button class="kds-mute" id="kMute">'+(muted?'Sonido ✕':'Sonido ✓')+'</button>'+
       '<div class="kds-clock" id="kClock">'+kClockTxt()+'</div></div>'+
     '<div class="prodline" id="prodline"></div>'+
+    '<div class="kds-tabs">'+
+      '<button class="ktab p" data-s="pendiente">POR HACER<span class="kt-n" id="ktPend">0</span></button>'+
+      '<button class="ktab m" data-s="en_marcha">EN MARCHA<span class="kt-n" id="ktMar">0</span></button>'+
+      '<button class="ktab l" data-s="lista">LISTAS<span class="kt-n" id="ktLis">0</span></button>'+
+    '</div>'+
     '<div class="kboard">'+
       '<div class="kcol" data-s="pendiente"><div class="col-h">POR HACER<span class="n" id="nPend">0</span></div><div class="col-body" id="colPend"></div></div>'+
       '<div class="kcol" data-s="en_marcha"><div class="col-h">EN MARCHA<span class="n" id="nMar">0</span></div><div class="col-body" id="colMar"></div></div>'+
@@ -1818,7 +1949,14 @@ function renderCocina(main){
     '</div>';
   main.appendChild(wrap);
   wrap.querySelector('#kMute').onclick=()=>{ muted=!muted; wrap.querySelector('#kMute').textContent=muted?'Sonido ✕':'Sonido ✓'; };
+  wrap.querySelectorAll('.ktab').forEach(b=>b.onclick=()=>kSetTab(b.dataset.s));
   kRenderBoard();
+  kSetTab(state.kTab);
+}
+function kSetTab(tab){
+  state.kTab=tab;
+  document.querySelectorAll('.kcol').forEach(c=>c.classList.toggle('active', c.dataset.s===tab));
+  document.querySelectorAll('.ktab').forEach(b=>b.classList.toggle('active', b.dataset.s===tab));
 }
 function kRenderBoard(){
   if(state.view!=='cocina') return;
@@ -1831,6 +1969,7 @@ function kRenderBoard(){
   setCol('colPend',pend,'Sin comandas pendientes'); setCol('colMar',mar,'Nada en marcha'); setCol('colLis',lis,'Nada listo aún');
   const set=(id,v)=>{ const e=document.getElementById(id); if(e) e.textContent=v; };
   set('nPend',pend.length); set('nMar',mar.length); set('nLis',lis.length);
+  set('ktPend',pend.length); set('ktMar',mar.length); set('ktLis',lis.length);
   let up=0,um=0,ul=0; comandas.forEach(c=>c.lines.forEach(it=>{const s=lineState(it); up+=s.p;um+=s.m;ul+=s.l;}));
   set('kPend',up); set('kMar',um); set('kLis',ul);
   const agg={}; comandas.forEach(c=>c.lines.forEach(it=>{const s=lineState(it); if(s.p>0) agg[it.name]=(agg[it.name]||0)+s.p;}));
@@ -2496,14 +2635,14 @@ function renderTableDesktop(main){
   const right=el('div','tv-right');
   right.appendChild((()=>{ const p=el('div','pane'); p.id='cuenta-pane'; return p; })());
   const foot=el('div','foot',
-    '<div class="linetools"><button class="lt-b" id="c-move">Mover mesa</button></div>'+
+    '<div class="linetools"><button class="lt-b" id="c-move">Mover mesa</button><button class="lt-b" id="c-union">Unir mesa</button></div>'+
     '<div class="total"><span class="tl">TOTAL</span><span class="tv num" id="c-total">'+eur(tTotal(state.active))+'</span></div>'+
     '<button class="btn btn-split" id="c-split">Cobrar solo una parte</button>'+
     '<div class="actions"><button class="btn btn-clear" id="c-clear">Vaciar</button><button class="btn btn-pay" id="c-pay">Cobrado</button></div>');
   foot.querySelector('#c-clear').onclick=clearTable;
   foot.querySelector('#c-pay').onclick=payTable;
   foot.querySelector('#c-split').onclick=openSplitModal;
-  foot.querySelector('#c-move').onclick=openMoveModal;
+  foot.querySelector('#c-move').onclick=openMoveModal; foot.querySelector('#c-union').onclick=openUnionModal;
   right.appendChild(foot);
   wrap.appendChild(left); wrap.appendChild(right);
   main.appendChild(wrap);
@@ -2522,9 +2661,28 @@ function renderHeaderBoard(hdr){
 }
 function renderBoard(main){
   const head=el('div','board-head','<span class="board-title">MESAS</span>');
-  const et=el('button','edit-toggle', state.editMesas?'Hecho':'Editar');
-  et.onclick=toggleEditMesas; head.appendChild(et);
+  const plan=(state.boardView==='plan');
+  if(plan){
+    const acts=el('div','board-acts');
+    if(state.planEdit||state.planUnir){
+      const done=el('button','edit-toggle','Hecho');
+      done.onclick=()=>{ state.planEdit=false; state.planUnir=false; state.unirSel=null; renderApp(); };
+      acts.appendChild(done);
+    } else {
+      const mv=el('button','edit-toggle ghost','Mover'); mv.onclick=()=>{ state.planEdit=true; state.planUnir=false; state.unirSel=null; renderApp(); };
+      const un=el('button','edit-toggle','Unir'); un.onclick=()=>{ state.planUnir=true; state.planEdit=false; state.unirSel=null; renderApp(); };
+      acts.appendChild(mv); acts.appendChild(un);
+    }
+    head.appendChild(acts);
+  } else {
+    const et=el('button','edit-toggle', state.editMesas?'Hecho':'Editar');
+    et.onclick=toggleEditMesas; head.appendChild(et);
+  }
   main.appendChild(head);
+  const seg=el('div','board-seg','<button data-v="list"'+(!plan?' class="on"':'')+'>Lista</button><button data-v="plan"'+(plan?' class="on"':'')+'>Croquis</button>');
+  seg.querySelectorAll('button').forEach(b=>b.onclick=()=>{ if(state.boardView===b.dataset.v) return; state.boardView=b.dataset.v; state.editMesas=false; state.planEdit=false; renderApp(); });
+  main.appendChild(seg);
+  if(plan){ renderPlano(main); return; }
   const g=el('div','grid');
   const kiosko=()=>{ const k=el('button','mesa kiosko',
       '<div class="mtop"><span class="mname display">Barra Kiosko</span></div><div class="ksub">Venta rápida: se pide, se paga</div>');
@@ -2543,6 +2701,76 @@ function renderBoard(main){
   if(!puesto) g.insertBefore(kiosko(), g.firstChild);
   if(!state.editMesas){ const add=el('button','mesa add','<span class="plus">+</span><span class="al">Añadir mesa</span>'); add.onclick=addTable; g.appendChild(add); }
   main.appendChild(g);
+}
+
+/* ---- Croquis de sala: mesas colocadas como en la realidad ---- */
+function shortName(n){ const m=/^Mesa\s+(.+)$/.exec(n); return m?m[1]:n; }
+function defaultPos(i,total){
+  if(total<=20){ const cols=2, rows=Math.ceil(total/cols); const c=i%cols, r=Math.floor(i/cols);
+    const x=(c===0?26:74), y=rows>1 ? 9 + r*(82/(rows-1)) : 50;
+    return { x, y:Math.round(y*10)/10 }; }
+  const cols=Math.max(1,Math.ceil(Math.sqrt(total))), rows=Math.max(1,Math.ceil(total/cols));
+  const c=i%cols, r=Math.floor(i/cols);
+  return { x:Math.round((c+0.5)/cols*1000)/10, y:Math.round((r+0.5)/rows*1000)/10 };
+}
+function renderPlano(main){
+  const plano=el('div','plano'+(state.planEdit?' editing':''));
+  plano.innerHTML=
+    '<div class="ref ref-top">CÉSPED</div>'+
+    '<div class="ref ref-left">CÉSPED</div>'+
+    '<div class="ref ref-right">PARED</div>'+
+    '<div class="ref ref-bot">PUERTA COCINA</div>';
+  const arr=state.tableList.filter(n=>n!=='Barra'), total=arr.length, posOf={};
+  arr.forEach((n,i)=>{ const t=tbl(n); posOf[n]=(t.x!=null&&t.y!=null)?{x:t.x,y:t.y}:(LAYOUT_DEFAULT[n]||defaultPos(i,total)); });
+  // conectores de mesas unidas (SVG detrás de las fichas)
+  const links=[];
+  arr.forEach(n=>{ const mm=mainOf(n); if(mm!==n && posOf[mm]&&posOf[n]) links.push([posOf[mm],posOf[n]]); });
+  if(links.length) plano.insertAdjacentHTML('beforeend',
+    '<svg class="plano-links" viewBox="0 0 100 100" preserveAspectRatio="none">'+
+    links.map(([a,b])=>'<line x1="'+a.x+'" y1="'+a.y+'" x2="'+b.x+'" y2="'+b.y+'" vector-effect="non-scaling-stroke"/>').join('')+'</svg>');
+  arr.forEach(n=>{
+    const pos=posOf[n], principal=mainOf(n), grouped=groupMembers(principal).length>1, isMain=(principal===n);
+    const tot=tTotal(n);
+    const label = isMain ? (tot>0?eur(tot):'') : 'unida';
+    const m=el('button','pmesa'+(tot>0?' has':'')+(grouped?' grouped':'')+(state.planEdit?' editing':'')+(state.unirSel===n?' sel':''),
+      '<span class="pm-n display">'+shortName(n)+'</span>'+(label?'<span class="pm-t num">'+label+'</span>':''));
+    m.style.left=pos.x+'%'; m.style.top=pos.y+'%'; m._x=pos.x; m._y=pos.y;
+    m.onclick=()=>{ if(state.planEdit) return; if(state.planUnir){ tapUnir(n); return; } openTable(n); };
+    makePlanoDrag(m,n,plano);
+    plano.appendChild(m);
+  });
+  main.appendChild(plano);
+  if(state.planEdit){
+    main.appendChild(el('div','plano-hint','Arrastra cada mesa hasta donde está en la sala. Se guarda solo.'));
+    const rb=el('button','plano-reset','Reordenar al croquis por defecto'); rb.onclick=resetLayout; main.appendChild(rb);
+  } else if(state.planUnir){
+    main.appendChild(el('div','plano-hint', state.unirSel
+      ? ('Mesa '+shortName(state.unirSel)+' seleccionada. Toca otra para unirlas.')
+      : 'Toca dos mesas para unirlas. Si ya estaban juntas, vuelve a tocarlas para separarlas.'));
+  } else {
+    main.appendChild(el('div','plano-hint','Toca una mesa para abrirla. Las mesas unidas comparten cuenta. Pulsa «Unir» para juntar dos, o «Mover» para recolocar.'));
+  }
+}
+async function resetLayout(){
+  const arr=state.tableList.filter(n=>n!=='Barra'&&LAYOUT_DEFAULT[n]);
+  arr.forEach(n=>{ const p=LAYOUT_DEFAULT[n]; ensure(n).x=p.x; ensure(n).y=p.y; });
+  renderApp();
+  for(const n of arr){ const p=LAYOUT_DEFAULT[n]; await DB.setPos(n,p.x,p.y); }
+  showToast('Croquis reordenado',true);
+}
+function makePlanoDrag(elm,mesa,plano){
+  let drag=false, moved=false;
+  elm.addEventListener('pointerdown',e=>{ if(!state.planEdit) return; drag=true; moved=false;
+    try{ elm.setPointerCapture(e.pointerId); }catch(_){} elm.classList.add('dragging'); e.preventDefault(); });
+  elm.addEventListener('pointermove',e=>{ if(!drag) return; moved=true;
+    const r=plano.getBoundingClientRect(); if(!r.width) return;
+    let x=((e.clientX-r.left)/r.width)*100, y=((e.clientY-r.top)/r.height)*100;
+    x=Math.max(6,Math.min(94,x)); y=Math.max(8,Math.min(92,y));
+    elm.style.left=x+'%'; elm.style.top=y+'%'; elm._x=Math.round(x*10)/10; elm._y=Math.round(y*10)/10; });
+  const end=()=>{ if(!drag) return; drag=false; elm.classList.remove('dragging');
+    if(moved && elm._x!=null){ const t=ensure(mesa); t.x=elm._x; t.y=elm._y; DB.setPos(mesa,elm._x,elm._y); } };
+  elm.addEventListener('pointerup',end);
+  elm.addEventListener('pointercancel',end);
 }
 
 function renderHeaderTable(hdr){
@@ -2573,7 +2801,7 @@ function renderTableBody(){
 function renderCuentaInto(body){
   const pane=el('div','pane'); pane.id='cuenta-pane'; body.appendChild(pane);
   const foot=el('div','foot',
-    '<div class="linetools"><button class="lt-b" id="c-move">Mover mesa</button></div>'+
+    '<div class="linetools"><button class="lt-b" id="c-move">Mover mesa</button><button class="lt-b" id="c-union">Unir mesa</button></div>'+
     '<div class="total"><span class="tl">TOTAL</span><span class="tv num" id="c-total">'+eur(tTotal(state.active))+'</span></div>'+
     '<button class="btn btn-split" id="c-split">Cobrar solo una parte</button>'+
     '<div class="actions"><button class="btn btn-clear" id="c-clear">Vaciar</button><button class="btn btn-pay" id="c-pay">Cobrado</button></div>');
@@ -2581,7 +2809,7 @@ function renderCuentaInto(body){
   foot.querySelector('#c-clear').onclick=clearTable;
   foot.querySelector('#c-pay').onclick=payTable;
   foot.querySelector('#c-split').onclick=openSplitModal;
-  foot.querySelector('#c-move').onclick=openMoveModal;
+  foot.querySelector('#c-move').onclick=openMoveModal; foot.querySelector('#c-union').onclick=openUnionModal;
   renderCuenta();
 }
 function renderCuenta(){
