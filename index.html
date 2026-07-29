@@ -165,14 +165,25 @@
   .acc.open .acc-body{ display:grid; }
   .acc-item{ position:relative; background:#fff; border:1.5px solid var(--blue-line); border-radius:11px; padding:10px 11px; text-align:left; display:flex; flex-direction:column; gap:5px; min-height:58px; justify-content:space-between; transition:transform .06s; }
   .acc-item:active{ transform:scale(.95); border-color:var(--blue); }
-  .acc-item .ain{ font-size:13.5px; font-weight:600; line-height:1.15; }
+  .acc-item .ain{ font-size:13.5px; font-weight:600; line-height:1.15; display:flex; align-items:center; gap:8px; }
+  /* foto de producto (si no existe, desaparece sin dejar hueco) */
+  .pimg{ width:32px; height:32px; flex:0 0 auto; object-fit:contain; border-radius:6px; background:#fff; }
+  .pimg.nope{ display:none; }
+  /* pantalla de fotos */
+  .fotolist{ display:flex; flex-direction:column; gap:8px; padding:0 16px 26px; }
+  .fotorow{ display:flex; align-items:center; gap:11px; background:var(--blue-tint); border-radius:12px; padding:9px 12px; }
+  .fotomini{ width:44px; height:44px; flex:0 0 auto; object-fit:contain; background:#fff; border-radius:8px; border:1px solid var(--blue-line); }
+  .fotomini.nope{ display:none; }
+  .fotomini.nope + .fotoph{ display:block; }
+  .fotoph{ display:none; width:44px; height:44px; flex:0 0 auto; border-radius:8px; border:1.5px dashed var(--blue-line); background:#fff; }
+  .fotoi{ flex:1; min-width:0; display:flex; flex-direction:column; gap:1px; }
+  .foton{ font-size:14px; font-weight:700; color:var(--ink); }
+  .fotoc{ font-size:11.5px; color:var(--muted); }
+  .fotob{ flex:0 0 auto; padding:9px 15px; border-radius:10px; background:var(--blue); color:#fff; font-weight:800; font-size:13px; }
+  .fotob:active{ transform:scale(.96); }
+  .bprod .pimg{ width:38px; height:38px; margin-bottom:1px; }
   .acc-item .aip{ font-size:14px; font-weight:800; color:var(--blue); }
   .acc-item .badge{ position:absolute; top:-8px; right:-8px; min-width:22px; height:22px; padding:0 6px; background:var(--blue); color:#fff; border-radius:11px; font-size:12px; font-weight:800; display:none; align-items:center; justify-content:center; box-shadow:0 2px 6px rgba(30,82,217,.35); }
-  /* iconos de producto */
-  .pic{ width:21px; height:21px; flex:0 0 auto; color:var(--blue); opacity:.85; }
-  .acc-item .pic{ margin-bottom:2px; }
-  .acc-item.in .pic{ opacity:1; }
-  .bprod .pic{ width:23px; height:23px; margin-bottom:1px; }
   .acc-item.in .badge{ display:flex; }
   /* buscador de productos en la mesa (discreto) */
   .addsearch{ display:flex; align-items:center; gap:8px; margin:2px 12px 10px; padding:9px 12px; background:var(--blue-tint); border:1.5px solid transparent; border-radius:11px; transition:border-color .12s, background .12s; }
@@ -247,15 +258,13 @@
   .board-seg{ display:grid; grid-template-columns:1fr 1fr; gap:6px; background:var(--blue-tint); border-radius:12px; padding:4px; margin:2px 16px 12px; }
   .board-seg button{ padding:10px; border-radius:9px; font-weight:800; font-size:14px; color:var(--blue); }
   .board-seg button.on{ background:var(--blue); color:#fff; }
-  .plano{ position:relative; width:calc(100% - 32px); max-width:460px; margin:0 auto; aspect-ratio:3/4.4; background:linear-gradient(180deg,#eef3ff,#fbfcff); border:2px solid var(--blue-line); border-radius:16px; overflow:hidden; }
+  .plano{ position:relative; width:calc(100% - 32px); max-width:460px; margin:0 auto; aspect-ratio:3/5; background:linear-gradient(180deg,#eef3ff,#fbfcff); border:2px solid var(--blue-line); border-radius:16px; overflow:hidden; }
   .plano.editing{ touch-action:none; border-color:var(--blue); border-style:dashed; }
   .ref{ position:absolute; font-size:9px; font-weight:800; letter-spacing:.1em; color:var(--muted); text-transform:uppercase; pointer-events:none; z-index:2; white-space:nowrap; }
   .ref-top{ top:5px; left:50%; transform:translateX(-50%); color:#2F9E44; }
   .ref-bot{ bottom:0; left:50%; transform:translateX(-50%); color:#fff; background:var(--blue); padding:3px 14px; border-radius:10px 10px 0 0; letter-spacing:.12em; }
   .ref-left{ left:2px; top:50%; transform:translateY(-50%); writing-mode:vertical-rl; color:#2F9E44; }
   .ref-right{ right:2px; top:66%; transform:translateY(-50%); writing-mode:vertical-rl; color:var(--muted); }
-  .plano-links{ position:absolute; inset:0; width:100%; height:100%; pointer-events:none; z-index:0; }
-  .plano-links line{ stroke:#E8890C; stroke-width:3; stroke-linecap:round; }
   .pmesa{ position:absolute; z-index:1; transform:translate(-50%,-50%); min-width:52px; min-height:52px; padding:7px 6px; border-radius:13px; background:#fff; border:2px solid var(--blue-line); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; box-shadow:0 3px 10px rgba(30,82,217,.12); transition:transform .09s ease, box-shadow .12s ease; }
   .pmesa:active{ transform:translate(-50%,-50%) scale(.93); }
   .pmesa.has{ background:var(--blue); border-color:var(--blue); box-shadow:0 4px 14px rgba(30,82,217,.32); }
@@ -270,6 +279,24 @@
   .pmesa.has .pm-n{ color:#fff; }
   .pmesa .pm-t{ font-size:11px; font-weight:800; color:var(--blue); }
   .pmesa.has .pm-t{ color:#fff; }
+  .pmesa.junta{ border-color:#E8890C; border-width:2.5px; border-radius:14px; z-index:3; cursor:pointer; }
+  .pmesa.junta.horiz{ min-width:112px; min-height:56px; }
+  .pmesa.junta.vert{ min-width:58px; min-height:112px; }
+  .pmesa.junta .pm-n{ font-size:18px; color:#C4770B; letter-spacing:.5px; }
+  .pmesa.junta .pm-t{ color:#C4770B; font-size:10.5px; }
+  .pmesa.junta.has{ background:var(--blue); border-color:#E8890C; }
+  .pmesa.junta.has .pm-n, .pmesa.junta.has .pm-t{ color:#fff; }
+  .pmesa.junta .chair{ background:#f0c99a; border-color:#e3ac6b; }
+  /* sillas extra: en la mesa larga van repartidas por el lado largo */
+  .ch-x1,.ch-x2{ display:none; }
+  .junta.horiz .ch-x1,.junta.horiz .ch-x2{ display:block; width:24px; height:7px; }
+  .junta.horiz .ch-x1{ top:-8px; left:72%; transform:translateX(-50%); border-radius:5px 5px 2px 2px; }
+  .junta.horiz .ch-x2{ bottom:-8px; left:72%; transform:translateX(-50%); border-radius:2px 2px 5px 5px; }
+  .junta.horiz .ch-t{ left:28%; } .junta.horiz .ch-b{ left:28%; }
+  .junta.vert .ch-x1,.junta.vert .ch-x2{ display:block; width:7px; height:24px; }
+  .junta.vert .ch-x1{ left:-8px; top:72%; transform:translateY(-50%); border-radius:5px 2px 2px 5px; }
+  .junta.vert .ch-x2{ right:-8px; top:72%; transform:translateY(-50%); border-radius:2px 5px 5px 2px; }
+  .junta.vert .ch-l{ top:28%; } .junta.vert .ch-r{ top:28%; }
   .pmesa.grouped{ border-color:#E8890C; }
   .pmesa.grouped .pm-t{ color:#E8890C; }
   .pmesa.grouped.has{ background:var(--blue); border-color:#E8890C; }
@@ -282,6 +309,21 @@
   .pmesa.kio{ background:var(--blue); border-color:var(--blue); box-shadow:0 4px 14px rgba(30,82,217,.3); }
   .pmesa.kio .pm-n{ color:#fff; }
   .pmesa.kio .pm-k{ font-size:9.5px; color:#d7e3ff; font-weight:700; margin-top:2px; }
+  @media (max-width:560px){
+    .plano{ width:calc(100% - 20px); aspect-ratio:3/5.2; }
+    .pmesa{ min-width:44px; min-height:44px; padding:5px 4px; border-radius:11px; }
+    .pmesa .pm-n{ font-size:15px; }
+    .pmesa .pm-t{ font-size:9.5px; }
+    .pmesa.wide{ min-width:92px; min-height:48px; }
+    .pmesa.wide .pm-n{ font-size:12px; }
+    .pmesa.junta.horiz{ min-width:94px; min-height:48px; }
+    .pmesa.junta.vert{ min-width:50px; min-height:94px; }
+    .pmesa.junta .pm-n{ font-size:16px; }
+    .chair{ transform-origin:center; }
+    .ch-t,.ch-b{ width:19px; height:6px; }
+    .ch-l,.ch-r{ width:6px; height:19px; }
+    .ref{ font-size:8px; }
+  }
   .plano-hint{ font-size:12.5px; color:var(--muted); text-align:center; margin:11px 16px 24px; line-height:1.4; }
   .plano-reset{ display:block; margin:0 auto 24px; padding:8px 16px; border-radius:10px; background:var(--blue-tint); color:var(--blue); font-weight:800; font-size:13px; border:1.5px solid var(--blue-line); }
   .plano-reset:active{ background:var(--blue-2); transform:scale(.98); }
@@ -471,6 +513,7 @@
   .bmodo .bm{ flex:1; padding:10px; border-radius:11px; background:var(--blue-tint); color:var(--blue); font-weight:800; font-size:14px; }
   .bmodo .bm.on{ background:var(--blue); color:#fff; }
   .bbody{ flex:1 1 auto; overflow-y:auto; min-height:0; padding:8px 12px 4px; }
+  .bsearch{ margin:0 12px 10px; }
   .bgrid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(96px,1fr)); gap:8px; }
   .bprod{ position:relative; background:#fff; border:2px solid var(--blue-line); border-radius:12px; padding:12px 8px; min-height:74px;
           display:flex; flex-direction:column; align-items:center; justify-content:center; gap:5px; text-align:center; transition:transform .05s; }
@@ -787,11 +830,15 @@ function desgloseIVA(items,propina){
    Arriba a la derecha está la barra: la mesa "Barra" (barra normal) y, encima,
    un acceso especial al Kiosko (venta rápida). */
 const LAYOUT_DEFAULT={
-  'Mesa 6':{x:22,y:12},'Mesa 5':{x:22,y:28},'Mesa 4':{x:22,y:44},'Mesa 3':{x:22,y:60},'Mesa 2':{x:22,y:76},'Mesa 1':{x:22,y:90},
-  'Mesa 7':{x:50,y:12},'Mesa 8':{x:50,y:28},'Mesa 9':{x:50,y:44},'Mesa 10':{x:50,y:60},'Mesa 11':{x:50,y:76},'Mesa 12':{x:50,y:90},
-  'Barra':{x:78,y:28},'Mesa 16':{x:78,y:44},'Mesa 15':{x:78,y:60},'Mesa 14':{x:78,y:76},'Mesa 13':{x:78,y:90},
+  /* rejilla de 3 columnas alineadas por filas, con separación uniforme */
+  'Mesa 6':{x:20,y:9},   'Mesa 5':{x:20,y:25.6}, 'Mesa 4':{x:20,y:42.2},
+  'Mesa 3':{x:20,y:58.8},'Mesa 2':{x:20,y:75.4}, 'Mesa 1':{x:20,y:92},
+  'Mesa 7':{x:50,y:9},   'Mesa 8':{x:50,y:25.6}, 'Mesa 9':{x:50,y:42.2},
+  'Mesa 10':{x:50,y:58.8},'Mesa 11':{x:50,y:75.4},'Mesa 12':{x:50,y:92},
+  'Barra':{x:80,y:25.6}, 'Mesa 16':{x:80,y:42.2},'Mesa 15':{x:80,y:58.8},
+  'Mesa 14':{x:80,y:75.4},'Mesa 13':{x:80,y:92},
 };
-const KIOSKO_POS={x:78,y:12};   // acceso al kiosko, encima de la barra
+const KIOSKO_POS={x:80,y:9};   // acceso al kiosko, encima de la barra
 
 /* ---------------------------------------------------------------
    NOMBRE CANÓNICO
@@ -878,29 +925,29 @@ const PUNTO_CARNE={
    Formato: 'Nombre base de la carta': [ [etiqueta, sufijo], ... ]
    sufijo '' -> se añade el base tal cual, sin paréntesis.
    ---------------------------------------------------------------- */
+
 /* ----------------------------------------------------------------
-   ICONOS POR CATEGORÍA (SVG dibujados dentro del archivo)
-   Sin imágenes externas: no rompen el archivo único, cargan al instante
-   aunque el wifi vaya mal y no dependen de fotos de terceros.
+   FOTOS DE PRODUCTO
+   Las fotos viven en Supabase Storage (bucket público "productos"),
+   no dentro de este archivo: así la app sigue siendo ligera y las
+   imágenes se guardan en la caché del móvil.
+   El nombre del archivo se deduce solo del producto:
+     "Coca-Cola"            -> coca-cola.png
+     "Hamburguesa de Vacuno"-> hamburguesa-de-vacuno.png
+     "Jumpers Ketchup"      -> jumpers-ketchup.png
+   Si la foto no existe, el botón se ve como siempre (sin hueco).
+   Para añadir una foto NO hay que tocar el código: basta subirla al
+   bucket con ese nombre.
    ---------------------------------------------------------------- */
-const _sv = d => '<svg class="pic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">'+d+'</svg>';
-const ICONS={
-  'Refrescos':   _sv('<path d="M6 4h12l-1.4 16.2a1.8 1.8 0 0 1-1.8 1.6H9.2a1.8 1.8 0 0 1-1.8-1.6L6 4z"/><path d="M6.5 9.5h11"/>'),
-  'Café':        _sv('<path d="M4 6h13v7.5A5.5 5.5 0 0 1 11.5 19h-2A5.5 5.5 0 0 1 4 13.5V6z"/><path d="M17 8.5h2a2.5 2.5 0 0 1 0 5h-2"/><path d="M7 3.2v1.4M11 3.2v1.4"/>'),
-  'Cervezas':    _sv('<path d="M5 8h10v11a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V8z"/><path d="M15 11h3a2 2 0 0 1 0 5h-3"/><path d="M5 11.5h10"/>'),
-  'Vinos':       _sv('<path d="M7 3h10l-.9 6.4A5.2 5.2 0 0 1 12 14a5.2 5.2 0 0 1-4.1-4.6L7 3z"/><path d="M12 14v6"/><path d="M8.5 20.5h7"/>'),
-  'Cubatas y Piedras': _sv('<path d="M3.5 4h17l-8.5 9-8.5-9z"/><path d="M12 13v7"/><path d="M8 20.5h8"/>'),
-  'Granizados':  _sv('<path d="M5.5 9h13l-1.3 11.4a1.7 1.7 0 0 1-1.7 1.5H8.5a1.7 1.7 0 0 1-1.7-1.5L5.5 9z"/><path d="M8.5 9a3.5 3.5 0 0 1 7 0"/><path d="M14.5 9V3.5"/>'),
-  'Helados y Polos': _sv('<path d="M8 9.5a4 4 0 0 1 8 0"/><path d="M7 9.5h10L12.6 21a.7.7 0 0 1-1.2 0L7 9.5z"/>'),
-  'Chuches':     _sv('<ellipse cx="12" cy="12" rx="4.2" ry="3.6"/><path d="M7.9 12L3.6 9v6l4.3-3z"/><path d="M16.1 12l4.3-3v6l-4.3-3z"/>'),
-  'Papas':       _sv('<path d="M6.5 7.5h11l-1 12.6a1.4 1.4 0 0 1-1.4 1.3H8.9a1.4 1.4 0 0 1-1.4-1.3l-1-12.6z"/><path d="M6.5 7.5L8 2.6h8l1.5 4.9"/>'),
-  'Burguers, Sándwich y Perrito': _sv('<path d="M3.5 10.5a8.5 5.5 0 0 1 17 0"/><path d="M3.5 13.6h17"/><path d="M3.5 16.5h17a3.5 3.5 0 0 1-3.5 3.5H7a3.5 3.5 0 0 1-3.5-3.5z"/>'),
-  'Bocadillos y Montados': _sv('<path d="M3.4 14.6L14.2 3.8a3.5 3.5 0 0 1 5 5L8.4 19.6a3.5 3.5 0 0 1-5-5z"/><path d="M8 10.2l1.6 1.6M11.4 6.8L13 8.4"/>'),
-  'Combinados':  _sv('<circle cx="12" cy="12" r="8.3"/><path d="M12 3.7v16.6"/><path d="M12 12H3.7"/>'),
-  'Tapas':       _sv('<circle cx="12" cy="12" r="8.3"/><circle cx="12" cy="12" r="3.6"/>'),
-  'Menú Desayunos': _sv('<path d="M4 15.5h16a8 8 0 0 1-16 0z"/><path d="M6.4 12.2a2 2 0 0 1 0-3 2 2 0 0 0 0-3"/><path d="M12 12.2a2 2 0 0 1 0-3 2 2 0 0 0 0-3"/><path d="M17.6 12.2a2 2 0 0 1 0-3 2 2 0 0 0 0-3"/><path d="M2.5 19.5h19"/>'),
-};
-function iconFor(cat){ return ICONS[cat]||_sv('<circle cx="12" cy="12" r="8.3"/>'); }
+const IMG_BASE = SUPABASE_URL + '/storage/v1/object/public/productos/';
+const slugProd = n => String(n).split(' (')[0].trim().toLowerCase()
+  .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+  .replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');
+function imgFor(name){
+  if(!CLOUD) return '';
+  return '<img class="pimg" loading="lazy" alt="" src="'+IMG_BASE+slugProd(canonical(name))+'.png'+
+         '" onerror="this.classList.add(\'nope\')">';
+}
 
 const VARIANTS={
   'Coca-Cola':      [['Normal',''],['Zero','Zero'],['Zero Zero','Zero Zero']],
@@ -933,7 +980,7 @@ let state = {
   prodPeriod:'dia',          // dia | semana | mes
   editMesas:false,
   reservas:[],               // {id,fecha,hora,nombre,personas,nota}
-  barra:{ cart:[], recibido:0, todo:false, openCat:null, fb:'bebidas' },
+  barra:{ cart:[], recibido:0, todo:false, openCat:null, fb:'bebidas', busca:'' },
   stock:{},                  // item -> {unidades, minimo, caja, proveedor}
   stockTab:'existencias',    // existencias | entrada | recuento | compra
   stockGroup:'cat',          // agrupar existencias: cat (categoría) | prov (proveedor)
@@ -1116,7 +1163,7 @@ function mainOf(n){ return (state.tables[n] && state.tables[n].unida) || n; }
 function groupMembers(main){ return state.tableList.filter(x=>mainOf(x)===main); }
 function isUnida(n){ return mainOf(n)!==n; }
 function openTable(n){ const main=mainOf(n); state.active=main; state.view='table'; state.fb='comida'; state.openCat=null; state.tab = tbl(main).lines.length?'cuenta':'add'; renderApp(); }
-function back(){ state.view='board'; renderApp(); }
+function back(){ state.view = (state.active && esBarra(state.active)) ? 'barras' : 'board'; renderApp(); }
 function goHome(){ state.view='board'; renderApp(); }
 
 async function addItem(name,price){
@@ -1380,6 +1427,12 @@ function payTable(){
     close(); back(); preguntarEnviar(ticketObj);
     DB.setSub(m,''); await DB.pay(m,total,items,sub,tip);
     for(const n of secun) DB.setUnion(n,null);
+    /* una barra extra desaparece al cobrarla: vuelve a quedar una sola */
+    if(esBarra(m) && m!=='Barra'){
+      state.tableList=state.tableList.filter(x=>x!==m); delete state.tables[m];
+      if(state.active===m) state.active=null;
+      renderApp(); await DB.deleteMesa(m);
+    }
   };
 }
 /* guarda el ticket cobrado en memoria (caja + lista) */
@@ -1447,6 +1500,39 @@ function askDeleteMesa(n){
 function openReport(){ state.view='report'; state.reportTab='resumen'; renderApp(); }
 function setReportTab(t){ state.reportTab=t; renderApp(); }
 
+/* ---- barras: una sola card en el tablero que agrupa Barra, Barra 2, Barra 3… ---- */
+const esBarra = n => /^Barra( \d+)?$/.test(n);
+function barrasList(){
+  return state.tableList.filter(esBarra).sort((a,b)=>{
+    const na=(a.match(/\d+/)||[1])[0]*1, nb=(b.match(/\d+/)||[1])[0]*1; return na-nb; });
+}
+const nombreBarra = n => (n==='Barra' ? 'Barra 1' : n);
+function openBarras(){
+  const b=barrasList();
+  if(b.length<=1){ openTable(b[0]||'Barra'); return; }   // una sola barra: entra directa
+  state.view='barras'; renderApp();
+}
+async function nuevaBarraDesdeCuenta(){
+  const nums=barrasList().map(n=>(n.match(/\d+/)||[1])[0]*1);
+  const name='Barra '+((nums.length?Math.max(...nums):1)+1);
+  state.tableList.push(name); ensure(name);
+  state.active=name; state.tab='add'; renderApp();
+  await DB.addMesa(name);
+  showToast(name+' abierta',true);
+}
+async function addBarra(){
+  const nums=barrasList().map(n=>(n.match(/\d+/)||[1])[0]*1);
+  const name='Barra '+((nums.length?Math.max(...nums):1)+1);
+  state.tableList.push(name); ensure(name); renderApp();
+  await DB.addMesa(name);
+}
+function askDeleteBarra(n){
+  if(n==='Barra'){ showToast('La barra principal no se puede borrar',false); return; }
+  if(tCount(n)>0){ showToast('Esa barra tiene una cuenta abierta',false); return; }
+  confirmDialog({ message:'¿Quitar <b>'+n+'</b>?', sub:'Solo se quita de la lista; no afecta a lo ya cobrado.', okLabel:'Quitar', danger:true,
+    onOk:async()=>{ state.tableList=state.tableList.filter(x=>x!==n); delete state.tables[n]; renderApp(); await DB.deleteMesa(n); } });
+}
+
 /* ---- menú del molino: Barra / Cocina / Reservas ---- */
 function openMenu(){ state.view='menu'; renderApp(); }
 function openCocina(){ state.view='cocina'; renderApp(); }
@@ -1499,6 +1585,8 @@ function renderBarra(main){
   const wrap=el('div','barra');
   wrap.innerHTML=
     '<div class="bmodo"><button class="bm on" data-m="rapida">Barra</button><button class="bm" data-m="todo">Toda la carta</button></div>'+
+    '<div class="addsearch bsearch"><svg class="as-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><line x1="20" y1="20" x2="16.65" y2="16.65"></line></svg>'+
+      '<input type="text" id="b-search" placeholder="Buscar producto…" autocomplete="off" spellcheck="false"><button class="as-clear" type="button">✕</button></div>'+
     '<div class="bbody" id="b-body"></div>'+
     '<div class="foot bfoot">'+
       '<div id="b-lista" class="blista"></div>'+
@@ -1519,7 +1607,33 @@ function renderBarra(main){
   const bi=wrap.querySelector('#b-cash .cashinp');
   if(bi) bi.oninput=()=>{ const n=parseFloat((bi.value||'').replace(',','.'));
     state.barra.recibido=(isFinite(n)&&n>0)?n:0; paintBarra(); };
+  const bs=wrap.querySelector('#b-search'), bsw=wrap.querySelector('.bsearch'), bsc=wrap.querySelector('.bsearch .as-clear');
+  bs.value=state.barra.busca||''; bsw.classList.toggle('has',!!bs.value);
+  bs.oninput=()=>{ state.barra.busca=bs.value; bsw.classList.toggle('has',!!bs.value); filtrarBarra(bs.value); };
+  bsc.onclick=()=>{ bs.value=''; state.barra.busca=''; bsw.classList.remove('has'); filtrarBarra(''); bs.focus(); };
   renderBarraBody(); paintBarra();
+  if(state.barra.busca) filtrarBarra(state.barra.busca);
+}
+/* filtra toda la carta en el kiosko */
+function filtrarBarra(q){
+  const body=document.getElementById('b-body'); if(!body) return;
+  const query=_normS(String(q||'').trim());
+  if(!query){ renderBarraBody(); paintBarra(); return; }
+  const hits=buildAddIndex().filter(o=>_normS(o.name).includes(query)||_normS(o.cat).includes(query))
+    .sort((a,b)=>((_normS(a.name).startsWith(query)?0:1)-(_normS(b.name).startsWith(query)?0:1))||a.name.localeCompare(b.name,'es'))
+    .slice(0,40);
+  body.innerHTML='';
+  if(!hits.length){ body.appendChild(el('div','as-empty','Sin resultados para «'+String(q).trim()+'»')); return; }
+  const g=el('div','bgrid');
+  hits.forEach(o=>{
+    const b=el('button','bprod',imgFor(o.name)+'<span class="bpn">'+o.name+(VARIANTS[o.name]?' ▾':'')+'</span>'+
+      '<span class="bpp num">'+eur(o.price)+'</span><span class="bbadge num">0</span>');
+    b.dataset.name=o.name;
+    bindProductButton(b,o.name,o.price,o.cat);
+    g.appendChild(b);
+  });
+  body.appendChild(g);
+  paintBarra();
 }
 /* ---- cuánto pagan y cuánto devolver (se usa en todos los cobros) ---- */
 const CASH_VALORES=[5,10,20,50];
@@ -1568,7 +1682,7 @@ function renderBarraBody(){
         const name=Array.isArray(it)?it[0]:it, corto=Array.isArray(it)?it[1]:it;
         const price=PRICE_OF[name]; if(price==null) return;
         const cat=ITEM_CAT[name];
-        const b=el('button','bprod',iconFor(cat)+'<span class="bpn">'+corto+(VARIANTS[name]?' ▾':'')+'</span><span class="bpp num">'+eur(price)+'</span><span class="bbadge num">0</span>');
+        const b=el('button','bprod',imgFor(name)+'<span class="bpn">'+corto+(VARIANTS[name]?' ▾':'')+'</span><span class="bpp num">'+eur(price)+'</span><span class="bbadge num">0</span>');
         b.dataset.name=name;
         bindProductButton(b,name,price,cat);
         g.appendChild(b);
@@ -1588,7 +1702,7 @@ function renderBarraBody(){
       head.onclick=()=>{ state.barra.openCat=(state.barra.openCat===cat?null:cat); renderBarraBody(); paintBarra(); };
       const bd=el('div','acc-body');
       groups[cat].forEach(([name,price])=>{
-        const it=el('button','acc-item',iconFor(cat)+'<span class="ain">'+name+(VARIANTS[name]?' ▾':'')+'</span><span class="aip num">'+eur(price)+'</span><span class="badge num">0</span>');
+        const it=el('button','acc-item','<span class="ain">'+imgFor(name)+name+(VARIANTS[name]?' ▾':'')+'</span><span class="aip num">'+eur(price)+'</span><span class="badge num">0</span>');
         it.dataset.name=name;
         bindProductButton(it,name,price,cat);
         bd.appendChild(it);
@@ -1952,11 +2066,68 @@ function refresh(){
   setDot();
 }
 
+/* ================================================================
+   ACTUALIZACIÓN AUTOMÁTICA (cada 3 s)
+   Complementa al tiempo real de Supabase por si la conexión se cae
+   sin avisar. Está pensada para NO molestar:
+     · si nada ha cambiado, no toca la pantalla
+     · no interrumpe si hay un diálogo abierto, estás escribiendo,
+       colocando el croquis o cobrando en la barra
+     · mantiene la posición del scroll al repintar
+   ================================================================ */
+let _pollTimer=null, _pollSig='', _pollBusy=false;
+function dataSig(){
+  let s='';
+  (state.tableList||[]).forEach(n=>{ const t=state.tables[n]; if(!t) return;
+    s+=n+':'+(t.sub||'')+':'+(t.unida||'')+':'+(t.x||'')+','+(t.y||'')+'[';
+    (t.lines||[]).forEach(l=>{ s+=l.name+l.qty+l.price+(l.km||0)+(l.kl||0)+(l.ks||0)+(l.nota||'')+'|'; });
+    s+=']'; });
+  s+='R'+(state.reservas||[]).length;
+  (state.reservas||[]).forEach(r=>{ s+=(r.id||'')+(r.vista===false?'!':''); });
+  return s;
+}
+function pollOcupado(){
+  if(document.hidden) return true;
+  if(document.querySelector('.overlay')) return true;              // hay un diálogo abierto
+  const a=document.activeElement;
+  if(a && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)) return true; // está escribiendo
+  if(document.querySelector('.pmesa.dragging')) return true;        // arrastrando en el croquis
+  if(state.planEdit) return true;                                   // colocando el croquis
+  if(state.view==='barra' && (state.barra.cart.length||state.barra.recibido)) return true;  // cobrando
+  if(state.view==='stock' && state.stockTab==='recuento') return true;
+  return false;
+}
+async function autoSync(){
+  if(_pollBusy || pollOcupado()) return;
+  _pollBusy=true;
+  try{
+    await DB.load();
+    const sig=dataSig();
+    if(sig!==_pollSig){
+      _pollSig=sig;
+      const main=document.getElementById('main');
+      const sc=main?main.scrollTop:0;              // no perder dónde estaba mirando
+      refresh();
+      if(main) main.scrollTop=sc;
+      notificarReservas();
+    }
+  }catch(e){ /* si falla, el aviso de conexión ya lo indica */ }
+  finally{ _pollBusy=false; }
+}
+function arrancarPoll(){
+  clearInterval(_pollTimer);
+  _pollSig=dataSig();
+  _pollTimer=setInterval(autoSync,3000);
+}
+document.addEventListener('visibilitychange',()=>{ if(!document.hidden) autoSync(); });
+
 function renderApp(){
   const hdr=document.getElementById('hdr'), main=document.getElementById('main');
   hdr.innerHTML=''; main.innerHTML=''; main.scrollTop=0;
   if(state.view==='report'){ renderHeaderReport(hdr); renderReport(main); }
   else if(state.view==='menu'){ renderHeaderSimple(hdr,'Bar Piscina',goHome); renderMenuScreen(main); }
+  else if(state.view==='barras'){ renderHeaderSimple(hdr,'Barra',goHome); renderBarras(main); }
+  else if(state.view==='fotos'){ renderHeaderSimple(hdr,'Fotos',openMenu); renderFotos(main); }
   else if(state.view==='cocina'){ renderHeaderSimple(hdr,'Cocina',openMenu); renderCocina(main); }
   else if(state.view==='barra'){ renderHeaderSimple(hdr,'Barra Kiosko',goHome); renderBarra(main); }
   else if(state.view==='reservas'){ renderHeaderSimple(hdr,'Reservas',openMenu); renderReservas(main); }
@@ -1976,6 +2147,33 @@ function renderHeaderSimple(hdr, title, onBack){
 }
 
 /* menú del molino */
+/* pantalla de barras: las cuentas de la barra, las que tú crees */
+function renderBarras(main){
+  const head=el('div','board-head','<span class="board-title">BARRA</span>');
+  main.appendChild(head);
+  const barras=barrasList();
+  const totB=barras.reduce((s,n)=>s+tTotal(n),0);
+  main.appendChild(el('div','stnota', totB>0
+    ? 'Hay '+eur(totB)+' sin cobrar en la barra. Cada grupo lleva su propia cuenta.'
+    : 'Cada grupo de la barra lleva su propia cuenta. Añade las que necesites.'));
+  const g=el('div','grid');
+  barras.forEach(n=>{
+    const tot=tTotal(n), sub=tbl(n).sub;
+    const b=el('button','mesa'+(tot>0?' has':''),
+      (n!=='Barra'?'<span class="mdel">✕</span>':'')+
+      '<div class="mtop"><span class="mname display">'+nombreBarra(n)+'</span>'+(tot>0?'<span class="mtot num">'+eur(tot)+'</span>':'')+'</div>'+
+      (sub?'<div class="msub">'+sub+'</div>':''));
+    b.onclick=()=>openTable(n);
+    const del=b.querySelector('.mdel');
+    if(del) del.onclick=e=>{ e.stopPropagation(); askDeleteBarra(n); };
+    g.appendChild(b);
+  });
+  const add=el('button','mesa add','<span class="plus">+</span><span class="al">Añadir barra</span>');
+  add.onclick=addBarra; g.appendChild(add);
+  main.appendChild(g);
+}
+
+/* pantalla de barras · fin */
 function renderMenuScreen(main){
   const wrap=el('div','hub');
   const mk=(title,desc,fn)=>{ const b=el('button','hubbtn','<span class="hubt display">'+title+'</span><span class="hubd">'+desc+'</span>'); b.onclick=fn; return b; };
@@ -1984,9 +2182,91 @@ function renderMenuScreen(main){
   wrap.appendChild(mk('Proveedores','Contactos, días de pedido y reparto', openProveedores));
   wrap.appendChild(mk('Historial','Lo facturado cada día, mes a mes', openHistorial));
   wrap.appendChild(mk('Cocina','Comandas de comida pendientes por mesa', openCocina));
+  if(CLOUD) wrap.appendChild(mk('Fotos','Haz la foto de cada producto con la cámara', openFotos));
   if(CLOUD){ const out=el('button','hublogout','Cerrar sesión'); out.onclick=logout; wrap.appendChild(out); }
   main.appendChild(wrap);
 }
+/* ================================================================
+   FOTOS DE PRODUCTO — cámara del móvil, recorte cuadrado y subida
+   Se guardan en el bucket público "productos" de Supabase, con el
+   nombre que la app espera. No hay que renombrar nada a mano.
+   ================================================================ */
+function openFotos(){ state.view='fotos'; state.fotoBusca=''; renderApp(); }
+function listaProductos(){
+  const out=[], vis={};
+  ['comida','bebidas'].forEach(sec=>{ const g=MENU[sec].groups;
+    Object.keys(g).forEach(cat=>g[cat].forEach(([name])=>{
+      const sl=slugProd(name); if(vis[sl]) return; vis[sl]=1; out.push({name,cat,slug:sl}); })); });
+  return out;
+}
+function renderFotos(main){
+  const head=el('div','board-head','<span class="board-title">FOTOS DE PRODUCTO</span>');
+  main.appendChild(head);
+  const buscador=el('div','addsearch',
+    '<svg class="as-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><line x1="20" y1="20" x2="16.65" y2="16.65"></line></svg>'+
+    '<input type="text" id="foto-search" placeholder="Buscar producto…" autocomplete="off">');
+  main.appendChild(buscador);
+  const inp=buscador.querySelector('#foto-search'); inp.value=state.fotoBusca||'';
+  inp.oninput=()=>{ state.fotoBusca=inp.value; pintarFotos(); };
+  main.appendChild(el('div','stnota','Coloca el producto sobre un folio blanco con buena luz y haz la foto. Se recorta en cuadrado y se sube sola.'));
+  const cont=el('div','fotolist'); cont.id='fotolist'; main.appendChild(cont);
+  pintarFotos();
+}
+function pintarFotos(){
+  const cont=document.getElementById('fotolist'); if(!cont) return;
+  const q=_normS(String(state.fotoBusca||'').trim());
+  const arr=listaProductos().filter(p=>!q || _normS(p.name).includes(q) || _normS(p.cat).includes(q));
+  cont.innerHTML='';
+  if(!arr.length){ cont.appendChild(el('div','as-empty','Sin resultados.')); return; }
+  arr.forEach(p=>{
+    const row=el('div','fotorow',
+      '<img class="fotomini" loading="lazy" alt="" src="'+IMG_BASE+p.slug+'.png?v='+(state.fotoV||0)+'" onerror="this.classList.add(\'nope\')">'+
+      '<span class="fotoph"></span>'+
+      '<div class="fotoi"><span class="foton">'+p.name+'</span><span class="fotoc">'+p.cat+'</span></div>'+
+      '<button class="fotob">Foto</button>');
+    row.querySelector('.fotob').onclick=()=>elegirFoto(p);
+    cont.appendChild(row);
+  });
+}
+function elegirFoto(p){
+  const inp=document.createElement('input');
+  inp.type='file'; inp.accept='image/*'; inp.capture='environment';
+  inp.onchange=()=>{ const f=inp.files&&inp.files[0]; if(f) procesarFoto(f,p); };
+  inp.click();
+}
+/* recorta al cuadrado central, reduce a 320px y pone fondo blanco */
+function procesarFoto(file,p){
+  const fr=new FileReader();
+  fr.onload=()=>{ const im=new Image();
+    im.onload=()=>{
+      const S=320, c=document.createElement('canvas'); c.width=S; c.height=S;
+      const x=c.getContext('2d');
+      x.fillStyle='#ffffff'; x.fillRect(0,0,S,S);
+      const lado=Math.min(im.width,im.height);
+      const sx=(im.width-lado)/2, sy=(im.height-lado)/2;
+      x.drawImage(im, sx,sy,lado,lado, 0,0,S,S);
+      c.toBlob(b=>{ if(b) subirFoto(b,p); }, 'image/png');
+    };
+    im.onerror=()=>showToast('No se pudo leer la foto',false);
+    im.src=fr.result; };
+  fr.readAsDataURL(file);
+}
+async function subirFoto(blob,p){
+  showToast('Subiendo foto…',true);
+  try{
+    if(!sb || !sb.storage) throw new Error('sin conexión');
+    const { error } = await sb.storage.from('productos')
+      .upload(p.slug+'.png', blob, { upsert:true, contentType:'image/png' });
+    if(error) throw error;
+    state.fotoV=Date.now();          // fuerza recargar la miniatura
+    pintarFotos();
+    showToast('Foto de '+p.name+' guardada',true);
+  }catch(e){
+    showToast('No se pudo subir. Revisa el bucket "productos".',false);
+    console.error(e);
+  }
+}
+
 function logout(){
   confirmDialog({ message:'¿Cerrar sesión?', sub:'Habrá que volver a escribir la contraseña para entrar.', okLabel:'Cerrar sesión', danger:true,
     onOk:async()=>{ try{ localStorage.removeItem(AUTH_KEY); await sb.auth.signOut(); }catch(e){} location.reload(); } });
@@ -2872,14 +3152,16 @@ function renderTableDesktop(main){
   const right=el('div','tv-right');
   right.appendChild((()=>{ const p=el('div','pane'); p.id='cuenta-pane'; return p; })());
   const foot=el('div','foot',
-    '<div class="linetools"><button class="lt-b" id="c-move">Mover mesa</button><button class="lt-b" id="c-union">Unir mesa</button></div>'+
+    ''+(esBarra(state.active)?'<div class="linetools"><button class="lt-b" id="c-newbar">+ Añadir barra</button></div>':'<div class="linetools"><button class="lt-b" id="c-move">Mover mesa</button><button class="lt-b" id="c-union">Unir mesa</button></div>')+''+
     '<div class="total"><span class="tl">TOTAL</span><span class="tv num" id="c-total">'+eur(tTotal(state.active))+'</span></div>'+
     '<button class="btn btn-split" id="c-split">Cobrar solo una parte</button>'+
     '<div class="actions"><button class="btn btn-clear" id="c-clear">Vaciar</button><button class="btn btn-pay" id="c-pay">Cobrado</button></div>');
   foot.querySelector('#c-clear').onclick=clearTable;
   foot.querySelector('#c-pay').onclick=payTable;
   foot.querySelector('#c-split').onclick=openSplitModal;
-  foot.querySelector('#c-move').onclick=openMoveModal; foot.querySelector('#c-union').onclick=openUnionModal;
+  const _mv=foot.querySelector('#c-move'); if(_mv) _mv.onclick=openMoveModal;
+  const _un=foot.querySelector('#c-union'); if(_un) _un.onclick=openUnionModal;
+  const _nb=foot.querySelector('#c-newbar'); if(_nb) _nb.onclick=nuevaBarraDesdeCuenta;
   right.appendChild(foot);
   wrap.appendChild(left); wrap.appendChild(right);
   main.appendChild(wrap);
@@ -2924,8 +3206,17 @@ function renderBoard(main){
   const kiosko=()=>{ const k=el('button','mesa kiosko',
       '<div class="mtop"><span class="mname display">Barra Kiosko</span></div><div class="ksub">Venta rápida: se pide, se paga</div>');
     k.onclick=openBarra; return k; };
-  let puesto=false;
-  state.tableList.forEach(n=>{
+  /* una sola card para todas las barras */
+  const barras=barrasList();
+  const totB=barras.reduce((s,n)=>s+tTotal(n),0);
+  const abiertas=barras.filter(n=>tCount(n)>0).length;
+  const cardB=el('button','mesa'+(totB>0?' has':''),
+    '<div class="mtop"><span class="mname display">Barra</span>'+(totB>0?'<span class="mtot num">'+eur(totB)+'</span>':'')+'</div>'+
+    '<div class="msub">'+(abiertas?abiertas+' de '+barras.length+' con cuenta abierta':barras.length+' barra'+(barras.length===1?'':'s'))+'</div>');
+  cardB.onclick=openBarras;
+  g.appendChild(cardB);
+  g.appendChild(kiosko());
+  state.tableList.filter(n=>!esBarra(n)).forEach(n=>{
     const tot=tTotal(n), sub=tbl(n).sub;
     const b=el('button','mesa'+(tot>0?' has':'')+(state.editMesas?' editing':''),
       (state.editMesas?'<span class="mdel">✕</span>':'')+
@@ -2933,9 +3224,7 @@ function renderBoard(main){
       (sub?'<div class="msub">'+sub+'</div>':''));
     b.onclick = state.editMesas ? (()=>askDeleteMesa(n)) : (()=>openTable(n));
     g.appendChild(b);
-    if(n==='Barra' && !puesto){ g.appendChild(kiosko()); puesto=true; }
   });
-  if(!puesto) g.insertBefore(kiosko(), g.firstChild);
   if(!state.editMesas){ const add=el('button','mesa add','<span class="plus">+</span><span class="al">Añadir mesa</span>'); add.onclick=addTable; g.appendChild(add); }
   main.appendChild(g);
 }
@@ -2957,26 +3246,48 @@ function renderPlano(main){
     '<div class="ref ref-left">CÉSPED</div>'+
     '<div class="ref ref-right">PARED</div>'+
     '<div class="ref ref-bot">PUERTA COCINA</div>';
-  const APODO={'Barra':'Barra normal'}, WIDE={'Barra':true};
-  const arr=state.tableList, total=arr.length, posOf={};
+  const APODO={'Barra':'Barra'}, WIDE={'Barra':true};
+  const arr=state.tableList.filter(n=>!esBarra(n)||n==='Barra'), total=arr.length, posOf={};
   arr.forEach((n,i)=>{ const t=tbl(n); posOf[n]=(t.x!=null&&t.y!=null)?{x:t.x,y:t.y}:(LAYOUT_DEFAULT[n]||defaultPos(i,total)); });
-  // conectores de mesas unidas (SVG detrás de las fichas)
-  const links=[];
-  arr.forEach(n=>{ const mm=mainOf(n); if(mm!==n && posOf[mm]&&posOf[n]) links.push([posOf[mm],posOf[n]]); });
-  if(links.length) plano.insertAdjacentHTML('beforeend',
-    '<svg class="plano-links" viewBox="0 0 100 100" preserveAspectRatio="none">'+
-    links.map(([a,b])=>'<line x1="'+a.x+'" y1="'+a.y+'" x2="'+b.x+'" y2="'+b.y+'" vector-effect="non-scaling-stroke"/>').join('')+'</svg>');
-  arr.forEach(n=>{
-    const pos=posOf[n], principal=mainOf(n), grouped=groupMembers(principal).length>1, isMain=(principal===n);
-    const tot=tTotal(n), wide=WIDE[n], disp=APODO[n]||shortName(n);
-    const label = isMain ? (tot>0?eur(tot):'') : 'unida';
-    const sillas = '<i class="chair ch-t"></i><i class="chair ch-b"></i><i class="chair ch-l"></i><i class="chair ch-r"></i>';
-    const m=el('button','pmesa'+(wide?' wide':'')+(tot>0?' has':'')+(grouped?' grouped':'')+(state.planEdit?' editing':'')+(state.unirSel===n?' sel':''),
-      sillas+'<span class="pm-n display">'+disp+'</span>'+(label?'<span class="pm-t num">'+label+'</span>':''));
-    m.style.left=pos.x+'%'; m.style.top=pos.y+'%'; m._x=pos.x; m._y=pos.y;
-    m.onclick=()=>{ if(state.planEdit) return; if(state.planUnir){ tapUnir(n); return; } openTable(n); };
-    makePlanoDrag(m,n,plano);
-    plano.appendChild(m);
+  const SILLAS='<i class="chair ch-t"></i><i class="chair ch-b"></i><i class="chair ch-l"></i><i class="chair ch-r"></i>';
+  /* agrupar por mesa principal: las unidas se dibujan como UNA sola mesa grande.
+     En modo Mover se ven sueltas, para poder colocar cada una en su sitio. */
+  const grupos={};
+  arr.forEach(n=>{ const mm=mainOf(n); (grupos[mm]=grupos[mm]||[]).push(n); });
+  const unir = !state.planEdit;
+  Object.keys(grupos).forEach(principal=>{
+    const miembros=grupos[principal];
+    if(unir && miembros.length>1){
+      /* ---- mesa unida: una sola ficha, larga en el sentido en que se juntan ---- */
+      const xs=miembros.map(n=>posOf[n].x), ys=miembros.map(n=>posOf[n].y);
+      const px=xs.reduce((a,b)=>a+b,0)/xs.length, py=ys.reduce((a,b)=>a+b,0)/ys.length;
+      const dx=Math.max(...xs)-Math.min(...xs), dy=Math.max(...ys)-Math.min(...ys);
+      const vert = dy>=dx;                       // apiladas en columna -> mesa larga vertical
+      const nums=miembros.slice().sort((a,b)=>(shortName(a)*1||0)-(shortName(b)*1||0)).map(shortName).join('+');
+      const tot=miembros.reduce((a,n)=>a+tTotal(n),0);
+      const n2=Math.min(miembros.length,3), largo=54*n2+9*(n2-1);
+      const m=el('div','pmesa junta '+(vert?'vert':'horiz')+(tot>0?' has':''),
+        SILLAS+'<i class="chair ch-x1"></i><i class="chair ch-x2"></i>'+
+        '<span class="pm-n display">'+nums+'</span>'+
+        '<span class="pm-t num">'+(tot>0?eur(tot):miembros.length+' mesas')+'</span>');
+      if(vert) m.style.minHeight=largo+'px'; else m.style.minWidth=largo+'px';
+      m.style.left=px+'%'; m.style.top=py+'%';
+      m.onclick=()=>{ if(state.planUnir){ tapUnir(principal); return; } openTable(principal); };
+      plano.appendChild(m);
+      return;
+    }
+    miembros.forEach(n=>{
+      const pos=posOf[n];
+      const tot=(n==='Barra')?barrasList().reduce((s2,x)=>s2+tTotal(x),0):tTotal(n);
+      const wide=WIDE[n], disp=APODO[n]||shortName(n);
+      const enGrupo=miembros.length>1;
+      const m=el('button','pmesa'+(wide?' wide':'')+(tot>0?' has':'')+(enGrupo?' grouped':'')+(state.planEdit?' editing':'')+(state.unirSel===n?' sel':''),
+        SILLAS+'<span class="pm-n display">'+disp+'</span>'+(tot>0?'<span class="pm-t num">'+eur(tot)+'</span>':''));
+      m.style.left=pos.x+'%'; m.style.top=pos.y+'%'; m._x=pos.x; m._y=pos.y;
+      m.onclick=()=>{ if(state.planEdit) return; if(state.planUnir){ tapUnir(n); return; } if(n==='Barra'){ openBarras(); return; } openTable(n); };
+      makePlanoDrag(m,n,plano);
+      plano.appendChild(m);
+    });
   });
   // acceso especial al Kiosko (venta rápida), encima de la barra
   const k=el('button','pmesa wide kio',
@@ -3047,7 +3358,7 @@ function renderTableBody(){
 function renderCuentaInto(body){
   const pane=el('div','pane'); pane.id='cuenta-pane'; body.appendChild(pane);
   const foot=el('div','foot',
-    '<div class="linetools"><button class="lt-b" id="c-move">Mover mesa</button><button class="lt-b" id="c-union">Unir mesa</button></div>'+
+    ''+(esBarra(state.active)?'<div class="linetools"><button class="lt-b" id="c-newbar">+ Añadir barra</button></div>':'<div class="linetools"><button class="lt-b" id="c-move">Mover mesa</button><button class="lt-b" id="c-union">Unir mesa</button></div>')+''+
     '<div class="total"><span class="tl">TOTAL</span><span class="tv num" id="c-total">'+eur(tTotal(state.active))+'</span></div>'+
     '<button class="btn btn-split" id="c-split">Cobrar solo una parte</button>'+
     '<div class="actions"><button class="btn btn-clear" id="c-clear">Vaciar</button><button class="btn btn-pay" id="c-pay">Cobrado</button></div>');
@@ -3055,7 +3366,9 @@ function renderCuentaInto(body){
   foot.querySelector('#c-clear').onclick=clearTable;
   foot.querySelector('#c-pay').onclick=payTable;
   foot.querySelector('#c-split').onclick=openSplitModal;
-  foot.querySelector('#c-move').onclick=openMoveModal; foot.querySelector('#c-union').onclick=openUnionModal;
+  const _mv=foot.querySelector('#c-move'); if(_mv) _mv.onclick=openMoveModal;
+  const _un=foot.querySelector('#c-union'); if(_un) _un.onclick=openUnionModal;
+  const _nb=foot.querySelector('#c-newbar'); if(_nb) _nb.onclick=nuevaBarraDesdeCuenta;
   renderCuenta();
 }
 function renderCuenta(){
@@ -3136,7 +3449,7 @@ function filtrarAdd(q){
   hits.forEach(o=>{
     const c=qtyOf(o.name);
     const it=el('button','acc-item'+(c>0?' in':''),
-      iconFor(o.cat)+'<span class="ain">'+o.name+(VARIANTS[o.name]?' ▾':'')+'<span class="as-cat">'+o.cat+'</span></span>'+
+      '<span class="ain">'+imgFor(o.name)+o.name+(VARIANTS[o.name]?' ▾':'')+'<span class="as-cat">'+o.cat+'</span></span>'+
       '<span class="aip num">'+eur(o.price)+'</span><span class="badge num">'+c+'</span>');
     it.dataset.name=o.name;
     bindProductButton(it,o.name,o.price,o.cat);
@@ -3156,7 +3469,7 @@ function renderAddPane(){
     groups[cat].forEach(([name,price])=>{
       const q=qtyOf(name);
       const it=el('button','acc-item'+(q>0?' in':''),
-        iconFor(cat)+'<span class="ain">'+name+(VARIANTS[name]?' ▾':'')+'</span><span class="aip num">'+eur(price)+'</span><span class="badge num">'+q+'</span>');
+        '<span class="ain">'+imgFor(name)+name+(VARIANTS[name]?' ▾':'')+'</span><span class="aip num">'+eur(price)+'</span><span class="badge num">'+q+'</span>');
       it.dataset.name=name;
       bindProductButton(it,name,price,cat);
       bodyEl.appendChild(it);
@@ -3262,6 +3575,7 @@ function showLogin(){
   await DB.load();
   renderApp();
   DB.subscribe(scheduleSync);
+  arrancarPoll();                                  // refresco automático cada 3 s
   window.addEventListener('offline', ()=>{ online=false; setDot(); });
   window.addEventListener('online',  ()=>{ setDot(); });   // el canal Realtime confirmará SUBSCRIBED y volverá a verde
   setDot();
