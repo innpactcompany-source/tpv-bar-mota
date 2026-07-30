@@ -165,7 +165,7 @@
   .acc.open .acc-body{ display:grid; }
   .acc-item{ position:relative; background:#fff; border:1.5px solid var(--blue-line); border-radius:11px; padding:10px 11px; text-align:left; display:flex; flex-direction:column; gap:5px; min-height:58px; justify-content:space-between; transition:transform .06s; }
   .acc-item:active{ transform:scale(.95); border-color:var(--blue); }
-  .acc-item .ain{ font-size:13.5px; font-weight:600; line-height:1.15; display:flex; align-items:center; gap:8px; }
+  .acc-item .ain{ font-size:13.5px; font-weight:600; line-height:1.15; display:flex; align-items:center; gap:8px; flex-wrap:wrap; min-width:0; overflow-wrap:anywhere; }
   /* foto de producto (si no existe, desaparece sin dejar hueco) */
   /* foto de producto: a la derecha del recuadro y sin fondo */
   .pimg{ position:absolute; right:8px; top:50%; transform:translateY(-50%);
@@ -187,7 +187,7 @@
   .bprod .pimg{ right:6px; width:54px; height:54px; }
   .bprod:has(.pimg:not(.nope)){ padding-right:60px; min-height:82px; align-items:flex-start; text-align:left; }
   .acc-item .aip{ font-size:14px; font-weight:800; color:var(--blue); }
-  .amed{ display:block; font-size:11.5px; font-weight:700; color:var(--muted); margin-top:3px; letter-spacing:.2px; }
+  .amed{ font-size:12px; font-weight:600; color:var(--muted); white-space:nowrap; margin-left:-3px; }
   .acc-item .badge{ position:absolute; top:-8px; right:-8px; min-width:22px; height:22px; padding:0 6px; background:var(--blue); color:#fff; border-radius:11px; font-size:12px; font-weight:800; display:none; align-items:center; justify-content:center; box-shadow:0 2px 6px rgba(30,82,217,.35); }
   .acc-item.in .badge{ display:flex; }
   /* buscador de productos en la mesa (discreto) */
@@ -785,7 +785,7 @@ const MENU = {
   }},
   bebidas: { label:'Bebidas', groups:{
     'Refrescos': [ ['Coca-Cola',2.5],['Fanta',2.5],['Fuze Tea',2.5],['Aquarius',2.5],['Zumo',2],['Tónica',2],['Agua',1.5] ],
-    'Cervezas': [ ['Caña',2.5],['Jarra',3],['Megajarra',7],['Tercio',2.5],['Tinto de Verano',2.5],['Happy Hour Jarra + Pincho',2.5] ],
+    'Cervezas': [ ['Caña',2.5],['Jarra',3],['Megajarra',7],['Tercio',2.5],['Tinto de Verano',2.5],['Happy Hour',2.5] ],
     'Vinos': [ ['Vino Semidulce',2.5],['Vino Tinto',2.2],['Vino Blanco',2.2],['Vermut',2] ],
     'Cubatas y Piedras': [ ['Cubata',5.5],['Piedra',3],['Chupito',1.5] ],
     'Granizados': [ ['Granizado de Café',2.8],['Granizado de Café + Baileys',3.8],['Granizado de Limón',2.5],['Granizado de Fresa',2.5],['Granizado de España',3] ],
@@ -880,7 +880,7 @@ function isKitchen(name){ return KITCHEN_CATS.includes(ITEM_CAT[canonical(name)]
 /* Barra: secciones en el orden en que más se piden. Nombre corto entre
    corchetes para leerlo de un vistazo (la sección ya dice de qué es). */
 const BARRA_SECCIONES=[
-  {t:'Cervezas', items:[['Caña','Caña'],['Jarra','Jarra'],['Tercio','Tercio'],['Tinto de Verano','Tinto verano'],['Megajarra','MEGAJARRA'],['Happy Hour Jarra + Pincho','Happy Hour']]},
+  {t:'Cervezas', items:[['Caña','Caña'],['Jarra','Jarra'],['Tercio','Tercio'],['Tinto de Verano','Tinto verano'],['Megajarra','MEGAJARRA'],['Happy Hour','Happy Hour']]},
   {t:'Refrescos', items:[['Coca-Cola','Coca-Cola'],['Fanta','Fanta'],['Aquarius','Aquarius'],['Fuze Tea','Fuze Tea'],['Agua','Agua'],['Zumo','Zumo'],['Tónica','Tónica']]},
   {t:'Granizados', items:[['Granizado de Limón','Limón'],['Granizado de Fresa','Fresa'],['Granizado de Café','Café'],['Granizado de España','España'],['Granizado de Café + Baileys','Café + Baileys']]},
   {t:'Helados', items:[['Magnum','Magnum'],['Calippo','Calippo'],['Frigopié','Frigopié'],['Frigo Chuches','Frigo Chuches'],['Haribo','Haribo'],['Twister','Twister'],['Flash','Flash'],['Frigurón','Frigurón'],['Cornetto Normal','Cornetto'],['Cornetto Max','Cornetto Max'],['Cornetto XXL','Cornetto XXL'],['Chock and Ball','Chock and Ball'],['Sándwich Original','Sánd. Original'],['Sándwich Dino','Sánd. Dino'],['Sándwich Filipinos','Sánd. Filipinos'],['Donut Filipinos','Donut Filip.']]},
