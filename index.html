@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
 <title>Bar Piscina · Mota del Cuervo — Comandas</title>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#1E52D9">
@@ -36,7 +36,10 @@
   .num{ font-variant-numeric:tabular-nums; }
 
   .app{ display:flex; flex-direction:column; height:100dvh; }
-  #hdr{ flex:0 0 auto; }
+  #hdr{ flex:0 0 auto; padding-top:env(safe-area-inset-top); background:var(--blue); }
+  /* nada de rebote ni de "tirar para recargar": en pleno servicio se recarga sin querer */
+  html,body{ overscroll-behavior:none; }
+  button{ -webkit-user-select:none; user-select:none; -webkit-touch-callout:none; }
   #main{ flex:1 1 auto; overflow-y:auto; min-height:0; }
 
   /* ================= CABECERA ================= */
@@ -265,6 +268,42 @@
   .board-seg button.on{ background:var(--blue); color:#fff; }
   .plano{ position:relative; width:calc(100% - 32px); max-width:460px; margin:0 auto; aspect-ratio:3/5; background:linear-gradient(180deg,#eef3ff,#fbfcff); border:2px solid var(--blue-line); border-radius:16px; overflow:hidden; }
   .plano.editing{ touch-action:none; border-color:var(--blue); border-style:dashed; }
+  /* cuadrícula de encuadre: solo mientras se mueven las mesas */
+  .plano.editing.grid{
+    background-image:
+      repeating-linear-gradient(to right, rgba(30,82,217,.13) 0 1px, transparent 1px 4%),
+      repeating-linear-gradient(to bottom, rgba(30,82,217,.13) 0 1px, transparent 1px 4%),
+      linear-gradient(180deg,#eef3ff,#fbfcff); }
+  .pguide{ position:absolute; z-index:3; background:var(--blue); opacity:.6; pointer-events:none; display:none; }
+  .pguide.on{ display:block; }
+  /* ---- atendida por / comensales ---- */
+  .mesainfo{ width:100%; display:flex; align-items:center; gap:8px; padding:9px 14px;
+    background:var(--white); border-bottom:1px solid var(--blue-line); }
+  .pill{ display:inline-flex; align-items:center; gap:7px; padding:7px 13px; border-radius:999px;
+    background:#EAEFF7; color:#41506B; font-size:13.5px; font-weight:700; line-height:1;
+    border:1px solid #DCE4F0; }
+  .pill svg{ flex:0 0 auto; opacity:.65; }
+  .pill .num{ font-size:15px; font-weight:800; color:#2B3A55; }
+  .pill-off{ background:#F2F5F9; color:#93A0B5; border-color:#E4E9F1; }
+  .pill-off svg{ opacity:.55; }
+  .camgrid{ display:grid; grid-template-columns:repeat(2,1fr); gap:8px; margin:4px 0 10px; }
+  .camb{ padding:14px 10px; border-radius:14px; border:1.5px solid var(--blue-line); background:#fff;
+    font-size:15px; font-weight:800; color:var(--ink); }
+  .camb.on{ background:var(--blue); color:#fff; border-color:var(--blue); }
+  .camb-mas{ font-weight:700; color:var(--muted); border-style:dashed; }
+  .comgrid{ display:grid; grid-template-columns:repeat(5,1fr); gap:6px; margin:4px 0 12px; }
+  .comb{ padding:12px 0; border-radius:12px; border:1.5px solid var(--blue-line); background:#fff;
+    font-size:15px; font-weight:800; font-variant-numeric:tabular-nums; }
+  .comb.on{ background:var(--blue); color:#fff; border-color:var(--blue); }
+  .bcam{ font-size:11px; font-weight:800; color:var(--blue); letter-spacing:.3px; }
+  /* ---- dividir a partes iguales ---- */
+  .divwrap{ display:flex; align-items:baseline; gap:8px; flex-wrap:wrap;
+    background:#eef3ff; border:1px solid var(--blue-line); border-radius:14px; padding:10px 12px; margin:10px 0; }
+  .divpp{ font-size:20px; font-weight:800; color:var(--blue); }
+  .divlbl{ font-size:13px; font-weight:700; color:var(--muted); }
+  .divcent{ margin-left:auto; font-size:12px; font-weight:600; color:var(--muted); }
+  .pg-v{ top:0; bottom:0; width:2px; margin-left:-1px; }
+  .pg-h{ left:0; right:0; height:2px; margin-top:-1px; }
   .ref{ position:absolute; font-size:9px; font-weight:800; letter-spacing:.1em; color:var(--muted); text-transform:uppercase; pointer-events:none; z-index:2; white-space:nowrap; }
   .ref-top{ top:5px; left:50%; transform:translateX(-50%); color:#2F9E44; }
   .ref-bot{ bottom:0; left:50%; transform:translateX(-50%); color:#fff; background:var(--blue); padding:3px 14px; border-radius:10px 10px 0 0; letter-spacing:.12em; }
@@ -763,6 +802,95 @@ const SUPABASE_KEY = "sb_publishable_hwze_N-sgY7eCb2Jr7kHQw_xxsOJHWY";
    Así funciona con cualquiera de los usuarios que tengas creados
    en Supabase, sin tener que acertar cuál es.
    ──────────────────────────────────────────────────────────────── */
+/* ================================================================
+   EQUIPO Y TURNOS
+   EQUIPO: todos los que pueden trabajar en el bar esta temporada.
+   TURNOS: qué día trabaja cada quién, en formato 'AAAA-MM-DD'.
+   Al abrir una mesa solo se ofrecen los del turno de HOY, que son
+   dos o tres toques en vez de buscar entre doce nombres.
+   El día se calcula con la jornada de 6:00 a 6:00: a las 2 de la
+   madrugada sigue saliendo el turno del día anterior, que es el
+   que de verdad está trabajando.
+   Si un día no está en TURNOS, o si entra alguien a cubrir que no
+   estaba previsto, el botón "Otro" abre la lista completa.
+   ================================================================ */
+const ICO_PERSONA='<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>';
+const ICO_GRUPO='<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>';
+const EQUIPO = ['Alberto', 'Alejandro', 'Clara', 'Fionn', 'Jorge', 'Laia', 'Lola', 'Marco', 'Marina', 'Paula', 'Silvia', 'Álvaro'];
+
+const TURNOS = {
+  // ---- JULIO ----
+  '2026-07-01': ['Laia', 'Paula', 'Jorge', 'Marina'],
+  '2026-07-02': ['Laia', 'Paula', 'Jorge', 'Marina'],
+  '2026-07-03': ['Laia', 'Paula', 'Jorge', 'Marina'],
+  '2026-07-04': ['Laia', 'Paula', 'Jorge', 'Marina'],
+  '2026-07-05': ['Laia', 'Paula', 'Jorge', 'Marina'],
+  '2026-07-06': ['Laia', 'Paula', 'Jorge', 'Marco'],
+  '2026-07-07': ['Laia', 'Paula', 'Jorge', 'Marco'],
+  '2026-07-08': ['Laia', 'Paula', 'Jorge', 'Marco'],
+  '2026-07-09': ['Laia', 'Paula', 'Jorge', 'Marco'],
+  '2026-07-10': ['Laia', 'Paula', 'Jorge', 'Marco'],
+  '2026-07-11': ['Laia', 'Paula', 'Jorge', 'Marco'],
+  '2026-07-12': ['Paula', 'Jorge', 'Marco'],
+  '2026-07-13': ['Paula', 'Jorge', 'Clara', 'Álvaro'],
+  '2026-07-14': ['Paula', 'Jorge', 'Clara', 'Álvaro'],
+  '2026-07-15': ['Paula', 'Jorge', 'Clara', 'Álvaro'],
+  '2026-07-16': ['Paula', 'Jorge', 'Clara', 'Álvaro'],
+  '2026-07-17': ['Paula', 'Jorge', 'Clara', 'Álvaro'],
+  '2026-07-18': ['Paula', 'Jorge', 'Clara', 'Álvaro'],
+  '2026-07-19': ['Alejandro', 'Paula', 'Jorge', 'Clara', 'Álvaro'],
+  '2026-07-20': ['Alejandro', 'Paula', 'Jorge', 'Clara', 'Álvaro'],
+  '2026-07-21': ['Alejandro', 'Paula', 'Jorge', 'Clara', 'Álvaro'],
+  '2026-07-22': ['Alejandro', 'Paula', 'Jorge', 'Clara', 'Álvaro'],
+  '2026-07-23': ['Alejandro', 'Fionn', 'Clara', 'Álvaro'],
+  '2026-07-24': ['Alejandro', 'Fionn', 'Álvaro', 'Marina', 'Clara'],
+  '2026-07-25': ['Alejandro', 'Fionn', 'Álvaro', 'Marina', 'Clara'],
+  '2026-07-26': ['Alejandro', 'Fionn', 'Álvaro', 'Marina', 'Clara'],
+  '2026-07-27': ['Alejandro', 'Fionn', 'Álvaro', 'Marina', 'Clara'],
+  '2026-07-28': ['Alejandro', 'Fionn', 'Álvaro', 'Marina', 'Clara'],
+  '2026-07-29': ['Alejandro', 'Fionn', 'Álvaro', 'Marina', 'Clara'],
+  '2026-07-30': ['Alejandro', 'Fionn', 'Álvaro', 'Marina', 'Clara'],
+  '2026-07-31': ['Alejandro', 'Fionn', 'Álvaro', 'Marina', 'Clara'],
+  // ---- AGOSTO ----
+  '2026-08-01': ['Alejandro', 'Álvaro', 'Fionn', 'Lola', 'Clara'],
+  '2026-08-02': ['Alejandro', 'Álvaro', 'Fionn', 'Lola', 'Clara'],
+  '2026-08-03': ['Alejandro', 'Álvaro', 'Fionn', 'Lola', 'Clara'],
+  '2026-08-04': ['Alejandro', 'Lola', 'Fionn'],
+  '2026-08-05': ['Alejandro', 'Lola', 'Fionn'],
+  '2026-08-06': ['Alejandro', 'Lola', 'Fionn'],
+  '2026-08-07': ['Alejandro', 'Lola', 'Fionn'],
+  '2026-08-08': ['Alejandro', 'Lola', 'Fionn'],
+  '2026-08-09': ['Alejandro', 'Lola', 'Fionn'],
+  '2026-08-10': ['Silvia', 'Alberto', 'Lola', 'Fionn'],
+  '2026-08-11': ['Silvia', 'Alberto', 'Lola', 'Fionn'],
+  '2026-08-12': ['Silvia', 'Alberto', 'Fionn'],
+  '2026-08-13': ['Silvia', 'Alberto', 'Fionn'],
+  '2026-08-14': ['Silvia', 'Alberto'],
+  '2026-08-15': ['Silvia', 'Alberto'],
+  '2026-08-16': ['Silvia', 'Alberto'],
+  '2026-08-17': ['Silvia', 'Alberto', 'Marco'],
+  '2026-08-18': ['Silvia', 'Alberto', 'Marco'],
+  '2026-08-19': ['Silvia', 'Alberto', 'Marco'],
+  '2026-08-20': ['Silvia', 'Alberto', 'Marco'],
+  '2026-08-21': ['Silvia', 'Alberto', 'Marco'],
+  '2026-08-22': ['Silvia', 'Alberto', 'Marco'],
+  '2026-08-23': ['Silvia', 'Alberto', 'Marco'],
+  '2026-08-24': ['Silvia', 'Alberto', 'Marco'],
+  '2026-08-25': ['Silvia', 'Alberto', 'Marco'],
+  '2026-08-26': ['Silvia', 'Alberto', 'Marco'],
+  '2026-08-27': ['Silvia', 'Alberto', 'Marco'],
+  '2026-08-28': ['Silvia', 'Alberto', 'Marco'],
+  '2026-08-29': ['Silvia', 'Alberto', 'Marco'],
+  '2026-08-30': ['Silvia', 'Alberto', 'Marco'],
+  '2026-08-31': ['Silvia', 'Alberto', 'Marco'],
+};
+
+function equipoHoy(){
+  const t=TURNOS[today()];
+  return (t && t.length) ? t : EQUIPO;
+}
+function hayTurnoHoy(){ const t=TURNOS[today()]; return !!(t && t.length); }
+
 const PEDIR_CONTRASENA = true;   // PRODUCCIÓN: pide login · PRUEBAS: poner en false
 const USUARIO_FIJO = "";
 const DOMINIO_USUARIO = "@mota.com";
@@ -1010,7 +1138,7 @@ const etiquetaCaja=()=>{ const n=new Date();
 let state = {
   tableList:[...DEFAULT_TABLES],
   tables:{},                 // name -> { sub:'', lines:[{name,price,qty}] }
-  view:'board', active:null, tab:'add', fb:'comida', openCat:null, addSearch:'', boardView:'list', planEdit:false, planUnir:false, unirSel:null, kTab:'pendiente',
+  view:'board', active:null, tab:'add', fb:'comida', openCat:null, addSearch:'', boardView:'list', planEdit:false, planSnap:true, planUnir:false, unirSel:null, kTab:'pendiente',
   caja:{ count:0, total:0, date:today() },
   tickets:[],                // tickets cobrados de hoy: {mesa,total,items:[{name,qty,price}],at}
   reportTab:'resumen',       // resumen | tickets | productos
@@ -1027,7 +1155,9 @@ let state = {
 };
 const eur=n=>n.toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2})+' €';
 const tbl =n=>state.tables[n]||{sub:'',lines:[]};
-const ensure=n=>{ if(!state.tables[n]) state.tables[n]={sub:'',lines:[]}; return state.tables[n]; };
+const ensure=n=>{ if(!state.tables[n]) state.tables[n]={sub:'',lines:[],camarero:'',comensales:0};
+  const t=state.tables[n]; if(t.camarero===undefined) t.camarero=''; if(t.comensales===undefined) t.comensales=0;
+  return t; };
 const tTotal=n=>tbl(n).lines.reduce((s,l)=>s+l.price*l.qty,0);
 const tCount=n=>tbl(n).lines.reduce((s,l)=>s+l.qty,0);
 const el=(t,c,h)=>{ const e=document.createElement(t); if(c)e.className=c; if(h!=null)e.innerHTML=h; return e; };
@@ -1064,6 +1194,7 @@ const LocalDB={
   async addItem(){ this.persist(); }, async stepItem(){ this.persist(); }, async removeItem(){ this.persist(); },
   async clearMesa(){ this.persist(); }, async setSub(){ this.persist(); }, async addMesa(){ this.persist(); },
   async setPos(){ this.persist(); },
+  async setInfo(){ this.persist(); },
   async setUnion(){ this.persist(); },
   async deleteMesa(){ this.persist(); },
   async setKitchen(){ this.persist(); },
@@ -1080,7 +1211,8 @@ const LocalDB={
 const CloudDB={
   async load(){
     try{
-      let mm = await sb.from('mesas').select('name,sub,x,y,unida_a');
+      let mm = await sb.from('mesas').select('name,sub,x,y,unida_a,camarero,comensales');
+      if(mm.error) mm = await sb.from('mesas').select('name,sub,x,y,unida_a');
       if(mm.error) mm = await sb.from('mesas').select('name,sub,x,y');
       if(mm.error) mm = await sb.from('mesas').select('name,sub');
       let mesas = mm.data; const error = mm.error;
@@ -1108,7 +1240,7 @@ const CloudDB={
       }
       const names=mesas.map(m=>m.name).sort(sortNames);
       const tables={};
-      names.forEach(n=>{ const r=mesas.find(x=>x.name===n); tables[n]={sub:(r&&r.sub)||'',lines:[], x:(r&&r.x!=null?Number(r.x):null), y:(r&&r.y!=null?Number(r.y):null), unida:(r&&r.unida_a)||null}; });
+      names.forEach(n=>{ const r=mesas.find(x=>x.name===n); tables[n]={sub:(r&&r.sub)||'',lines:[], x:(r&&r.x!=null?Number(r.x):null), y:(r&&r.y!=null?Number(r.y):null), unida:(r&&r.unida_a)||null, camarero:(r&&r.camarero)||'', comensales:(r&&r.comensales)||0}; });
       (orders||[]).forEach(o=>{ if(!tables[o.mesa]) tables[o.mesa]={sub:'',lines:[]};
         tables[o.mesa].lines.push({name:o.item,price:Number(o.price),qty:o.qty,km:o.km||0,kl:o.kl||0,ks:o.ks||0,creada_en:o.creada_en||null,nota:o.nota||''}); });
       Object.values(tables).forEach(t=>t.lines.sort((a,b)=>a.name.localeCompare(b.name,'es')));
@@ -1125,6 +1257,10 @@ const CloudDB={
   async clearMesa(mesa){ flag((await sb.from('orders').delete().eq('mesa',mesa)).error); },
   async setSub(mesa,sub){ flag((await sb.from('mesas').upsert({name:mesa,sub},{onConflict:'name'})).error); },
   async setPos(mesa,x,y){ flag((await sb.from('mesas').update({x,y}).eq('name',mesa)).error); },
+  async setInfo(mesa,camarero,comensales){
+    // si aun no has creado las columnas en Supabase, no molesta: se queda en local
+    const r=await sb.from('mesas').update({camarero,comensales}).eq('name',mesa);
+    if(r.error) console.warn('mesas.camarero/comensales no existen todavia'); },
   async setUnion(mesa,principal){ flag((await sb.from('mesas').update({unida_a:principal}).eq('name',mesa)).error); },
   async addMesa(name){ flag((await sb.from('mesas').upsert({name,sub:''},{onConflict:'name',ignoreDuplicates:true})).error); },
   async deleteMesa(mesa){ await sb.from('orders').delete().eq('mesa',mesa); flag((await sb.from('mesas').delete().eq('name',mesa)).error); },
@@ -1199,7 +1335,53 @@ function scheduleSync(){ clearTimeout(syncTimer); syncTimer=setTimeout(async()=>
 function mainOf(n){ return (state.tables[n] && state.tables[n].unida) || n; }
 function groupMembers(main){ return state.tableList.filter(x=>mainOf(x)===main); }
 function isUnida(n){ return mainOf(n)!==n; }
-function openTable(n){ const main=mainOf(n); state.active=main; state.view='table'; state.fb='comida'; state.openCat=null; state.tab = tbl(main).lines.length?'cuenta':'add'; renderApp(); }
+function openTable(n){ const main=mainOf(n); state.active=main; state.view='table'; state.fb='comida'; state.openCat=null;
+  const t=ensure(main);
+  state.tab = t.lines.length?'cuenta':'add'; renderApp();
+  // solo la primera vez: mesa vacía y sin camarero asignado
+  if(!esBarra(main) && !t.camarero && !t.lines.length) openMesaInfoModal(true);
+}
+
+/* ---- Atendida por / comensales ---- */
+function setMesaInfo(mesa,camarero,comensales){
+  const t=ensure(mesa);
+  if(camarero!==null) t.camarero=camarero;
+  if(comensales!==null) t.comensales=comensales;
+  commit();
+  DB.setInfo(mesa,t.camarero,t.comensales);
+}
+function openMesaInfoModal(primeraVez){
+  const mesa=state.active, t=ensure(mesa);
+  const turno=equipoHoy();
+  let cam=t.camarero||'', com=t.comensales||0, verTodos=false;
+  const ov=el('div','overlay');
+  const pinta=()=>{
+    const lista = verTodos ? EQUIPO : turno;
+    const otros = EQUIPO.filter(x=>!turno.includes(x)).length;
+    ov.innerHTML='<div class="modal"><div class="m-msg">'+esc(mesa)+'</div>'+
+      '<div class="m-sub">¿Quién atiende?</div>'+
+      '<div class="camgrid">'+
+        lista.map(p=>'<button class="camb'+(p===cam?' on':'')+'" data-p="'+esc(p)+'">'+esc(p)+'</button>').join('')+
+        ((!verTodos && otros>0)?'<button class="camb camb-mas" data-mas="1">Otro…</button>':'')+
+      '</div>'+
+      '<div class="m-sub">¿Cuántos son?</div>'+
+      '<div class="comgrid">'+
+        [1,2,3,4,5,6,8,10].map(n=>'<button class="comb'+(n===com?' on':'')+'" data-n="'+n+'">'+n+'</button>').join('')+
+        '<button class="comb'+(com===0?' on':'')+'" data-n="0">—</button>'+
+      '</div>'+
+      '<div class="m-actions"><button class="m-btn m-cancel">'+(primeraVez?'Ahora no':'Cancelar')+'</button>'+
+      '<button class="m-btn m-ok m-guardar">Guardar</button></div></div>';
+    ov.querySelectorAll('.camb').forEach(b=>b.onclick=()=>{
+      if(b.dataset.mas){ verTodos=true; pinta(); return; }
+      cam=(cam===b.dataset.p)?'':b.dataset.p; pinta(); });
+    ov.querySelectorAll('.comb').forEach(b=>b.onclick=()=>{ com=+b.dataset.n; pinta(); });
+    ov.querySelector('.m-cancel').onclick=()=>ov.remove();
+    ov.querySelector('.m-guardar').onclick=()=>{ ov.remove(); setMesaInfo(mesa,cam,com); renderApp(); };
+  };
+  pinta();
+  document.body.appendChild(ov);
+  ov.addEventListener('click',e=>{ if(e.target===ov) ov.remove(); });
+}
 function back(){ state.view = (state.active && esBarra(state.active)) ? 'barras' : 'board'; renderApp(); }
 function goHome(){ state.view='board'; renderApp(); }
 
@@ -1434,6 +1616,7 @@ function showUndo(msg,undoFn){
 function payTable(){
   const m=state.active; const subt=tTotal(m); if(subt<=0)return;
   let tip=0;
+  let nDiv=Math.max(1, tbl(m).comensales||1);   // arranca con los comensales de la mesa
   const chips=[['Sin propina',0],['+0,50',0.5],['+1',1],['+2',2]];
   const ov=el('div','overlay');
   ov.innerHTML='<div class="modal"><div class="m-msg">Cobrar · '+m+'</div>'+
@@ -1441,16 +1624,28 @@ function payTable(){
     '<div class="tipchips">'+chips.map((c,i)=>'<button class="tipchip'+(i===0?' on':'')+'" data-t="'+c[1]+'">'+c[0]+'</button>').join('')+'</div>'+
     '<div class="tiprow"><span class="exl">Propina</span><input class="tipinp num" type="number" inputmode="decimal" step="0.10" min="0" value="0"> €</div>'+
     '<div class="ex-total"><span class="exl">Total a cobrar</span><span class="ex-tv num" id="pm-tot">'+eur(subt)+'</span></div>'+
+    (nDiv>1?'<div class="divwrap" id="pm-div"></div>':'')+
     cashHTML()+
     '<div class="m-actions"><button class="m-btn m-cancel">Cancelar</button><button class="m-btn m-ok pm-ok">Cobrado</button></div></div>';
   document.body.appendChild(ov);
   const close=()=>ov.remove();
   const inp=ov.querySelector('.tipinp');
   const paintCash=wireCash(ov,()=>subt+tip);
+  const pintaDiv=()=>{
+    const box=ov.querySelector('#pm-div'); if(!box) return;      // mesa de 1 o sin comensales: no se pinta nada
+    const cents=Math.round((subt+tip)*100);
+    const base=Math.floor(cents/nDiv), resto=cents-base*nDiv;
+    const alto=(base+1)/100, bajo=base/100;
+    box.innerHTML='<span class="divpp num">'+eur(resto?alto:bajo)+'</span>'+
+      '<span class="divlbl">por persona · '+nDiv+' comensales</span>'+
+      (resto?'<span class="divcent">'+(nDiv-resto)+' pagan '+eur(bajo)+'</span>':'');
+  };
   const paint=()=>{ ov.querySelector('#pm-tot').textContent=eur(subt+tip);
-    ov.querySelectorAll('.tipchip').forEach(b=>b.classList.toggle('on', parseFloat(b.dataset.t)===tip)); paintCash(); };
+    ov.querySelectorAll('.tipchip').forEach(b=>b.classList.toggle('on', parseFloat(b.dataset.t)===tip)); pintaDiv(); paintCash(); };
+
   ov.querySelectorAll('.tipchip').forEach(b=>{ b.onclick=()=>{ tip=parseFloat(b.dataset.t); inp.value=tip.toFixed(2); paint(); }; });
   inp.oninput=()=>{ tip=Math.max(0, parseFloat(inp.value)||0); paint(); };
+  pintaDiv();
   ov.addEventListener('click',e=>{ if(e.target===ov) close(); });
   ov.querySelector('.m-cancel').onclick=close;
   ov.querySelector('.pm-ok').onclick=async()=>{
@@ -1459,10 +1654,10 @@ function payTable(){
     const ticketObj={ mesa:m, sub, total, items, propina:tip, at:Date.now() };
     const secun=state.tableList.filter(n=>n!==m && mainOf(n)===m);   // mesas unidas a esta
     logTicket(m,total,items,sub,tip);
-    if(state.tables[m]){ state.tables[m].lines=[]; state.tables[m].sub=''; }
+    if(state.tables[m]){ state.tables[m].lines=[]; state.tables[m].sub=''; state.tables[m].camarero=''; state.tables[m].comensales=0; }
     secun.forEach(n=>{ if(state.tables[n]) state.tables[n].unida=null; });   // al cobrar, se separan
     close(); back(); preguntarEnviar(ticketObj);
-    DB.setSub(m,''); await DB.pay(m,total,items,sub,tip);
+    DB.setSub(m,''); DB.setInfo(m,'',0); await DB.pay(m,total,items,sub,tip);
     for(const n of secun) DB.setUnion(n,null);
     /* una barra extra desaparece al cobrarla: vuelve a quedar una sola */
     if(esBarra(m) && m!=='Barra'){
@@ -1476,7 +1671,7 @@ function payTable(){
 function logTicket(mesa,total,items,sub,propina){
   if(state.caja.date!==today()){ state.caja={count:0,total:0,date:today()}; state.tickets=[]; }
   state.caja.count++; state.caja.total+=total;
-  state.tickets.unshift({id:(CLOUD?null:Date.now()),mesa,sub:sub||'',total,propina:propina||0,items,at:new Date().toISOString()});
+  state.tickets.unshift({id:(CLOUD?null:Date.now()),mesa,sub:sub||'',total,propina:propina||0,items,at:new Date().toISOString(),camarero:(state.tables[mesa]&&state.tables[mesa].camarero)||'',comensales:(state.tables[mesa]&&state.tables[mesa].comensales)||0});
   aplicarStock(items,-1);          // descuenta del stock lo vendido
 }
 
@@ -3277,12 +3472,13 @@ function defaultPos(i,total){
   return { x:Math.round((c+0.5)/cols*1000)/10, y:Math.round((r+0.5)/rows*1000)/10 };
 }
 function renderPlano(main){
-  const plano=el('div','plano'+(state.planEdit?' editing':''));
+  const plano=el('div','plano'+(state.planEdit?' editing':'')+(state.planEdit&&state.planSnap!==false?' grid':''));
   plano.innerHTML=
     '<div class="ref ref-top">CÉSPED</div>'+
     '<div class="ref ref-left">CÉSPED</div>'+
     '<div class="ref ref-right">PARED</div>'+
-    '<div class="ref ref-bot">PUERTA COCINA</div>';
+    '<div class="ref ref-bot">PUERTA COCINA</div>'+
+    (state.planEdit?'<div class="pguide pg-v"></div><div class="pguide pg-h"></div>':'');
   const APODO={'Barra':'Barra'}, WIDE={'Barra':true};
   const arr=state.tableList.filter(n=>!esBarra(n)||n==='Barra'), total=arr.length, posOf={};
   arr.forEach((n,i)=>{ const t=tbl(n); posOf[n]=(t.x!=null&&t.y!=null)?{x:t.x,y:t.y}:(LAYOUT_DEFAULT[n]||defaultPos(i,total)); });
@@ -3335,7 +3531,12 @@ function renderPlano(main){
   plano.appendChild(k);
   main.appendChild(plano);
   if(state.planEdit){
-    main.appendChild(el('div','plano-hint','Arrastra cada mesa hasta donde está en la sala. Se guarda solo.'));
+    main.appendChild(el('div','plano-hint', state.planSnap!==false
+      ? 'Arrastra cada mesa. Se pega a la cuadrícula y se alinea sola con las demás. Se guarda solo.'
+      : 'Arrastra cada mesa hasta donde está en la sala. Colocación libre. Se guarda solo.'));
+    const gb=el('button','plano-reset', state.planSnap!==false?'Cuadrícula: activada':'Cuadrícula: desactivada');
+    gb.onclick=()=>{ state.planSnap = (state.planSnap===false); renderApp(); };
+    main.appendChild(gb);
     const rb=el('button','plano-reset','Reordenar al croquis por defecto'); rb.onclick=resetLayout; main.appendChild(rb);
   } else if(state.planUnir){
     main.appendChild(el('div','plano-hint', state.unirSel
@@ -3352,6 +3553,19 @@ async function resetLayout(){
   for(const n of arr){ const p=LAYOUT_DEFAULT[n]; await DB.setPos(n,p.x,p.y); }
   showToast('Croquis reordenado',true);
 }
+/* ---- Croquis: cuadrícula e imantado al mover mesas ----
+   PASO_REJILLA coincide con el 4% que dibuja el CSS de .plano.editing.grid
+   IMAN = margen en % para que una mesa se alinee sola con otra ya colocada. */
+const PASO_REJILLA=4, IMAN=2;
+function otrasMesas(plano,elm){
+  return [...plano.querySelectorAll('.pmesa')].filter(e=>e!==elm).map(e=>({
+    x:parseFloat(e.style.left)||0, y:parseFloat(e.style.top)||0 }));
+}
+function pintaGuias(plano,gx,gy){
+  const v=plano.querySelector('.pg-v'), h=plano.querySelector('.pg-h');
+  if(v){ v.classList.toggle('on',gx!=null); if(gx!=null) v.style.left=gx+'%'; }
+  if(h){ h.classList.toggle('on',gy!=null); if(gy!=null) h.style.top=gy+'%'; }
+}
 function makePlanoDrag(elm,mesa,plano){
   let drag=false, moved=false;
   elm.addEventListener('pointerdown',e=>{ if(!state.planEdit) return; drag=true; moved=false;
@@ -3360,15 +3574,26 @@ function makePlanoDrag(elm,mesa,plano){
     const r=plano.getBoundingClientRect(); if(!r.width) return;
     let x=((e.clientX-r.left)/r.width)*100, y=((e.clientY-r.top)/r.height)*100;
     x=Math.max(6,Math.min(94,x)); y=Math.max(8,Math.min(92,y));
+    let gx=null, gy=null;
+    if(state.planSnap!==false){
+      const otras=otrasMesas(plano,elm);
+      // 1º se intenta alinear con otra mesa; si no hay ninguna cerca, a la cuadrícula
+      const ax=otras.find(p=>Math.abs(p.x-x)<IMAN);
+      const ay=otras.find(p=>Math.abs(p.y-y)<IMAN);
+      if(ax){ x=ax.x; gx=x; } else { x=Math.round(x/PASO_REJILLA)*PASO_REJILLA; }
+      if(ay){ y=ay.y; gy=y; } else { y=Math.round(y/PASO_REJILLA)*PASO_REJILLA; }
+      x=Math.max(6,Math.min(94,x)); y=Math.max(8,Math.min(92,y));
+    }
+    pintaGuias(plano,gx,gy);
     elm.style.left=x+'%'; elm.style.top=y+'%'; elm._x=Math.round(x*10)/10; elm._y=Math.round(y*10)/10; });
-  const end=()=>{ if(!drag) return; drag=false; elm.classList.remove('dragging');
+  const end=()=>{ if(!drag) return; drag=false; elm.classList.remove('dragging'); pintaGuias(plano,null,null);
     if(moved && elm._x!=null){ const t=ensure(mesa); t.x=elm._x; t.y=elm._y; DB.setPos(mesa,elm._x,elm._y); } };
   elm.addEventListener('pointerup',end);
   elm.addEventListener('pointercancel',end);
 }
 
 function renderHeaderTable(hdr){
-  const n=state.active, sub=tbl(n).sub;
+  const n=state.active, t=tbl(n), sub=t.sub;
   const h=el('div','ht',
     '<button class="back">←</button>'+
     '<div class="thead"><span class="tname display">'+n+'</span>'+
@@ -3377,6 +3602,13 @@ function renderHeaderTable(hdr){
   h.querySelector('.back').onclick=back;
   h.querySelector('.tsub').oninput=e=>setSub(e.target.value);
   hdr.appendChild(h);
+  if(!esBarra(n)){
+    const inf=el('button','mesainfo',
+      '<span class="pill'+(t.camarero?'':' pill-off')+'">'+ICO_PERSONA+'<span>'+(t.camarero?esc(t.camarero):'Asignar')+'</span></span>'+
+      (t.comensales?'<span class="pill">'+ICO_GRUPO+'<span class="num">'+t.comensales+'</span></span>':''));
+    inf.onclick=()=>openMesaInfoModal(false);
+    hdr.appendChild(inf);
+  }
 }
 function renderTableShell(main){
   const seg=el('div','seg','<button data-t="cuenta">Cuenta</button><button data-t="add">Añadir</button>');
