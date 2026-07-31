@@ -988,7 +988,25 @@ const VARIANTS={
 const CLOUD = !!(SUPABASE_URL && SUPABASE_KEY && window.supabase);
 let sb=null, online=false;
 
-const today=()=>new Date().toISOString().slice(0,10);
+/* ----------------------------------------------------------------
+   JORNADA DEL BAR
+   La jornada no va de 00:00 a 00:00 sino de las 6:00 a las 6:00.
+   Así, si abres el día 29 y cierras a las 3:00 del 30, todo lo
+   cobrado esa madrugada sigue contando como día 29.
+   Cambia CIERRE_JORNADA_H si alguna vez cierras más tarde de las 6.
+   ---------------------------------------------------------------- */
+const CIERRE_JORNADA_H = 6;
+const jornadaDe = f => { const d=new Date(f); d.setHours(d.getHours()-CIERRE_JORNADA_H);
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); };
+const inicioJornada = () => { const d=new Date();
+  if(d.getHours()<CIERRE_JORNADA_H) d.setDate(d.getDate()-1);
+  d.setHours(CIERRE_JORNADA_H,0,0,0); return d; };
+const today=()=>jornadaDe(new Date());
+// De madrugada avisa de que la caja sigue siendo la del día anterior
+const etiquetaCaja=()=>{ const n=new Date();
+  if(n.getHours()>=CIERRE_JORNADA_H) return 'CAJA HOY';
+  const d=new Date(today()+'T12:00:00');
+  return 'CAJA DÍA '+d.getDate(); };
 let state = {
   tableList:[...DEFAULT_TABLES],
   tables:{},                 // name -> { sub:'', lines:[{name,price,qty}] }
@@ -1073,7 +1091,7 @@ const CloudDB={
       if(ordRes.error) ordRes = await sb.from('orders').select('mesa,item,price,qty,km,kl,ks,creada_en');
       if(ordRes.error) ordRes = await sb.from('orders').select('mesa,item,price,qty');
       const orders = ordRes.data;
-      const start=new Date(); start.setHours(0,0,0,0);
+      const start=inicioJornada();
       // tickets del día (con items, subnombre y propina si las columnas existen)
       let tkRes = await sb.from('tickets').select('id,mesa,total,items,sub,propina,closed_at').gte('closed_at', start.toISOString()).order('closed_at',{ascending:false});
       if(tkRes.error) tkRes = await sb.from('tickets').select('id,mesa,total,items,sub,closed_at').gte('closed_at', start.toISOString()).order('closed_at',{ascending:false});
@@ -1564,7 +1582,7 @@ function histMover(d){
   if(nuevo>today().slice(0,7)) return;          // no ir al futuro
   state.histMes=nuevo; state.histData=null; renderApp();
 }
-const diaLocal=iso=>{ const d=new Date(iso); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); };
+const diaLocal=iso=>jornadaDe(iso);   // agrupa por jornada, no por medianoche
 const nombreMes=ym=>{ const [y,m]=ym.split('-').map(Number);
   return new Date(y,m-1,1).toLocaleDateString('es-ES',{month:'long',year:'numeric'}); };
 const nombreDia=f=>{ const d=new Date(f+'T12:00:00');
@@ -2436,7 +2454,7 @@ function renderHistorial(main){
 }
 async function cargarHistorial(cont){
   const [y,m]=state.histMes.split('-').map(Number);
-  const desde=new Date(y,m-1,1,0,0,0), hasta=new Date(y,m,1,0,0,0);
+  const desde=new Date(y,m-1,1,CIERRE_JORNADA_H,0,0), hasta=new Date(y,m,1,CIERRE_JORNADA_H,0,0);
   let filas=[];
   if(CLOUD && sb){
     const r=await sb.from('tickets').select('mesa,total,closed_at')
@@ -3128,10 +3146,10 @@ function renderProductos(body){
   loadProductos(list);
 }
 async function loadProductos(list){
-  const now=new Date(); const since=new Date(now);
-  if(state.prodPeriod==='dia'){ since.setHours(0,0,0,0); }
-  else if(state.prodPeriod==='semana'){ const d=(now.getDay()+6)%7; since.setDate(now.getDate()-d); since.setHours(0,0,0,0); }
-  else { since.setDate(1); since.setHours(0,0,0,0); }
+  const now=new Date(); let since;
+  if(state.prodPeriod==='dia'){ since=inicioJornada(); }
+  else if(state.prodPeriod==='semana'){ since=inicioJornada(); const d=(since.getDay()+6)%7; since.setDate(since.getDate()-d); }
+  else { since=inicioJornada(); since.setDate(1); }
   let tickets;
   if(state.prodPeriod==='dia' || !CLOUD){ tickets=state.tickets; }
   else {
@@ -3191,7 +3209,7 @@ function renderHeaderBoard(hdr){
   const h=el('div','hb', '<button class="logo">'+MILL+
     '<div class="brand"><span class="t1 display">BAR PISCINA</span><span class="t2 display">MOTA DEL CUERVO</span></div></button>'+
     REFRESH_BTN+
-    '<button class="caja">'+dotHTML()+'<div style="display:flex;flex-direction:column;line-height:1.1"><span class="cl">CAJA HOY</span><span class="cv num">'+eur(state.caja.total)+'</span></div>'+
+    '<button class="caja">'+dotHTML()+'<div style="display:flex;flex-direction:column;line-height:1.1"><span class="cl">'+etiquetaCaja()+'</span><span class="cv num">'+eur(state.caja.total)+'</span></div>'+
     '<span class="cc">'+state.caja.count+' tickets</span><span class="cchev">›</span></button>');
   h.querySelector('.logo').onclick=openMenu;
   h.querySelector('.caja').onclick=openReport;
