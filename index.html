@@ -302,6 +302,17 @@
   .divpp{ font-size:20px; font-weight:800; color:var(--blue); }
   .divlbl{ font-size:13px; font-weight:700; color:var(--muted); }
   .divcent{ margin-left:auto; font-size:12px; font-weight:600; color:var(--muted); }
+  /* ---- forma de pago ---- */
+  .pagowrap{ margin:12px 0 4px; }
+  .pagogrid{ display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:6px; }
+  .pagob{ display:flex; align-items:center; justify-content:center; gap:8px; padding:14px 8px;
+    border-radius:14px; border:1.5px solid var(--blue-line); background:#fff;
+    font-size:15px; font-weight:800; color:var(--ink); }
+  .pagob svg{ opacity:.7; }
+  .pagob.on{ background:var(--blue); border-color:var(--blue); color:#fff; }
+  .pagob.on svg{ opacity:1; }
+  .tpago{ font-size:11px; font-weight:800; letter-spacing:.3px; color:var(--muted);
+    border:1px solid var(--blue-line); border-radius:999px; padding:1px 7px; }
   .pg-v{ top:0; bottom:0; width:2px; margin-left:-1px; }
   .pg-h{ left:0; right:0; height:2px; margin-top:-1px; }
   .ref{ position:absolute; font-size:9px; font-weight:800; letter-spacing:.1em; color:var(--muted); text-transform:uppercase; pointer-events:none; z-index:2; white-space:nowrap; }
@@ -917,7 +928,7 @@ const MENU = {
     'Vinos': [ ['Vino Semidulce',2.5],['Vino Tinto',2.2],['Vino Blanco',2.2],['Vermut',2] ],
     'Cubatas y Piedras': [ ['Cubata',5.5],['Piedra',3],['Chupito',1.5] ],
     'Granizados': [ ['Granizado de Café',2.8],['Granizado de Café + Baileys',3.8],['Granizado de Limón',2.5],['Granizado de Fresa',2.5],['Granizado de España',3] ],
-    'Café': [ ['Café Solo',1.5],['Café con Leche',1.8],['Americano',1.5],['Café del Tiempo',1.8],['Bombón',1.8],['Café con Licor',2],['Cortado',1.6],['Colocado',2] ],
+    'Café': [ ['Café Solo',1.5],['Café con Leche',1.8],['Americano',1.5],['Bombón',1.8],['Café con Licor',2],['Cortado',1.6],['Colocado',2] ],
   }},
 };
 
@@ -1015,7 +1026,7 @@ const BARRA_SECCIONES=[
   {t:'Chuches', items:[['Bolsa de Chuches','Bolsa'],['Chupachups','Chupachups'],['Regaliz','Regaliz'],['Chicle','Chicle'],['Gofre','Gofre']]},
   {t:'Papas', items:[['Campesinas','Campesinas'],['Jamón','Jamón'],['Palomitas','Palomitas'],['Gusanitos','Gusanitos'],['Originales Vidal','Originales'],['Puntazos','Puntazos'],['Jumpers Ketchup','Jumpers Ketchup'],['Jumpers Mantequilla','Jumpers Manteq.']]},
   {t:'Copas', items:[['Cubata','Cubata'],['Piedra','Piedra']]},
-  {t:'Café', items:[['Café Solo','Solo'],['Café con Leche','Con leche'],['Cortado','Cortado'],['Café del Tiempo','Del tiempo'],['Americano','Americano'],['Bombón','Bombón'],['Café con Licor','Con licor'],['Colocado','Colocado']]},
+  {t:'Café', items:[['Café Solo','Solo'],['Café con Leche','Con leche'],['Cortado','Cortado'],['Americano','Americano'],['Bombón','Bombón'],['Café con Licor','Con licor'],['Colocado','Colocado']]},
   {t:'Vinos', items:[['Vino Tinto','Tinto'],['Vino Blanco','Blanco'],['Vino Semidulce','Semidulce'],['Vermut','Vermut']]},
 ];
 
@@ -1145,7 +1156,7 @@ let state = {
   prodPeriod:'dia',          // dia | semana | mes
   editMesas:false,
   reservas:[],               // {id,fecha,hora,nombre,personas,nota}
-  barra:{ cart:[], recibido:0, todo:false, openCat:null, fb:'bebidas', busca:'' },
+  barra:{ cart:[], recibido:0, todo:false, openCat:null, fb:'bebidas', busca:'', pago:'efectivo' },
   stock:{},                  // item -> {unidades, minimo, caja, proveedor}
   stockTab:'existencias',    // existencias | entrada | recuento | compra
   stockGroup:'cat',          // agrupar existencias: cat (categoría) | prov (proveedor)
@@ -1225,7 +1236,8 @@ const CloudDB={
       const orders = ordRes.data;
       const start=inicioJornada();
       // tickets del día (con items, subnombre y propina si las columnas existen)
-      let tkRes = await sb.from('tickets').select('id,mesa,total,items,sub,propina,closed_at').gte('closed_at', start.toISOString()).order('closed_at',{ascending:false});
+      let tkRes = await sb.from('tickets').select('id,mesa,total,items,sub,propina,pago,closed_at').gte('closed_at', start.toISOString()).order('closed_at',{ascending:false});
+      if(tkRes.error) tkRes = await sb.from('tickets').select('id,mesa,total,items,sub,propina,closed_at').gte('closed_at', start.toISOString()).order('closed_at',{ascending:false});
       if(tkRes.error) tkRes = await sb.from('tickets').select('id,mesa,total,items,sub,closed_at').gte('closed_at', start.toISOString()).order('closed_at',{ascending:false});
       if(tkRes.error) tkRes = await sb.from('tickets').select('id,mesa,total,closed_at').gte('closed_at', start.toISOString()).order('closed_at',{ascending:false});
       const tk=tkRes.data||[];
@@ -1305,11 +1317,12 @@ const CloudDB={
     let x=await sb.from('reservas').update({fecha:r.fecha,hora:r.hora||null,nombre:r.nombre,personas:r.personas,nota:r.nota}).eq('id',r.id);
     if(x.error) x=await sb.from('reservas').update({fecha:r.fecha,nombre:r.nombre,personas:r.personas,nota:r.nota}).eq('id',r.id);
     flag(x.error); return x.error?{error:x.error}:{}; },
-  async pay(mesa,total,items,sub,propina){ let r=await sb.from('tickets').insert({mesa,total,items,sub,propina}); if(r.error) r=await sb.from('tickets').insert({mesa,total,items,sub}); if(r.error) await sb.from('tickets').insert({mesa,total});
+  async pay(mesa,total,items,sub,propina,pago){ let r=await sb.from('tickets').insert({mesa,total,items,sub,propina,pago}); if(r.error) r=await sb.from('tickets').insert({mesa,total,items,sub,propina}); if(r.error) r=await sb.from('tickets').insert({mesa,total,items,sub}); if(r.error) await sb.from('tickets').insert({mesa,total});
     flag((await sb.from('orders').delete().eq('mesa',mesa)).error); },
-  async payPartial(mesa,total,items,sub){ let r=await sb.from('tickets').insert({mesa,total,items,sub}); if(r.error) await sb.from('tickets').insert({mesa,total});
+  async payPartial(mesa,total,items,sub,pago){ let r=await sb.from('tickets').insert({mesa,total,items,sub,pago}); if(r.error) r=await sb.from('tickets').insert({mesa,total,items,sub}); if(r.error) await sb.from('tickets').insert({mesa,total});
     for(const it of items){ await sb.rpc('step_item',{_mesa:mesa,_item:it.name,_d:-it.qty}); } flag(null); },
-  async payQuick(mesa,total,items){ let r=await sb.from('tickets').insert({mesa,total,items});
+  async payQuick(mesa,total,items,pago){ let r=await sb.from('tickets').insert({mesa,total,items,pago});
+    if(r.error) r=await sb.from('tickets').insert({mesa,total,items});
     if(r.error) r=await sb.from('tickets').insert({mesa,total}); flag(r.error); return r.error?{error:r.error}:{}; },
   async resetCaja(){},
   subscribe(cb){
@@ -1625,11 +1638,13 @@ function payTable(){
     '<div class="tiprow"><span class="exl">Propina</span><input class="tipinp num" type="number" inputmode="decimal" step="0.10" min="0" value="0"> €</div>'+
     '<div class="ex-total"><span class="exl">Total a cobrar</span><span class="ex-tv num" id="pm-tot">'+eur(subt)+'</span></div>'+
     (nDiv>1?'<div class="divwrap" id="pm-div"></div>':'')+
+    pagoHTML()+
     cashHTML()+
     '<div class="m-actions"><button class="m-btn m-cancel">Cancelar</button><button class="m-btn m-ok pm-ok">Cobrado</button></div></div>';
   document.body.appendChild(ov);
   const close=()=>ov.remove();
   const inp=ov.querySelector('.tipinp');
+  const getPago=wirePago(ov,()=>ov.querySelector('.cashwrap'));
   const paintCash=wireCash(ov,()=>subt+tip);
   const pintaDiv=()=>{
     const box=ov.querySelector('#pm-div'); if(!box) return;      // mesa de 1 o sin comensales: no se pinta nada
@@ -1651,13 +1666,14 @@ function payTable(){
   ov.querySelector('.pm-ok').onclick=async()=>{
     const items=tbl(m).lines.map(l=>({name:l.name,qty:l.qty,price:l.price}));
     const sub=tbl(m).sub||''; const total=subt+tip;
-    const ticketObj={ mesa:m, sub, total, items, propina:tip, at:Date.now() };
+    const pago=getPago();
+    const ticketObj={ mesa:m, sub, total, items, propina:tip, at:Date.now(), pago };
     const secun=state.tableList.filter(n=>n!==m && mainOf(n)===m);   // mesas unidas a esta
-    logTicket(m,total,items,sub,tip);
+    logTicket(m,total,items,sub,tip,pago);
     if(state.tables[m]){ state.tables[m].lines=[]; state.tables[m].sub=''; state.tables[m].camarero=''; state.tables[m].comensales=0; }
     secun.forEach(n=>{ if(state.tables[n]) state.tables[n].unida=null; });   // al cobrar, se separan
     close(); back(); preguntarEnviar(ticketObj);
-    DB.setSub(m,''); DB.setInfo(m,'',0); await DB.pay(m,total,items,sub,tip);
+    DB.setSub(m,''); DB.setInfo(m,'',0); await DB.pay(m,total,items,sub,tip,pago);
     for(const n of secun) DB.setUnion(n,null);
     /* una barra extra desaparece al cobrarla: vuelve a quedar una sola */
     if(esBarra(m) && m!=='Barra'){
@@ -1668,10 +1684,10 @@ function payTable(){
   };
 }
 /* guarda el ticket cobrado en memoria (caja + lista) */
-function logTicket(mesa,total,items,sub,propina){
+function logTicket(mesa,total,items,sub,propina,pago){
   if(state.caja.date!==today()){ state.caja={count:0,total:0,date:today()}; state.tickets=[]; }
   state.caja.count++; state.caja.total+=total;
-  state.tickets.unshift({id:(CLOUD?null:Date.now()),mesa,sub:sub||'',total,propina:propina||0,items,at:new Date().toISOString(),camarero:(state.tables[mesa]&&state.tables[mesa].camarero)||'',comensales:(state.tables[mesa]&&state.tables[mesa].comensales)||0});
+  state.tickets.unshift({id:(CLOUD?null:Date.now()),mesa,sub:sub||'',total,propina:propina||0,items,at:new Date().toISOString(),camarero:(state.tables[mesa]&&state.tables[mesa].camarero)||'',comensales:(state.tables[mesa]&&state.tables[mesa].comensales)||0,pago:pago||'efectivo'});
   aplicarStock(items,-1);          // descuenta del stock lo vendido
 }
 
@@ -1800,16 +1816,17 @@ function barraLess(name){
   l.qty--; if(l.qty<=0) state.barra.cart=c.filter(x=>x.name!==name);
   state.barra.recibido=0; paintBarra();
 }
-function barraClear(){ state.barra.cart=[]; state.barra.recibido=0; paintBarra(); }
+function barraClear(){ state.barra.cart=[]; state.barra.recibido=0; state.barra.pago='efectivo'; paintBarra(); }
 function barraRecibido(v){ state.barra.recibido=(state.barra.recibido===v?0:v); paintBarra(); }
 async function barraPay(){
   const tot=bTotal(); if(tot<=0) return;
   const items=state.barra.cart.map(l=>({name:l.name,qty:l.qty,price:l.price}));
-  logTicket('Barra',tot,items,'',0);
+  const pago=state.barra.pago||'efectivo';
+  logTicket('Barra',tot,items,'',0,pago);
   barraClear(); buzz(25);
   showToast('Cobrado '+eur(tot),true);
   renderApp();
-  const res=await DB.payQuick('Barra',tot,items) || {};
+  const res=await DB.payQuick('Barra',tot,items,pago) || {};
   if(res.error) errorDialog('No se pudo registrar la venta',res.error);
 }
 
@@ -1824,6 +1841,7 @@ function renderBarra(main){
       '<div id="b-lista" class="blista"></div>'+
       '<div class="btot"><div><span class="btl">Total</span><div class="btv num" id="b-total">0,00 €</div></div>'+
         '<div class="bvuelta" id="b-vuelta"></div></div>'+
+      pagoHTML(state.barra.pago)+
       '<div id="b-cash">'+cashChipsHTML()+'</div>'+
       '<div class="actions"><button class="btn btn-clear" id="b-del">Borrar</button><button class="btn btn-pay" id="b-pay">Cobrar</button></div>'+
     '</div>';
@@ -1832,6 +1850,12 @@ function renderBarra(main){
   wrap.querySelectorAll('.bm').forEach(b=>b.classList.toggle('on',(b.dataset.m==='todo')===state.barra.todo));
   wrap.querySelector('#b-del').onclick=barraClear;
   wrap.querySelector('#b-pay').onclick=barraPay;
+  wrap.querySelectorAll('.pagob').forEach(b=>{ b.onclick=()=>{
+    state.barra.pago=b.dataset.pg;
+    wrap.querySelectorAll('.pagob').forEach(x=>x.classList.toggle('on',x.dataset.pg===state.barra.pago));
+    const cb=wrap.querySelector('#b-cash'); if(cb) cb.style.display=(state.barra.pago==='tarjeta')?'none':'';
+  }; });
+  { const cb=wrap.querySelector('#b-cash'); if(cb) cb.style.display=(state.barra.pago==='tarjeta')?'none':''; }
   wrap.querySelectorAll('#b-cash .bcashb').forEach(b=>{ b.onclick=()=>{
     const v=parseFloat(b.dataset.v); barraRecibido(v);
     const i=document.querySelector('#b-cash .cashinp'); if(i) i.value = state.barra.recibido?String(state.barra.recibido):'';
@@ -1873,6 +1897,31 @@ function cashChipsHTML(){
   return '<div class="bcash">'+CASH_VALORES.map(v=>'<button class="bcashb" data-v="'+v+'">'+v+' €</button>').join('')+'</div>'+
     '<div class="cashother"><span class="col">Otro</span><input class="cashinp num" type="number" inputmode="decimal" step="0.01" min="0" placeholder="0,00"><span class="coe">€</span></div>';
 }
+/* ---- Cómo se paga: efectivo o datáfono ----
+   Obligatorio en todos los cobros. Sin esto no se puede cuadrar la caja
+   al cierre: no sabrías cuánto debería haber en el cajón.
+   Al elegir datáfono se oculta la calculadora de vuelta, que ahí no pinta nada. */
+const ICO_EFEC='<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/></svg>';
+const ICO_TARJ='<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>';
+function pagoHTML(sel){
+  const m=sel||'efectivo';
+  return '<div class="pagowrap"><div class="cashlbl">¿Cómo paga?</div><div class="pagogrid">'+
+    '<button class="pagob'+(m==='efectivo'?' on':'')+'" data-pg="efectivo">'+ICO_EFEC+'<span>Efectivo</span></button>'+
+    '<button class="pagob'+(m==='tarjeta'?' on':'')+'" data-pg="tarjeta">'+ICO_TARJ+'<span>Datáfono</span></button>'+
+    '</div></div>';
+}
+function wirePago(ov,getCashBox){
+  let modo='efectivo';
+  const pinta=()=>{
+    ov.querySelectorAll('.pagob').forEach(b=>b.classList.toggle('on', b.dataset.pg===modo));
+    const box=getCashBox?getCashBox():null;
+    if(box) box.style.display = (modo==='tarjeta') ? 'none' : '';
+  };
+  ov.querySelectorAll('.pagob').forEach(b=>{ b.onclick=()=>{ modo=b.dataset.pg; pinta(); }; });
+  pinta();
+  return ()=>modo;
+}
+
 function cashHTML(){
   return '<div class="cashwrap"><div class="cashlbl">¿Con cuánto pagan?</div>'+cashChipsHTML()+'<div class="bvuelta" data-vuelta></div></div>';
 }
@@ -2133,6 +2182,7 @@ function openSplitModal(){
     '<div class="m-sub">Marca lo que te pagan ahora</div>'+
     '<div class="ex-list">'+rows+'</div>'+
     '<div class="ex-total"><span class="exl">A cobrar</span><span class="ex-tv num" id="sp-tot">'+eur(0)+'</span></div>'+
+    pagoHTML()+
     cashHTML()+
     '<div class="m-actions"><button class="m-btn m-cancel">Cancelar</button>'+
     '<button class="m-btn m-ok sp-add" disabled>Cobrado</button></div></div>';
@@ -2140,6 +2190,7 @@ function openSplitModal(){
   const close=()=>ov.remove();
   const lineOf=name=>lines.find(l=>l.name===name);
   const total=()=>lines.reduce((s,l)=>s+l.price*sel[l.name],0);
+  const getPagoSp=wirePago(ov,()=>ov.querySelector('.cashwrap'));
   const paintCash=wireCash(ov,total);
   const paint=()=>{ const t=total(); ov.querySelector('#sp-tot').textContent=eur(t);
     ov.querySelector('.sp-add').disabled=t<=0;
@@ -2159,11 +2210,11 @@ function openSplitModal(){
     const sub=tbl(mm).sub||'';
     items.forEach(i=>{ const l=tbl(mm).lines.find(x=>x.name===i.name); if(l) l.qty-=i.qty; });
     state.tables[mm].lines=state.tables[mm].lines.filter(l=>l.qty>0);
-    logTicket(mm,tot,items,sub);
+    logTicket(mm,tot,items,sub,0,getPagoSp());
     close();
     if(tbl(mm).lines.length===0){ state.tables[mm].sub=''; DB.setSub(mm,''); back(); }
     else commit();
-    await DB.payPartial(mm,tot,items,sub);
+    await DB.payPartial(mm,tot,items,sub,getPagoSp());
   };
 }
 
@@ -3188,6 +3239,9 @@ function renderResumen(body){
   const cBarra=tkBarra.reduce((s,t)=>s+t.total,0), cMesas=tkMesas.reduce((s,t)=>s+t.total,0);
   const cobrado=cBarra+cMesas;
   const propinas=state.tickets.reduce((s,t)=>s+(t.propina||0),0);
+  const tkTarj=state.tickets.filter(t=>t.pago==='tarjeta');
+  const tkEfec=state.tickets.filter(t=>t.pago!=='tarjeta');       // sin dato = efectivo (tickets antiguos)
+  const cTarj=tkTarj.reduce((s,t)=>s+t.total,0), cEfec=tkEfec.reduce((s,t)=>s+t.total,0);
   const pend=state.tableList.reduce((s,n)=>s+tTotal(n),0);
   const openN=state.tableList.filter(n=>tTotal(n)>0).length;
   const pct=v=>cobrado>0?Math.round(v*100/cobrado)+'%':'—';
@@ -3198,6 +3252,10 @@ function renderResumen(body){
     '</div>'+
     '<div class="rcard big"><span class="rk">Cobrado hoy</span><span class="rv num">'+eur(cobrado)+'</span>'+
       '<span class="rd">'+state.caja.count+' tickets'+(propinas>0?(' · '+eur(propinas)+' en propinas'):'')+'</span></div>'+
+    '<div class="rrow">'+
+      '<div class="rcard half"><span class="rk">Efectivo</span><span class="rv num">'+eur(cEfec)+'</span><span class="rd">'+tkEfec.length+' ticket'+(tkEfec.length===1?'':'s')+' · '+pct(cEfec)+'</span></div>'+
+      '<div class="rcard half"><span class="rk">Datáfono</span><span class="rv num">'+eur(cTarj)+'</span><span class="rd">'+tkTarj.length+' ticket'+(tkTarj.length===1?'':'s')+' · '+pct(cTarj)+'</span></div>'+
+    '</div>'+
     '<div class="rcard"><span class="rk">Pendiente de cobrar</span><span class="rv num">'+eur(pend)+'</span><span class="rd">'+openN+' mesa'+(openN===1?'':'s')+' abierta'+(openN===1?'':'s')+'</span></div>'+
     '<div class="rcard tot"><span class="rk">Total del día (cobrado + pendiente)</span><span class="rv num">'+eur(cobrado+pend)+'</span></div>'+
   '</div>';
@@ -3319,7 +3377,7 @@ function renderTickets(body){
       + ((t.propina>0)?'<div class="tkl"><span class="tkln">Propina</span><span class="tkls num">'+eur(t.propina)+'</span></div>':'');
     const card=el('div','tk');
     card.innerHTML=
-      '<button class="tk-head"><span class="tk-m">'+title+'</span><span class="tk-h">'+hora+'</span><span class="tk-t num">'+eur(t.total)+'</span><span class="tk-chev">▶</span></button>'+
+      '<button class="tk-head"><span class="tk-m">'+title+'</span><span class="tpago">'+(t.pago==='tarjeta'?'DATÁFONO':'EFECTIVO')+'</span><span class="tk-h">'+hora+'</span><span class="tk-t num">'+eur(t.total)+'</span><span class="tk-chev">▶</span></button>'+
       '<div class="tk-body">'+rows+
         '<div class="tk-acts"><button class="tka send">Enviar ticket</button><button class="tka undo">↩ Devolver a la mesa</button><button class="tka del">✕ Eliminar</button></div>'+
       '</div>';
