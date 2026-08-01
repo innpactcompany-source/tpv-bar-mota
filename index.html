@@ -315,8 +315,8 @@
   .rv-alerta{ margin:0 14px 10px; padding:10px 12px; border-radius:12px; background:#FFF4E0;
     border:1px solid #F0C97A; color:#8A5A00; font-size:13px; font-weight:800; }
   .rvcard.pend{ border-color:#F0C97A; background:#FFFCF5; }
-  .rv-tel{ margin-top:4px; font-size:12.5px; font-weight:700; color:var(--muted); }
-  .rv-conf{ display:flex; align-items:center; gap:8px; margin-top:9px; padding-top:9px; border-top:1px solid var(--blue-line); }
+  .rv-tel{ margin-top:8px; font-size:13px; font-weight:700; color:var(--muted); }
+  .rv-conf{ display:flex; align-items:center; gap:8px; margin-top:14px; padding-top:13px; border-top:1px solid var(--blue-line); }
   .rv-pendlbl{ font-size:11px; font-weight:800; letter-spacing:.4px; color:#8A5A00;
     background:#FFEFCC; border-radius:999px; padding:3px 9px; }
   .rv-oklbl{ font-size:11.5px; font-weight:800; letter-spacing:.3px; color:#1E7A44; }
@@ -411,8 +411,8 @@
 
   /* ===== COCINA (KDS) ===== */
   :root{ --kpend:#E23A2E; --kmar:#F08C00; --klis:#2F9E44; --kserv:#8B97B8; }
-  .kds{ display:flex; flex-direction:column; height:100%; min-height:0; }
-  .kds-bar{ display:flex; align-items:center; gap:14px; padding:8px 14px; background:#fff; border-bottom:1px solid var(--blue-line); flex:0 0 auto; }
+  .kds{ display:block; }
+  .kds-bar{ display:flex; align-items:center; gap:14px; padding:8px 14px; background:#fff; border-bottom:1px solid var(--blue-line); position:sticky; top:0; z-index:6; }
   .kds-stat{ display:flex; flex-direction:column; align-items:center; }
   .kds-stat b{ font-size:22px; font-weight:800; line-height:1; font-variant-numeric:tabular-nums; }
   .kds-stat span{ font-size:8.5px; letter-spacing:.12em; color:var(--muted); font-weight:700; }
@@ -420,99 +420,113 @@
   .kds-spacer{ flex:1; }
   .kds-mute{ padding:8px 12px; border-radius:10px; background:var(--blue-tint); color:var(--blue); font-weight:700; font-size:12px; }
   .kds-clock{ font-size:20px; font-weight:800; font-variant-numeric:tabular-nums; color:var(--muted); }
-  .prodline{ display:flex; align-items:center; gap:8px; padding:8px 14px; background:#fff; border-bottom:1px solid var(--blue-line); overflow-x:auto; scrollbar-width:none; flex:0 0 auto; }
+  .prodline{ display:flex; align-items:center; gap:8px; padding:8px 14px; background:#fff; border-bottom:1px solid var(--blue-line); overflow-x:auto; scrollbar-width:none; position:sticky; top:52px; z-index:5; }
   .prodline::-webkit-scrollbar{ display:none; }
   .prodline:empty{ display:none; }
   .pl-lbl{ flex:0 0 auto; font-size:9px; letter-spacing:.18em; color:var(--muted); font-weight:800; }
   .pl-tag{ flex:0 0 auto; display:flex; align-items:center; gap:6px; background:var(--blue-tint); border:1.5px solid var(--blue-line); padding:4px 11px; border-radius:999px; font-size:13px; font-weight:600; white-space:nowrap; }
   .pl-tag b{ font-size:16px; font-weight:800; color:var(--blue); }
-  .kboard{ flex:1 1 auto; display:grid; grid-template-columns:1fr 1fr 1fr; overflow:hidden; min-height:0; }
-  .kcol{ display:flex; flex-direction:column; min-width:0; min-height:0; border-right:1px solid var(--blue-line); }
-  .kcol:last-child{ border-right:none; }
-  .kcol .col-h{ display:flex; align-items:center; gap:8px; padding:10px 13px; font-weight:800; font-size:13px; letter-spacing:.06em; color:#fff; flex:0 0 auto; }
-  .kcol[data-s="pendiente"] .col-h{ background:var(--kpend); }
-  .kcol[data-s="en_marcha"] .col-h{ background:var(--kmar); }
-  .kcol[data-s="lista"] .col-h{ background:var(--klis); }
-  .kcol .col-h .n{ margin-left:auto; background:rgba(255,255,255,.25); border-radius:8px; padding:1px 9px; font-size:13px; }
-  .kcol .col-body{ flex:1 1 auto; overflow-y:auto; padding:11px; display:flex; flex-direction:column; gap:11px; min-height:0; }
-  .korder{ background:#fff; border:1.5px solid var(--blue-line); border-left:6px solid var(--muted); border-radius:13px; overflow:hidden; box-shadow:var(--shadow); }
+  /* ================= COCINA (KDS) =================
+     Un solo listado, sin pestañas: en el móvil del cocinero todas las
+     comandas se ven de una sola pasada, ordenadas por urgencia.
+     Lo que ya está listo baja al final y se encoge para no estorbar. */
+  .kfeed{ padding:12px 12px 120px; display:flex; flex-direction:column; gap:14px; background:var(--bg); }
+  .kfeed .empty{ padding:40px 20px; text-align:center; }
+  .ksep{ display:flex; align-items:center; gap:10px; margin:6px 2px 0;
+    font-size:11px; font-weight:800; letter-spacing:.12em; color:var(--muted); }
+  .ksep::after{ content:''; flex:1; height:1px; background:var(--blue-line); }
+
+  .korder{ background:#fff; border:2px solid var(--blue-line); border-left:8px solid var(--muted);
+    border-radius:16px; overflow:hidden; box-shadow:var(--shadow); }
   .korder[data-s="pendiente"]{ border-left-color:var(--kpend); }
   .korder[data-s="en_marcha"]{ border-left-color:var(--kmar); }
   .korder[data-s="lista"]{ border-left-color:var(--klis); }
-  .korder.late{ animation:klate 1.2s ease-in-out infinite; }
-  @keyframes klate{ 0%,100%{ box-shadow:var(--shadow); } 50%{ box-shadow:0 0 0 4px rgba(226,58,46,.35); } }
-  .korder .o-top{ display:flex; align-items:center; gap:9px; padding:10px 12px 6px; }
-  .korder .o-mesa{ font-weight:800; font-size:16px; color:var(--blue); }
-  .korder .o-timer{ margin-left:auto; font-size:24px; font-weight:800; font-variant-numeric:tabular-nums; line-height:1; }
+  .korder.late{ border-color:var(--kpend); animation:klate 1.2s ease-in-out infinite; }
+  @keyframes klate{ 0%,100%{ box-shadow:var(--shadow); } 50%{ box-shadow:0 0 0 5px rgba(226,58,46,.30); } }
+
+  .korder .o-top{ display:flex; align-items:center; gap:10px; padding:13px 14px 8px; flex-wrap:wrap; }
+  .korder .o-mesa{ font-weight:800; font-size:23px; color:var(--blue); line-height:1.1; }
+  .korder .o-timer{ margin-left:auto; font-size:30px; font-weight:800; font-variant-numeric:tabular-nums; line-height:1; }
   .t-ok{ color:var(--klis); } .t-warn{ color:var(--kmar); } .t-bad{ color:var(--kpend); }
-  .korder .o-items{ padding:2px 12px 10px; display:flex; flex-direction:column; gap:8px; }
-  .itrow{ border-radius:10px; padding:8px 10px 9px; border:1.5px solid var(--blue-line); background:var(--blue-tint); }
-  .itrow.done{ opacity:.5; }
-  .it-head{ display:flex; align-items:baseline; gap:8px; }
-  .it-head .q{ font-weight:800; font-size:19px; color:var(--blue); min-width:26px; font-variant-numeric:tabular-nums; }
-  .it-head .nm{ font-weight:700; font-size:15.5px; line-height:1.2; }
-  .units{ display:flex; flex-wrap:wrap; gap:7px; margin-top:8px; align-items:center; }
-  .uchip{ display:flex; align-items:center; gap:6px; min-height:40px; padding:6px 12px; border-radius:10px; color:#fff; font-weight:800; font-size:11px; letter-spacing:.04em; }
-  .uchip b{ font-size:19px; font-weight:800; font-variant-numeric:tabular-nums; line-height:1; }
-  .uchip.p{ background:var(--kpend); } .uchip.m{ background:var(--kmar); } .uchip.l{ background:var(--klis); }
-  .uchip.s{ background:var(--kserv); opacity:.85; }
-  .uchip:active:not(.s){ transform:scale(.95); }
-  .it-undo{ margin-left:auto; width:36px; height:36px; border-radius:9px; background:#fff; border:1.5px solid var(--blue-line); color:var(--muted); font-size:14px; flex:0 0 auto; }
-  .it-undo:disabled{ opacity:.25; }
-  .korder .o-act{ display:flex; border-top:1.5px solid var(--blue-line); }
-  .korder .o-act .main{ flex:1; padding:13px; font-weight:800; font-size:14px; letter-spacing:.06em; color:#fff; }
+  .o-nueva{ font-size:10px; font-weight:800; letter-spacing:.1em; color:#fff;
+    background:var(--kpend); border-radius:999px; padding:4px 10px; animation:kblink 1s ease-in-out infinite; }
+  @keyframes kblink{ 0%,100%{ opacity:1; } 50%{ opacity:.35; } }
+
+  .korder .o-items{ padding:4px 12px 12px; display:flex; flex-direction:column; gap:7px; }
+  /* cada línea = un plato, como en la cuenta de la mesa */
+  .ki{ display:flex; align-items:center; gap:11px; padding:11px 12px; border-radius:12px;
+    border:2px solid var(--blue-line); background:#fff; }
+  .ki-q{ font-size:25px; font-weight:800; color:var(--blue); min-width:32px; text-align:center; }
+  .ki-n{ flex:1; font-size:19px; font-weight:700; line-height:1.2; min-width:0; }
+  .ki-nota{ display:block; margin-top:4px; font-size:14px; font-weight:700; color:#8A5A00; }
+  .ki-est{ font-size:10.5px; font-weight:800; letter-spacing:.08em; padding:4px 9px; border-radius:999px; }
+  .ki-b{ width:60px; min-height:56px; flex:0 0 auto; border-radius:13px; border:0;
+    background:var(--blue); color:#fff; font-weight:800;
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1px; line-height:1; }
+  .kb-ic{ font-size:22px; }
+  .kb-n{ font-size:12px; font-weight:800; opacity:.9; font-variant-numeric:tabular-nums; }
+  .ki-prog{ display:block; margin-top:3px; font-size:13px; font-weight:800; color:var(--kmar); }
+  .ki-b:disabled{ opacity:.3; }
+  .ki-b:active{ transform:scale(.93); }
+  .ki.mar{ background:#FFF6E5; border-color:var(--kmar); }
+  .ki.mar .ki-est{ background:var(--kmar); color:#fff; }
+  .ki.mar .ki-b{ background:var(--kmar); }
+  .ki.lis{ background:#E9F9EF; border-color:var(--klis); }
+  .ki.lis .ki-est{ background:var(--klis); color:#fff; }
+  .ki.lis .ki-b{ background:var(--klis); }
+  .ki.serv{ background:#F2F5F9; border-color:var(--blue-line); opacity:.55; }
+  .ki.serv .ki-est{ background:var(--kserv); color:#fff; }
+  .ki.serv .ki-n{ text-decoration:line-through; }
+  .o-nud{ width:100%; font-size:13px; font-weight:700; color:var(--muted); }
+
+  /* comanda entera lista -> todo en verde, se ve desde lejos */
+  .korder[data-s="lista"]{ background:#E9F9EF; border-color:var(--klis); }
+  .korder[data-s="lista"] .o-mesa{ color:#12703C; }
+  .korder[data-s="lista"] .ki{ background:#fff; }
+
+  .korder .o-act{ display:flex; border-top:2px solid var(--blue-line); }
+  .korder .o-act .main{ flex:1; padding:19px 13px; font-weight:800; font-size:17px; letter-spacing:.05em; color:#fff; }
   .korder[data-s="pendiente"] .o-act .main{ background:var(--kpend); }
   .korder[data-s="en_marcha"] .o-act .main{ background:var(--kmar); }
   .korder[data-s="lista"] .o-act .main{ background:var(--klis); }
-  #kds-toast{ position:fixed; bottom:18px; left:50%; transform:translateX(-50%) translateY(140%); background:var(--klis); color:#fff; font-weight:800; padding:12px 20px; border-radius:12px; font-size:14px; transition:transform .3s ease; z-index:200; box-shadow:0 6px 20px rgba(16,35,90,.25); text-align:center; max-width:90vw; }
+
+  /* comandas ya listas: se pliegan al final del listado */
+
+  #kds-toast{ position:fixed; bottom:18px; left:50%; transform:translateX(-50%) translateY(140%);
+    background:var(--klis); color:#fff; font-weight:800; padding:14px 22px; border-radius:12px; font-size:15px;
+    transition:transform .3s ease; z-index:200; box-shadow:0 6px 20px rgba(16,35,90,.25); text-align:center; max-width:90vw; }
   #kds-toast.brand{ background:var(--blue); }
   #kds-toast.on{ transform:translateX(-50%) translateY(0); }
-  .kds-tabs{ display:none; }
-  @media (max-width:900px){
-    .kds-tabs{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px; padding:8px 12px; background:#fff; border-bottom:1px solid var(--blue-line); flex:0 0 auto; }
-    .ktab{ display:flex; flex-direction:column; align-items:center; gap:2px; padding:9px 4px; border-radius:11px; background:var(--blue-tint); font-weight:800; font-size:10px; letter-spacing:.03em; color:var(--muted); line-height:1.1; }
-    .ktab .kt-n{ font-size:18px; font-weight:800; font-variant-numeric:tabular-nums; }
-    .ktab.p.active{ background:var(--kpend); color:#fff; }
-    .ktab.m.active{ background:var(--kmar); color:#fff; }
-    .ktab.l.active{ background:var(--klis); color:#fff; }
-    .ktab.active .kt-n{ color:#fff; }
-    .kboard{ grid-template-columns:1fr; overflow:hidden; }
-    .kcol{ display:none; border-right:none; }
-    .kcol.active{ display:flex; }
-    .kcol .col-h{ display:none; }
-    .kds-stat{ display:none; }
-    .kds-bar{ gap:10px; padding:7px 12px; }
-    .kds-clock{ font-size:16px; }
-    .korder .o-timer{ font-size:22px; }
-    .korder .o-mesa{ font-size:17px; }
-    .it-head .nm{ font-size:16px; }
-    .uchip{ font-size:12px; min-height:46px; padding:8px 14px; }
-    .uchip b{ font-size:20px; }
+
+  @media (min-width:900px){
+    .kfeed{ display:grid; grid-template-columns:repeat(auto-fill,minmax(340px,1fr)); align-content:start; }
+    .ksep{ grid-column:1/-1; }
   }
 
   /* reservas */
   .rv-addwrap{ padding:14px 12px 4px; }
   .rv-add{ width:100%; background:var(--blue); color:#fff; border-radius:13px; padding:15px; font-weight:800; font-size:16px; box-shadow:var(--shadow); }
   .rv-add:active{ background:var(--blue-dark); }
-  .rvlist{ padding:10px 12px 24px; display:flex; flex-direction:column; gap:10px; }
-  .rvcard{ background:var(--blue-tint); border-radius:14px; padding:13px 14px; cursor:pointer; transition:transform .06s; }
+  .rvlist{ padding:12px 12px 28px; display:flex; flex-direction:column; gap:16px; }
+  .rvcard{ background:var(--blue-tint); border-radius:16px; padding:16px 16px 18px; cursor:pointer; transition:transform .06s;
+    border:1px solid var(--blue-line); }
   .rvcard.web{ border-left:4px solid var(--blue); }
   .rv-web{ font-size:9px; font-weight:800; color:#fff; background:var(--blue); padding:2px 7px; border-radius:5px; letter-spacing:.06em; margin-left:7px; vertical-align:middle; }
   .rvcard:active{ transform:scale(.98); }
   .rv-edit{ margin-left:auto; font-size:11.5px; font-weight:700; color:var(--blue); opacity:.75; }
-  .rv-top{ display:flex; align-items:center; gap:6px; }
+  .rv-top{ display:flex; align-items:center; gap:8px; }
   .rv-fch{ font-size:13px; font-weight:800; color:var(--blue); text-transform:capitalize; }
   .rv-del{ width:26px; height:26px; color:var(--muted); font-size:15px; }
   .rv-del:active{ color:var(--danger); }
   .rv-nm{ font-size:18px; font-weight:700; }
-  .rv-mid{ display:flex; align-items:center; gap:10px; margin-top:4px; }
+  .rv-mid{ display:flex; align-items:center; gap:10px; margin-top:9px; }
   .rv-pers-badge{ margin-left:auto; flex:0 0 auto; background:var(--blue); color:#fff; border-radius:999px; padding:4px 12px; font-size:12px; font-weight:700; }
   .rv-pers-badge b{ font-size:15px; font-weight:800; }
   .perschips{ display:grid; grid-template-columns:repeat(6,1fr); gap:6px; margin-bottom:7px; }
   .pchip{ padding:11px 2px; border-radius:10px; background:var(--blue-tint); color:var(--blue); font-weight:800; font-size:15px; border:2px solid transparent; }
   .pchip.on{ background:var(--blue); color:#fff; border-color:var(--blue); }
   .rv-meta{ font-size:13px; color:var(--muted); margin-top:2px; }
-  .rv-note{ font-size:13.5px; margin-top:7px; line-height:1.35; }
+  .rv-note{ font-size:13.5px; margin-top:10px; line-height:1.4; color:var(--muted); }
   .rvform{ display:flex; flex-direction:column; gap:12px; margin-top:14px; }
   .rvrow{ display:grid; grid-template-columns:1.4fr 1fr; gap:10px; }
   .rv-hora-b{ background:var(--blue-2); color:var(--blue); border-radius:8px; padding:3px 9px; font-size:13px; font-weight:800; margin-left:8px; }
@@ -1162,7 +1176,7 @@ const etiquetaCaja=()=>{ const n=new Date();
 let state = {
   tableList:[...DEFAULT_TABLES],
   tables:{},                 // name -> { sub:'', lines:[{name,price,qty}] }
-  view:'board', active:null, tab:'add', fb:'comida', openCat:null, addSearch:'', boardView:'list', planEdit:false, planSnap:true, planUnir:false, unirSel:null, kTab:'pendiente',
+  view:'board', active:null, tab:'add', fb:'comida', openCat:null, addSearch:'', boardView:'list', planEdit:false, planSnap:true, planUnir:false, unirSel:null,
   caja:{ count:0, total:0, date:today() },
   tickets:[],                // tickets cobrados de hoy: {mesa,total,items:[{name,qty,price}],at}
   reportTab:'resumen',       // resumen | tickets | productos
@@ -1804,7 +1818,7 @@ function askDeleteBarra(n){
 
 /* ---- menú del molino: Barra / Cocina / Reservas ---- */
 function openMenu(){ state.view='menu'; renderApp(); }
-function openCocina(){ state.view='cocina'; renderApp(); }
+function openCocina(){ state.view='cocina'; desbloquearAudio(); renderApp(); }
 function openReservas(){ state.view='reservas'; marcarReservasVistas(); renderApp(); }
 function openHistorial(){ state.view='historial'; state.histMes=today().slice(0,7); state.histData=null; renderApp(); }
 function histMover(d){
@@ -2616,6 +2630,20 @@ function logout(){
    ================================================================ */
 let muted=false, kPrevMesas=new Set(), kInit=false, toastTimer;
 const foodLines = mesa => tbl(mesa).lines.filter(l=>isKitchen(l.name));
+
+/* ---- Orden de salida ----
+   Lo que se pica antes sale antes: las tapas primero, y luego el resto
+   por el orden en que se pidió. Es el orden en que la cocina debe montar
+   los platos, no el orden en que el camarero los tecleó. */
+const ORDEN_SALIDA = ['Tapas','Menú Desayunos','Bocadillos y Montados','Burguers, Sándwich y Perrito','Combinados'];
+function pase(name){ const i=ORDEN_SALIDA.indexOf(ITEM_CAT[canonical(name)]); return i<0?99:i; }
+function ordenSalida(lines){
+  return lines.slice().sort((a,b)=>{
+    const d=pase(a.name)-pase(b.name); if(d) return d;
+    const ta=a.creada_en?new Date(a.creada_en).getTime():0, tb=b.creada_en?new Date(b.creada_en).getTime():0;
+    return ta-tb;
+  });
+}
 function lineState(l){ const km=l.km||0, kl=l.kl||0, ks=l.ks||0; return {p:Math.max(0,l.qty-km-kl-ks), m:km, l:kl, s:ks}; }
 function kComandas(){
   const list=[];
@@ -2623,7 +2651,7 @@ function kComandas(){
     const fl=foodLines(mesa); if(!fl.length) return;
     if(!fl.some(l=>{const s=lineState(l); return (s.p+s.m+s.l)>0;})) return;  // todo servido -> archivada
     const times=fl.map(l=>l.creada_en?new Date(l.creada_en).getTime():Date.now());
-    list.push({ mesa, sub:tbl(mesa).sub, creada_en:Math.min(...times), lines:fl });
+    list.push({ mesa, sub:tbl(mesa).sub, creada_en:Math.min(...times), lines:ordenSalida(fl) });
   });
   return list.sort((a,b)=>a.creada_en-b.creada_en);
 }
@@ -2667,14 +2695,68 @@ function unitChips(c,it){
   h+='<button class="it-undo" onclick="kUndo(\''+m+'\',\''+nm+'\')" '+((s.m+s.l+s.s)>0?'':'disabled')+'>↩</button>';
   return h;
 }
-const BULK_TXT={pendiente:'EMPEZAR TODO ▶',en_marcha:'TODO LISTO ✓',lista:'SERVIR TODO'};
+/* Un solo botón por comanda que va pasando de estado:
+   EMPEZAR  ->  MARCAR LISTO  ->  SERVIDO */
+const BULK_TXT={pendiente:'▶  EMPEZAR',en_marcha:'✓  MARCAR LISTO',lista:'SERVIDO'};
+
 function orderCard(c){
   const age=Date.now()-c.creada_en, st=kAgg(c), late=st!=='lista'&&age>8*60000, m=esc(c.mesa);
-  return '<div class="korder '+(late?'late':'')+'" data-s="'+st+'">'+
+  const nueva = st==='pendiente' && age<90000;
+  const nUd = c.lines.reduce((s,l)=>s+l.qty,0);
+  const filas = c.lines.map(it=>{
+    const s=lineState(it), nm=esc(it.name);
+    /* El botón actúa sobre lo primero que quede por avanzar. El contador
+       enseña cuántas de esas unidades ya han pasado: con 3 bravas y una
+       empezada pone 1/3, y así se puede cantar "ha salido 1 de 3". */
+    const from = s.p>0?'p' : s.m>0?'m' : s.l>0?'l' : null;
+    const est  = from==='p'?'pdte' : from==='m'?'mar' : from==='l'?'lis' : 'serv';
+    const LBL  = {pdte:'', mar:'HACIENDO', lis:'LISTO', serv:'SERVIDO'};
+    const hechas = from==='p' ? (it.qty-s.p) : from==='m' ? (s.l+s.s) : from==='l' ? s.s : it.qty;
+    const parcial = it.qty>1 && est!=='serv';
+    const ico = est==='pdte'?'▶':est==='mar'?'✓':est==='lis'?'↑':'✓';
+    return '<div class="ki '+est+'">'+
+      '<span class="ki-q num">'+it.qty+'</span>'+
+      '<span class="ki-n">'+it.name+
+        (parcial&&hechas>0?'<span class="ki-prog">'+hechas+' de '+it.qty+'</span>':'')+
+        (it.nota?'<span class="ki-nota">'+esc(it.nota)+'</span>':'')+'</span>'+
+      (LBL[est]?'<span class="ki-est">'+LBL[est]+'</span>':'')+
+      '<button class="ki-b'+(parcial?' part':'')+'" data-m="'+m+'" data-i="'+nm+'" '+(est==='serv'?'disabled':'')+'>'+
+        '<span class="kb-ic">'+ico+'</span>'+(parcial?'<span class="kb-n">'+hechas+'/'+it.qty+'</span>':'')+'</button>'+
+    '</div>';
+  }).join('');
+  return '<div class="korder '+(late?'late ':'')+'" data-s="'+st+'">'+
     '<div class="o-top"><span class="o-mesa">'+c.mesa+(c.sub?' · '+c.sub:'')+'</span>'+
-      '<span class="o-timer '+timerClass(age)+'" data-t="'+c.creada_en+'">'+fmtTimer(age)+'</span></div>'+
-    '<div class="o-items">'+c.lines.map(it=>'<div class="itrow '+((it.ks||0)>=it.qty?'done':'')+'"><div class="it-head"><span class="q">'+it.qty+'×</span><span class="nm">'+it.name+'</span></div>'+(it.nota?'<div class="it-nota">Nota: '+esc(it.nota)+'</div>':'')+'<div class="units">'+unitChips(c,it)+'</div></div>').join('')+'</div>'+
+      (nueva?'<span class="o-nueva">NUEVA</span>':'')+
+      '<span class="o-timer '+timerClass(age)+'" data-t="'+c.creada_en+'">'+fmtTimer(age)+'</span>'+
+      '<span class="o-nud">'+nUd+' plato'+(nUd===1?'':'s')+' · toca el botón por cada uno que salga</span></div>'+
+    '<div class="o-items">'+filas+'</div>'+
     '<div class="o-act"><button class="main" onclick="kBulk(\''+m+'\')">'+BULK_TXT[st]+'</button></div></div>';
+}
+
+/* Un toque = una unidad. Mantener pulsado = todas las que queden.
+   Se enlaza tras pintar, para poder distinguir toque de pulsación larga. */
+function wireKitchenBtns(){
+  document.querySelectorAll('.ki-b:not([disabled])').forEach(b=>{
+    if(b._wired) return; b._wired=true;
+    let t=null, largo=false;
+    const mesa=b.dataset.m, item=b.dataset.i;
+    b.addEventListener('pointerdown',()=>{ largo=false;
+      t=setTimeout(()=>{ largo=true; buzz(30); kPasoItem(mesa,item,true); },550); });
+    const fin=()=>{ clearTimeout(t); };
+    b.addEventListener('pointerup',()=>{ fin(); if(!largo) kPasoItem(mesa,item,false); });
+    b.addEventListener('pointercancel',fin);
+    b.addEventListener('pointerleave',fin);
+  });
+}
+
+/* un toque en el botón de una línea la hace avanzar de estado */
+async function kPasoItem(mesa,item,todas){
+  const l=tbl(mesa).lines.find(x=>x.name===item); if(!l) return;
+  const s=lineState(l);
+  const from = s.p>0?'p' : s.m>0?'m' : s.l>0?'l' : null;
+  if(!from) return;
+  const n = todas ? (from==='p'?s.p : from==='m'?s.m : s.l) : 1;
+  for(let i=0;i<n;i++) await kMove(mesa,item,from);
 }
 
 function renderCocina(main){
@@ -2687,39 +2769,39 @@ function renderCocina(main){
       '<button class="kds-mute" id="kMute">'+(muted?'Sonido ✕':'Sonido ✓')+'</button>'+
       '<div class="kds-clock" id="kClock">'+kClockTxt()+'</div></div>'+
     '<div class="prodline" id="prodline"></div>'+
-    '<div class="kds-tabs">'+
-      '<button class="ktab p" data-s="pendiente">POR HACER<span class="kt-n" id="ktPend">0</span></button>'+
-      '<button class="ktab m" data-s="en_marcha">EN MARCHA<span class="kt-n" id="ktMar">0</span></button>'+
-      '<button class="ktab l" data-s="lista">LISTAS<span class="kt-n" id="ktLis">0</span></button>'+
-    '</div>'+
-    '<div class="kboard">'+
-      '<div class="kcol" data-s="pendiente"><div class="col-h">POR HACER<span class="n" id="nPend">0</span></div><div class="col-body" id="colPend"></div></div>'+
-      '<div class="kcol" data-s="en_marcha"><div class="col-h">EN MARCHA<span class="n" id="nMar">0</span></div><div class="col-body" id="colMar"></div></div>'+
-      '<div class="kcol" data-s="lista"><div class="col-h">LISTAS PARA SERVIR<span class="n" id="nLis">0</span></div><div class="col-body" id="colLis"></div></div>'+
-    '</div>';
+    '<div class="kfeed" id="kfeed"></div>';
   main.appendChild(wrap);
-  wrap.querySelector('#kMute').onclick=()=>{ muted=!muted; wrap.querySelector('#kMute').textContent=muted?'Sonido ✕':'Sonido ✓'; };
-  wrap.querySelectorAll('.ktab').forEach(b=>b.onclick=()=>kSetTab(b.dataset.s));
+  wrap.querySelector('#kMute').onclick=()=>{ muted=!muted; desbloquearAudio();
+    wrap.querySelector('#kMute').textContent=muted?'Sonido ✕':'Sonido ✓';
+    if(!muted) campanaCocina(); };
+  wrap.addEventListener('pointerdown',desbloquearAudio,{once:true});   // el navegador exige un toque
   kRenderBoard();
-  kSetTab(state.kTab);
 }
-function kSetTab(tab){
-  state.kTab=tab;
-  document.querySelectorAll('.kcol').forEach(c=>c.classList.toggle('active', c.dataset.s===tab));
-  document.querySelectorAll('.ktab').forEach(b=>b.classList.toggle('active', b.dataset.s===tab));
-}
+
 function kRenderBoard(){
   if(state.view!=='cocina') return;
   const comandas=kComandas();
   const cur=new Set(comandas.map(c=>c.mesa));
-  if(kInit){ for(const mm of cur){ if(!kPrevMesas.has(mm)){ beep(2); break; } } }
+  if(kInit){ for(const mm of cur){ if(!kPrevMesas.has(mm)){ campanaCocina(); showToast('COMANDA NUEVA · '+mm,true); break; } } }
   kPrevMesas=cur; kInit=true;
+
   const pend=comandas.filter(c=>kAgg(c)==='pendiente'), mar=comandas.filter(c=>kAgg(c)==='en_marcha'), lis=comandas.filter(c=>kAgg(c)==='lista');
-  const setCol=(id,arr,emp)=>{ const e=document.getElementById(id); if(e) e.innerHTML=arr.map(orderCard).join('')||'<div class="empty">'+emp+'</div>'; };
-  setCol('colPend',pend,'Sin comandas pendientes'); setCol('colMar',mar,'Nada en marcha'); setCol('colLis',lis,'Nada listo aún');
+  /* Orden del listado: primero lo que la cocina tiene que hacer, y dentro
+     de cada grupo lo más antiguo arriba. Lo ya listo, al final. */
+  const viejo=(a,b)=>a.creada_en-b.creada_en;
+  const feed=document.getElementById('kfeed');
+  if(feed){
+    if(!comandas.length){ feed.innerHTML='<div class="empty">No hay comandas en cocina.</div>'; }
+    else{
+      let h='';
+      if(pend.length) h+='<div class="ksep">POR HACER · '+pend.length+'</div>'+pend.sort(viejo).map(orderCard).join('');
+      if(mar.length)  h+='<div class="ksep">EN MARCHA · '+mar.length+'</div>'+mar.sort(viejo).map(orderCard).join('');
+      if(lis.length)  h+='<div class="ksep">LISTAS PARA SERVIR · '+lis.length+'</div>'+lis.sort(viejo).map(orderCard).join('');
+      feed.innerHTML=h;
+    }
+    wireKitchenBtns();
+  }
   const set=(id,v)=>{ const e=document.getElementById(id); if(e) e.textContent=v; };
-  set('nPend',pend.length); set('nMar',mar.length); set('nLis',lis.length);
-  set('ktPend',pend.length); set('ktMar',mar.length); set('ktLis',lis.length);
   let up=0,um=0,ul=0; comandas.forEach(c=>c.lines.forEach(it=>{const s=lineState(it); up+=s.p;um+=s.m;ul+=s.l;}));
   set('kPend',up); set('kMar',um); set('kLis',ul);
   const agg={}; comandas.forEach(c=>c.lines.forEach(it=>{const s=lineState(it); if(s.p>0) agg[it.name]=(agg[it.name]||0)+s.p;}));
@@ -2728,9 +2810,43 @@ function kRenderBoard(){
 }
 
 /* sonido + toast */
-function beep(times){ if(muted) return; try{ const ctx=new (window.AudioContext||window.webkitAudioContext)();
-  for(let i=0;i<(times||1);i++){ const o=ctx.createOscillator(),g=ctx.createGain(); o.connect(g);g.connect(ctx.destination);
-    o.frequency.value=880;o.type='sine'; const t=ctx.currentTime+i*0.18; g.gain.setValueAtTime(.25,t); g.gain.exponentialRampToValueAtTime(.001,t+.14); o.start(t);o.stop(t+.15); } }catch(e){} }
+/* ---- Campana de cocina ----
+   Suena SOLO en la pantalla de cocina y a volumen alto. No es un pitido
+   discreto: es un golpe de campana repetido para que se oiga con la
+   freidora y la campana extractora en marcha.
+   El navegador no deja sonar hasta que alguien toca la pantalla una vez,
+   por eso al abrir cocina se "desbloquea" el audio con el primer toque. */
+let _ac=null;
+function audioCtx(){ try{ if(!_ac) _ac=new (window.AudioContext||window.webkitAudioContext)();
+  if(_ac.state==='suspended') _ac.resume(); return _ac; }catch(e){ return null; } }
+function desbloquearAudio(){ const c=audioCtx(); if(!c) return;
+  try{ const o=c.createOscillator(),g=c.createGain(); g.gain.value=0.0001; o.connect(g); g.connect(c.destination);
+    o.start(); o.stop(c.currentTime+0.02); }catch(e){} }
+
+/* un golpe de campana: dos armónicos que decaen, como una campana de pase */
+function golpeCampana(c,t0,vol){
+  [ [880,1], [1320,0.55], [1760,0.35], [2640,0.18] ].forEach(([f,a])=>{
+    const o=c.createOscillator(), g=c.createGain();
+    o.type='sine'; o.frequency.value=f; o.connect(g); g.connect(c.destination);
+    g.gain.setValueAtTime(0.0001,t0);
+    g.gain.exponentialRampToValueAtTime(vol*a,t0+0.006);
+    g.gain.exponentialRampToValueAtTime(0.0001,t0+1.5);
+    o.start(t0); o.stop(t0+1.55);
+  });
+}
+function campanaCocina(){
+  if(muted) return;
+  const c=audioCtx(); if(!c) return;
+  const t=c.currentTime;
+  for(let i=0;i<3;i++) golpeCampana(c,t+i*0.42,0.9);      // tres campanadas seguidas
+  try{ if(navigator.vibrate) navigator.vibrate([250,120,250,120,400]); }catch(e){}
+}
+/* pitido corto y suave para confirmaciones (plato listo, etc.) */
+function beep(times){ if(muted) return; const c=audioCtx(); if(!c) return;
+  const t=c.currentTime;
+  for(let i=0;i<(times||1);i++) golpeCampana(c,t+i*0.20,0.28);
+}
+
 function showToast(msg,brand){ let t=document.getElementById('kds-toast'); if(!t){ t=el('div'); t.id='kds-toast'; document.body.appendChild(t); }
   t.textContent=msg; t.className=brand?'brand':''; t.classList.add('on'); clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove('on'),2600); }
 
