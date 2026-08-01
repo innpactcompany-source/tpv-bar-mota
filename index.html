@@ -311,6 +311,19 @@
   .pagob svg{ opacity:.7; }
   .pagob.on{ background:var(--blue); border-color:var(--blue); color:#fff; }
   .pagob.on svg{ opacity:1; }
+  /* ---- reservas: confirmación ---- */
+  .rv-alerta{ margin:0 14px 10px; padding:10px 12px; border-radius:12px; background:#FFF4E0;
+    border:1px solid #F0C97A; color:#8A5A00; font-size:13px; font-weight:800; }
+  .rvcard.pend{ border-color:#F0C97A; background:#FFFCF5; }
+  .rv-tel{ margin-top:4px; font-size:12.5px; font-weight:700; color:var(--muted); }
+  .rv-conf{ display:flex; align-items:center; gap:8px; margin-top:9px; padding-top:9px; border-top:1px solid var(--blue-line); }
+  .rv-pendlbl{ font-size:11px; font-weight:800; letter-spacing:.4px; color:#8A5A00;
+    background:#FFEFCC; border-radius:999px; padding:3px 9px; }
+  .rv-oklbl{ font-size:11.5px; font-weight:800; letter-spacing:.3px; color:#1E7A44; }
+  .rv-okb{ margin-left:auto; padding:9px 14px; border-radius:12px; border:0;
+    background:var(--blue); color:#fff; font-size:13.5px; font-weight:800; }
+  .rv-wa{ margin-left:auto; padding:7px 12px; border-radius:12px; border:1px solid var(--blue-line);
+    background:#fff; font-size:12.5px; font-weight:700; color:var(--muted); }
   .tpago{ font-size:11px; font-weight:800; letter-spacing:.3px; color:var(--muted);
     border:1px solid var(--blue-line); border-radius:999px; padding:1px 7px; }
   .pg-v{ top:0; bottom:0; width:2px; margin-left:-1px; }
@@ -1214,7 +1227,7 @@ const LocalDB={
   async movStock(){ this.persist(); }, async logMov(){ },
   async loadProv(){ return {}; }, async addProv(){ this.persist(); return {}; }, async updProv(){ this.persist(); return {}; }, async delProv(){ this.persist(); return {}; },
   async deleteTicket(){ this.persist(); }, async restoreItems(){ this.persist(); },
-  async addReserva(){ this.persist(); return {}; }, async deleteReserva(){ this.persist(); return {}; }, async updateReserva(){ this.persist(); return {}; },
+  async addReserva(){ this.persist(); return {}; }, async deleteReserva(){ this.persist(); return {}; }, async updateReserva(){ this.persist(); return {}; }, async confirmReserva(){ this.persist(); return {}; },
   async pay(){ this.persist(); }, async payPartial(){ this.persist(); }, async payQuick(){ this.persist(); return {}; }, async resetCaja(){ this.persist(); },
   subscribe(){},
 };
@@ -1242,12 +1255,16 @@ const CloudDB={
       if(tkRes.error) tkRes = await sb.from('tickets').select('id,mesa,total,closed_at').gte('closed_at', start.toISOString()).order('closed_at',{ascending:false});
       const tk=tkRes.data||[];
       // reservas de hoy en adelante, en orden cronológico (sin límite de cantidad)
-      let rr=await sb.from('reservas').select('id,fecha,hora,nombre,personas,nota,origen,vista').gte('fecha', today()).order('fecha',{ascending:true}).order('hora',{ascending:true}).limit(5000);
+      let rr=await sb.from('reservas').select('id,fecha,hora,nombre,personas,nota,origen,vista,confirmada,telefono').gte('fecha', today()).order('fecha',{ascending:true}).order('hora',{ascending:true}).limit(5000);
+      if(rr.error) rr=await sb.from('reservas').select('id,fecha,hora,nombre,personas,nota,origen,vista').gte('fecha', today()).order('fecha',{ascending:true}).order('hora',{ascending:true}).limit(5000);
       if(rr.error) rr=await sb.from('reservas').select('id,fecha,hora,nombre,personas,nota').gte('fecha', today()).order('fecha',{ascending:true}).order('hora',{ascending:true}).limit(5000);
       if(rr.error) rr=await sb.from('reservas').select('id,fecha,nombre,personas,nota').gte('fecha', today()).order('fecha',{ascending:true}).limit(5000);
       if(!rr.error && rr.data){
         const pendientes=state.reservas.filter(x=>String(x.id||'').startsWith('tmp'));
-        state.reservas=rr.data.map(r=>({id:r.id,fecha:r.fecha,hora:r.hora||'',nombre:r.nombre||'',personas:r.personas||0,nota:r.nota||''})).concat(pendientes);
+        state.reservas=rr.data.map(r=>({id:r.id,fecha:r.fecha,hora:r.hora||'',nombre:r.nombre||'',personas:r.personas||0,nota:r.nota||'',
+          origen:r.origen||'',vista:(r.vista===false?false:true),telefono:r.telefono||'',
+          /* una reserva de la web nace SIN confirmar; las que apunta el bar a mano ya lo están */
+          confirmada:(r.confirmada!=null ? !!r.confirmada : (r.origen!=='web'))})).concat(pendientes);
         sortReservas();
       }
       const names=mesas.map(m=>m.name).sort(sortNames);
@@ -1307,14 +1324,18 @@ const CloudDB={
   async restoreItems(mesa,items){ for(const i of (items||[])){ await sb.rpc('add_item',{_mesa:mesa,_item:i.name,_price:i.price});
       if(i.qty>1) await sb.rpc('step_item',{_mesa:mesa,_item:i.name,_d:i.qty-1}); } flag(null); },
   async addReserva(r){
-    let x=await sb.from('reservas').insert({fecha:r.fecha,hora:r.hora||null,nombre:r.nombre,personas:r.personas,nota:r.nota}).select('id').single();
+    let x=await sb.from('reservas').insert({fecha:r.fecha,hora:r.hora||null,nombre:r.nombre,personas:r.personas,nota:r.nota,telefono:r.telefono||null,confirmada:true}).select('id').single();
+    if(x.error) x=await sb.from('reservas').insert({fecha:r.fecha,hora:r.hora||null,nombre:r.nombre,personas:r.personas,nota:r.nota}).select('id').single();
     if(x.error) x=await sb.from('reservas').insert({fecha:r.fecha,nombre:r.nombre,personas:r.personas,nota:r.nota}).select('id').single();
     flag(x.error);
     return x.error ? {error:x.error} : {id:(x.data&&x.data.id)};
   },
+  async confirmReserva(id,val){ if(id==null||String(id).startsWith('tmp')) return {error:{message:'La reserva aún se está guardando.'}};
+    const x=await sb.from('reservas').update({confirmada:val,vista:true}).eq('id',id); flag(x.error); return x.error?{error:x.error}:{}; },
   async deleteReserva(id){ if(id==null||String(id).startsWith('tmp')) return {}; const x=await sb.from('reservas').delete().eq('id',id); flag(x.error); return x.error?{error:x.error}:{}; },
   async updateReserva(r){ if(r.id==null||String(r.id).startsWith('tmp')) return {error:{message:'La reserva aún se está guardando. Espera un segundo y vuelve a intentarlo.'}};
-    let x=await sb.from('reservas').update({fecha:r.fecha,hora:r.hora||null,nombre:r.nombre,personas:r.personas,nota:r.nota}).eq('id',r.id);
+    let x=await sb.from('reservas').update({fecha:r.fecha,hora:r.hora||null,nombre:r.nombre,personas:r.personas,nota:r.nota,telefono:r.telefono||null,confirmada:!!r.confirmada}).eq('id',r.id);
+    if(x.error) x=await sb.from('reservas').update({fecha:r.fecha,hora:r.hora||null,nombre:r.nombre,personas:r.personas,nota:r.nota}).eq('id',r.id);
     if(x.error) x=await sb.from('reservas').update({fecha:r.fecha,nombre:r.nombre,personas:r.personas,nota:r.nota}).eq('id',r.id);
     flag(x.error); return x.error?{error:x.error}:{}; },
   async pay(mesa,total,items,sub,propina,pago){ let r=await sb.from('tickets').insert({mesa,total,items,sub,propina,pago}); if(r.error) r=await sb.from('tickets').insert({mesa,total,items,sub,propina}); if(r.error) r=await sb.from('tickets').insert({mesa,total,items,sub}); if(r.error) await sb.from('tickets').insert({mesa,total});
@@ -2019,7 +2040,7 @@ function paintBarra(){
 
 async function addReserva(r){
   const tmp='tmp'+Date.now()+Math.random().toString(36).slice(2,6);
-  const rec={ id:tmp, fecha:r.fecha, hora:r.hora||'', nombre:r.nombre, personas:r.personas, nota:r.nota };
+  const rec={ id:tmp, fecha:r.fecha, hora:r.hora||'', nombre:r.nombre, personas:r.personas, nota:r.nota, telefono:r.telefono||'', confirmada:true, origen:'' };
   state.reservas.push(rec); sortReservas(); renderApp();
   const res=await DB.addReserva(rec) || {};
   if(res.error){
@@ -2029,6 +2050,36 @@ async function addReserva(r){
     const it=state.reservas.find(x=>x.id===tmp); if(it) it.id=res.id;
   }
 }
+/* ---- Confirmar una reserva de la web ----
+   Sin confirmar = el cliente no sabe si le hemos leído. Al confirmar se
+   marca en la app Y se ofrece avisarle por WhatsApp, que es lo único que
+   hace que el cliente se entere de verdad. */
+function textoConfirmacion(r){
+  const dia=fmtFecha(r.fecha);
+  return 'Hola'+(r.nombre?' '+r.nombre.split(' ')[0]:'')+', te escribimos del Bar Piscina de Mota del Cuervo. '+
+    'Tu reserva del '+dia+(r.hora?' a las '+r.hora:'')+
+    (r.personas?' para '+r.personas+' persona'+(r.personas===1?'':'s'):'')+
+    ' está CONFIRMADA. ¡Te esperamos!';
+}
+function avisarWhatsApp(r){
+  const tel=String(r.telefono||'').replace(/[^0-9+]/g,'');
+  if(!tel) return false;
+  let num=tel.startsWith('+')?tel.slice(1):tel;
+  if(num.startsWith('00')) num=num.slice(2);          // 0034... -> 34...
+  if(num.length===9) num='34'+num;                     // móvil español a secas
+
+  window.open('https://wa.me/'+num+'?text='+encodeURIComponent(textoConfirmacion(r)),'_blank');
+  return true;
+}
+async function confirmarReserva(r){
+  const antes=r.confirmada;
+  r.confirmada=true; r.vista=true; renderApp();
+  const res=await DB.confirmReserva(r.id,true) || {};
+  if(res.error){ r.confirmada=antes; renderApp(); errorDialog('No se pudo confirmar la reserva',res.error); return; }
+  if(r.telefono) avisarWhatsApp(r);
+  else showToast('Reserva confirmada · sin teléfono, avisa tú al cliente',true);
+}
+
 function sortReservas(){ state.reservas.sort((a,b)=>((a.fecha||'')+' '+(a.hora||'')).localeCompare((b.fecha||'')+' '+(b.hora||''))); }
 async function saveReserva(orig,r){
   const antes={fecha:orig.fecha,hora:orig.hora,nombre:orig.nombre,personas:orig.personas,nota:orig.nota};
@@ -2068,7 +2119,8 @@ function errorDialog(titulo, err){
 function openReservaModal(edit){
   const ed=!!edit;
   const v={ fecha: ed?(edit.fecha||today()):today(), hora: ed?(edit.hora||''):'14:00',
-            nombre: ed?(edit.nombre||''):'', personas: ed?(edit.personas||2):2, nota: ed?(edit.nota||''):'' };
+            nombre: ed?(edit.nombre||''):'', personas: ed?(edit.personas||2):2, nota: ed?(edit.nota||''):'',
+            telefono: ed?(edit.telefono||''):'' };
   const esc=s=>String(s||'').replace(/"/g,'&quot;');
   const ov=el('div','overlay');
   ov.innerHTML='<div class="modal"><div class="m-msg">'+(ed?'Editar reserva':'Nueva reserva')+'</div>'+
@@ -2076,6 +2128,7 @@ function openReservaModal(edit){
       '<div class="rvrow"><label class="rvf"><span>Día</span><input class="rv-fecha" type="date" value="'+v.fecha+'"></label>'+
       '<label class="rvf"><span>Hora</span><input class="rv-hora" type="time" value="'+v.hora+'"></label></div>'+
       '<label class="rvf"><span>Nombre</span><input class="rv-nombre" type="text" placeholder="Quién reserva" value="'+esc(v.nombre)+'"></label>'+
+      '<label class="rvf"><span>Teléfono</span><input class="rv-tel" type="tel" inputmode="tel" placeholder="Para avisar por WhatsApp (opcional)" value="'+esc(v.telefono)+'"></label>'+
       '<div class="rvf"><span>Personas</span>'+
         '<div class="perschips">'+[2,4,6,8,10,12].map(n=>'<button class="pchip'+(n===v.personas?' on':'')+'" data-n="'+n+'">'+n+'</button>').join('')+'</div>'+
         '<input class="rv-pers num" type="number" inputmode="numeric" min="1" value="'+v.personas+'"></div>'+
@@ -2096,10 +2149,11 @@ function openReservaModal(edit){
     const nombre=ov.querySelector('.rv-nombre').value.trim();
     const personas=parseInt(ov.querySelector('.rv-pers').value)||0;
     const nota=ov.querySelector('.rv-nota').value.trim();
+    const telefono=ov.querySelector('.rv-tel').value.trim();
     if(!nombre){ ov.querySelector('.rv-nombre').focus(); return; }
     close();
-    if(ed) saveReserva(edit,{fecha,hora,nombre,personas,nota});
-    else addReserva({fecha,hora,nombre,personas,nota});
+    if(ed) saveReserva(edit,{fecha,hora,nombre,personas,nota,telefono});
+    else addReserva({fecha,hora,nombre,personas,nota,telefono,confirmada:true});
   };
 }
 function fmtFecha(f){ if(!f) return ''; const d=new Date(f+'T12:00:00'); return d.toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long'}); }
@@ -3200,6 +3254,8 @@ function provVincular(p){
 function renderReservas(main){
   const w=el('div','rv-addwrap');
   const add=el('button','rv-add','+  Añadir reserva'); add.onclick=()=>openReservaModal(); w.appendChild(add);
+  const sinConf=state.reservas.filter(r=>r.confirmada===false).length;
+  if(sinConf){ const av=el('div','rv-alerta', sinConf===1?'1 reserva de la web sin confirmar':sinConf+' reservas de la web sin confirmar'); main.appendChild(av); }
   const hoyN=state.reservas.filter(r=>r.fecha===today()).length;
   const hoyB=el('button','rv-hoy', hoyN?('Ver las '+hoyN+' de hoy'):'Hoy no hay reservas');
   hoyB.onclick=()=>avisoReservasHoy(true); w.appendChild(hoyB);
@@ -3207,12 +3263,19 @@ function renderReservas(main){
   if(!state.reservas.length){ main.appendChild(el('div','empty','No hay reservas próximas.<br>Toca «Añadir reserva» para crear una.')); return; }
   const list=el('div','rvlist');
   state.reservas.forEach(r=>{
-    const card=el('div','rvcard'+(r.origen==='web'?' web':''),
+    const pend = r.confirmada===false;
+    const card=el('div','rvcard'+(r.origen==='web'?' web':'')+(pend?' pend':''),
       '<div class="rv-top"><span class="rv-fch">'+fmtFecha(r.fecha)+'</span>'+(r.hora?'<span class="rv-hora-b num">'+r.hora+'</span>':'')+'<span class="rv-edit">Editar ›</span><button class="rv-del">✕</button></div>'+
       '<div class="rv-mid"><span class="rv-nm">'+(r.nombre||'—')+'</span>'+(r.origen==='web'?'<span class="rv-web">WEB</span>':'')+(r.personas?'<span class="rv-pers-badge"><b>'+r.personas+'</b> pers.</span>':'')+'</div>'+
-      (r.nota?'<div class="rv-note">'+r.nota+'</div>':''));
+      (r.telefono?'<div class="rv-tel">'+String(r.telefono).replace(/[^0-9+ ]/g,'')+'</div>':'')+
+      (r.nota?'<div class="rv-note">'+r.nota+'</div>':'')+
+      (pend
+        ? '<div class="rv-conf"><span class="rv-pendlbl">SIN CONFIRMAR</span><button class="rv-okb">✓ Confirmar'+(r.telefono?' y avisar':'')+'</button></div>'
+        : (r.origen==='web'?'<div class="rv-conf ok"><span class="rv-oklbl">✓ Confirmada</span>'+(r.telefono?'<button class="rv-wa">Reenviar aviso</button>':'')+'</div>':'')));
     card.onclick=()=>openReservaModal(r);
     card.querySelector('.rv-del').onclick=e=>{ e.stopPropagation(); deleteReserva(r.id); };
+    const okb=card.querySelector('.rv-okb'); if(okb) okb.onclick=e=>{ e.stopPropagation(); confirmarReserva(r); };
+    const wa=card.querySelector('.rv-wa');  if(wa)  wa.onclick=e=>{ e.stopPropagation(); avisarWhatsApp(r); };
     list.appendChild(card);
   });
   main.appendChild(list);
