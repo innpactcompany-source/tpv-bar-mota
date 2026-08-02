@@ -478,6 +478,9 @@
   .ki.serv .ki-est{ background:var(--kserv); color:#fff; }
   .ki.serv .ki-n{ text-decoration:line-through; }
   .o-nud{ width:100%; font-size:13px; font-weight:700; color:var(--muted); }
+  .o-quitar{ width:40px; height:40px; flex:0 0 auto; border-radius:11px; border:2px solid var(--blue-line);
+    background:#fff; color:var(--muted); font-size:17px; font-weight:800; }
+  .o-quitar:active{ transform:scale(.92); }
 
   /* comanda entera lista -> todo en verde, se ve desde lejos */
   .korder[data-s="lista"]{ background:#E9F9EF; border-color:var(--klis); }
@@ -1287,8 +1290,9 @@ const CloudDB={
       (orders||[]).forEach(o=>{ if(!tables[o.mesa]) tables[o.mesa]={sub:'',lines:[]};
         tables[o.mesa].lines.push({name:o.item,price:Number(o.price),qty:o.qty,km:o.km||0,kl:o.kl||0,ks:o.ks||0,creada_en:o.creada_en||null,nota:o.nota||''}); });
       Object.values(tables).forEach(t=>t.lines.sort((a,b)=>a.name.localeCompare(b.name,'es')));
+      kAplicarToques(tables);           // no pisar lo que cocina acaba de marcar
       state.tableList=names; state.tables=tables;
-      state.tickets = tk.map(r=>({id:r.id,mesa:r.mesa,sub:r.sub||'',total:Number(r.total),propina:Number(r.propina||0),items:r.items||[],at:r.closed_at}));
+      state.tickets = tk.map(r=>({id:r.id,mesa:r.mesa,sub:r.sub||'',total:Number(r.total),propina:Number(r.propina||0),items:r.items||[],at:r.closed_at,pago:r.pago||'efectivo'}));
       await this.loadStock(); await this.loadProv();
       state.caja={ count:state.tickets.length, total:state.tickets.reduce((s,t)=>s+t.total,0), date:today() };
       online=true;
@@ -2631,6 +2635,26 @@ function logout(){
 let muted=false, kPrevMesas=new Set(), kInit=false, toastTimer;
 const foodLines = mesa => tbl(mesa).lines.filter(l=>isKitchen(l.name));
 
+/* ---- Protección contra recargas ----
+   Al tocar un plato en cocina se guarda en la nube, pero la app recarga cada
+   pocos segundos. Si la recarga llega antes que el guardado, machaca lo que
+   acabas de marcar y la comanda "vuelve a cero". Aquí se anota lo tocado
+   durante 30 s: mientras tanto manda lo que marcó el cocinero. */
+const kToques={};
+const kKey=(mesa,item)=>mesa+'\u0000'+item;
+function kMarcar(mesa,item,km,kl,ks){ kToques[kKey(mesa,item)]={km,kl,ks,ts:Date.now()}; }
+function kAplicarToques(tables){
+  const ahora=Date.now();
+  Object.keys(kToques).forEach(k=>{
+    const t=kToques[k];
+    if(ahora-t.ts>30000){ delete kToques[k]; return; }
+    const [mesa,item]=k.split('\u0000');
+    const tb=tables[mesa]; if(!tb) return;
+    const l=tb.lines.find(x=>x.name===item); if(!l) return;
+    if((l.km||0)+(l.kl||0)+(l.ks||0) < t.km+t.kl+t.ks){ l.km=t.km; l.kl=t.kl; l.ks=t.ks; }
+  });
+}
+
 /* ---- Orden de salida ----
    Lo que se pica antes sale antes: las tapas primero, y luego el resto
    por el orden en que se pidió. Es el orden en que la cocina debe montar
@@ -2664,6 +2688,7 @@ async function kMove(mesa,item,from){
   if(from==='p' && s.p>0){ l.km++; }
   else if(from==='m' && s.m>0){ l.km--; l.kl++; beep(1); showToast(mesa+': '+item+' LISTO — recoger', true); }
   else if(from==='l' && s.l>0){ l.kl--; l.ks++; kCheckDone(mesa); }
+  kMarcar(mesa,item,l.km,l.kl,l.ks);
   kRenderBoard(); await DB.setKitchen(mesa,item,l.km,l.kl,l.ks);
 }
 async function kUndo(mesa,item){
@@ -2678,8 +2703,31 @@ async function kBulk(mesa){
     else if(st==='en_marcha'){ l.kl=l.kl+s.p+s.m; l.km=0; }
     else { l.ks=l.ks+s.l; l.kl=0; } });
   if(st==='en_marcha') showToast(mesa+' COMPLETA — servir', true);
+  if(st==='lista') showToast(mesa+' SERVIDA — fuera de cocina', false);
+  fl.forEach(l=>kMarcar(mesa,l.name,l.km||0,l.kl||0,l.ks||0));
   kRenderBoard(); for(const l of fl){ await DB.setKitchen(mesa,l.name,l.km||0,l.kl||0,l.ks||0); }
 }
+/* Quitar una comanda de cocina a mano.
+   No borra nada de la cuenta: marca los platos como servidos, que es lo que
+   saca la comanda del listado. Lo pedido se sigue cobrando igual. */
+function kQuitar(mesa){
+  const fl=foodLines(mesa); if(!fl.length) return;
+  const pend=fl.reduce((n,l)=>{const s=lineState(l); return n+s.p+s.m+s.l;},0);
+  confirmDialog({
+    message:'Quitar '+mesa+' de cocina',
+    sub: (pend>0 ? 'Quedan '+pend+' plato'+(pend===1?'':'s')+' sin marcar y se darán por servidos. ' : '')
+       + 'La comanda desaparece de cocina. La cuenta de la mesa NO se toca: se cobra igual.',
+    okLabel:'Quitar de cocina',
+    danger:true,
+    onOk: async ()=>{
+      fl.forEach(l=>{ l.km=0; l.kl=0; l.ks=l.qty; kMarcar(mesa,l.name,0,0,l.qty); });
+      showToast(mesa+' fuera de cocina', false);
+      kRenderBoard();
+      for(const l of fl){ await DB.setKitchen(mesa,l.name,0,0,l.qty); }
+    }
+  });
+}
+
 function kCheckDone(mesa){ const fl=foodLines(mesa); if(fl.length && fl.every(l=>(l.ks||0)>=l.qty)) showToast(mesa+' completada', false); }
 
 function fmtTimer(ms){ const s=Math.max(0,Math.floor(ms/1000)); return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0'); }
@@ -2728,6 +2776,7 @@ function orderCard(c){
     '<div class="o-top"><span class="o-mesa">'+c.mesa+(c.sub?' · '+c.sub:'')+'</span>'+
       (nueva?'<span class="o-nueva">NUEVA</span>':'')+
       '<span class="o-timer '+timerClass(age)+'" data-t="'+c.creada_en+'">'+fmtTimer(age)+'</span>'+
+      '<button class="o-quitar" onclick="kQuitar(\''+m+'\')" title="Quitar de cocina">✕</button>'+
       '<span class="o-nud">'+nUd+' plato'+(nUd===1?'':'s')+' · toca el botón por cada uno que salga</span></div>'+
     '<div class="o-items">'+filas+'</div>'+
     '<div class="o-act"><button class="main" onclick="kBulk(\''+m+'\')">'+BULK_TXT[st]+'</button></div></div>';
