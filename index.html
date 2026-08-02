@@ -1238,7 +1238,7 @@ const LocalDB={
   async setInfo(){ this.persist(); },
   async setUnion(){ this.persist(); },
   async deleteMesa(){ this.persist(); },
-  async setKitchen(){ this.persist(); },
+  async setKitchen(){ this.persist(); return {}; },
   async setPrice(){ this.persist(); }, async setNota(){ this.persist(); return {}; },
   async loadStock(){ return {}; }, async setStock(){ this.persist(); return {}; }, async delStock(){ this.persist(); return {}; },
   async movStock(){ this.persist(); }, async logMov(){ },
@@ -1291,6 +1291,7 @@ const CloudDB={
         tables[o.mesa].lines.push({name:o.item,price:Number(o.price),qty:o.qty,km:o.km||0,kl:o.kl||0,ks:o.ks||0,creada_en:o.creada_en||null,nota:o.nota||''}); });
       Object.values(tables).forEach(t=>t.lines.sort((a,b)=>a.name.localeCompare(b.name,'es')));
       kAplicarToques(tables);           // no pisar lo que cocina acaba de marcar
+      kVaciarReintentos();              // y reintentar lo que no llegó a guardarse
       state.tableList=names; state.tables=tables;
       state.tickets = tk.map(r=>({id:r.id,mesa:r.mesa,sub:r.sub||'',total:Number(r.total),propina:Number(r.propina||0),items:r.items||[],at:r.closed_at,pago:r.pago||'efectivo'}));
       await this.loadStock(); await this.loadProv();
@@ -1311,7 +1312,7 @@ const CloudDB={
   async setUnion(mesa,principal){ flag((await sb.from('mesas').update({unida_a:principal}).eq('name',mesa)).error); },
   async addMesa(name){ flag((await sb.from('mesas').upsert({name,sub:''},{onConflict:'name',ignoreDuplicates:true})).error); },
   async deleteMesa(mesa){ await sb.from('orders').delete().eq('mesa',mesa); flag((await sb.from('mesas').delete().eq('name',mesa)).error); },
-  async setKitchen(mesa,item,km,kl,ks){ flag((await sb.from('orders').update({km,kl,ks}).eq('mesa',mesa).eq('item',item)).error); },
+  async setKitchen(mesa,item,km,kl,ks){ const x=await sb.from('orders').update({km,kl,ks}).eq('mesa',mesa).eq('item',item); flag(x.error); return x.error?{error:x.error}:{}; },
   async setPrice(mesa,item,price){ flag((await sb.from('orders').update({price}).eq('mesa',mesa).eq('item',item)).error); },
   async setNota(mesa,item,nota){ let x=await sb.from('orders').update({nota}).eq('mesa',mesa).eq('item',item); flag(x.error); return x.error?{error:x.error}:{}; },
   async loadStock(){
@@ -2635,40 +2636,60 @@ function logout(){
 let muted=false, kPrevMesas=new Set(), kInit=false, toastTimer;
 const foodLines = mesa => tbl(mesa).lines.filter(l=>isKitchen(l.name));
 
-/* ---- Protección contra recargas ----
-   Al tocar un plato en cocina se guarda en la nube, pero la app recarga cada
-   pocos segundos. Si la recarga llega antes que el guardado, machaca lo que
-   acabas de marcar y la comanda "vuelve a cero". Aquí se anota lo tocado
-   durante 30 s: mientras tanto manda lo que marcó el cocinero. */
-const kToques={};
+/* ---- Memoria de cocina a prueba de fallos ----
+   Objetivo: que lo que marca el cocinero NUNCA se pierda, y que a la vez
+   dos móviles en cocina puedan trabajar sobre las mismas comandas.
+
+   Cómo: al marcar algo se anota como "pendiente de guardar" en el propio
+   móvil. En cuanto la nube confirma el guardado, la anotación se BORRA y
+   ese móvil vuelve a aceptar lo que digan los demás. Solo si el guardado
+   falla (wifi caído) la anotación se queda y se reintenta.
+
+   Por eso dos móviles no se pelean: la protección dura lo que tarda el
+   guardado, no más. Los cambios del compañero entran siempre. */
+const KKEY='barmota_kds_v2';
+let kToques={};
+try{ kToques=JSON.parse(localStorage.getItem(KKEY)||'{}'); }catch(e){ kToques={}; }
 const kKey=(mesa,item)=>mesa+'\u0000'+item;
-function kMarcar(mesa,item,km,kl,ks){ kToques[kKey(mesa,item)]={km,kl,ks,ts:Date.now()}; }
+function kGuardar(){ try{ localStorage.setItem(KKEY,JSON.stringify(kToques)); }catch(e){} }
+
+/* marca como pendiente y guarda; si la nube responde bien, se olvida */
+async function kEscribir(mesa,item,km,kl,ks){
+  const k=kKey(mesa,item);
+  kToques[k]={km,kl,ks,ts:Date.now()}; kGuardar();
+  const r = await DB.setKitchen(mesa,item,km,kl,ks) || {};
+  if(!r.error){
+    const t=kToques[k];
+    if(t && t.km===km && t.kl===kl && t.ks===ks){ delete kToques[k]; kGuardar(); }   // confirmado
+  }
+  return r;
+}
+/* Se llama tras traer datos de la nube: solo defiende lo que aún no se ha
+   podido guardar. Todo lo demás se acepta tal cual venga del compañero. */
 function kAplicarToques(tables){
-  const ahora=Date.now();
+  let cambios=false;
   Object.keys(kToques).forEach(k=>{
     const t=kToques[k];
-    if(ahora-t.ts>30000){ delete kToques[k]; return; }
-    const [mesa,item]=k.split('\u0000');
-    const tb=tables[mesa]; if(!tb) return;
-    const l=tb.lines.find(x=>x.name===item); if(!l) return;
-    if((l.km||0)+(l.kl||0)+(l.ks||0) < t.km+t.kl+t.ks){ l.km=t.km; l.kl=t.kl; l.ks=t.ks; }
+    const i=k.indexOf('\u0000'); const mesa=k.slice(0,i), item=k.slice(i+1);
+    const tb=tables[mesa];
+    const l=tb && tb.lines.find(x=>x.name===item);
+    if(!l){ delete kToques[k]; cambios=true; return; }                 // línea cobrada o borrada
+    if(Date.now()-t.ts > 10*60000){ delete kToques[k]; cambios=true; return; }  // muy vieja: se suelta
+    l.km=t.km; l.kl=t.kl; l.ks=t.ks;
+    kReintentos.push({mesa,item,km:t.km,kl:t.kl,ks:t.ks});
   });
+  if(cambios) kGuardar();
+}
+let kReintentos=[];
+async function kVaciarReintentos(){
+  const cola=kReintentos; kReintentos=[];
+  const vistos={};
+  for(const r of cola){
+    const k=kKey(r.mesa,r.item); if(vistos[k]) continue; vistos[k]=1;
+    try{ await kEscribir(r.mesa,r.item,r.km,r.kl,r.ks); }catch(e){}
+  }
 }
 
-/* ---- Orden de salida ----
-   Lo que se pica antes sale antes: las tapas primero, y luego el resto
-   por el orden en que se pidió. Es el orden en que la cocina debe montar
-   los platos, no el orden en que el camarero los tecleó. */
-const ORDEN_SALIDA = ['Tapas','Menú Desayunos','Bocadillos y Montados','Burguers, Sándwich y Perrito','Combinados'];
-function pase(name){ const i=ORDEN_SALIDA.indexOf(ITEM_CAT[canonical(name)]); return i<0?99:i; }
-function ordenSalida(lines){
-  return lines.slice().sort((a,b)=>{
-    const d=pase(a.name)-pase(b.name); if(d) return d;
-    const ta=a.creada_en?new Date(a.creada_en).getTime():0, tb=b.creada_en?new Date(b.creada_en).getTime():0;
-    return ta-tb;
-  });
-}
-function lineState(l){ const km=l.km||0, kl=l.kl||0, ks=l.ks||0; return {p:Math.max(0,l.qty-km-kl-ks), m:km, l:kl, s:ks}; }
 function kComandas(){
   const list=[];
   state.tableList.forEach(mesa=>{
@@ -2688,13 +2709,12 @@ async function kMove(mesa,item,from){
   if(from==='p' && s.p>0){ l.km++; }
   else if(from==='m' && s.m>0){ l.km--; l.kl++; beep(1); showToast(mesa+': '+item+' LISTO — recoger', true); }
   else if(from==='l' && s.l>0){ l.kl--; l.ks++; kCheckDone(mesa); }
-  kMarcar(mesa,item,l.km,l.kl,l.ks);
-  kRenderBoard(); await DB.setKitchen(mesa,item,l.km,l.kl,l.ks);
+  kRenderBoard(); await kEscribir(mesa,item,l.km,l.kl,l.ks);
 }
 async function kUndo(mesa,item){
   const l=tbl(mesa).lines.find(x=>x.name===item); if(!l) return; l.km=l.km||0;l.kl=l.kl||0;l.ks=l.ks||0;
   if(l.ks>0){ l.ks--; l.kl++; } else if(l.kl>0){ l.kl--; l.km++; } else if(l.km>0){ l.km--; }
-  kRenderBoard(); await DB.setKitchen(mesa,item,l.km,l.kl,l.ks);
+  kRenderBoard(); await kEscribir(mesa,item,l.km,l.kl,l.ks);
 }
 async function kBulk(mesa){
   const fl=foodLines(mesa); const st=kAgg({lines:fl});
@@ -2704,8 +2724,7 @@ async function kBulk(mesa){
     else { l.ks=l.ks+s.l; l.kl=0; } });
   if(st==='en_marcha') showToast(mesa+' COMPLETA — servir', true);
   if(st==='lista') showToast(mesa+' SERVIDA — fuera de cocina', false);
-  fl.forEach(l=>kMarcar(mesa,l.name,l.km||0,l.kl||0,l.ks||0));
-  kRenderBoard(); for(const l of fl){ await DB.setKitchen(mesa,l.name,l.km||0,l.kl||0,l.ks||0); }
+  kRenderBoard(); for(const l of fl){ await kEscribir(mesa,l.name,l.km||0,l.kl||0,l.ks||0); }
 }
 /* Quitar una comanda de cocina a mano.
    No borra nada de la cuenta: marca los platos como servidos, que es lo que
@@ -2720,10 +2739,10 @@ function kQuitar(mesa){
     okLabel:'Quitar de cocina',
     danger:true,
     onOk: async ()=>{
-      fl.forEach(l=>{ l.km=0; l.kl=0; l.ks=l.qty; kMarcar(mesa,l.name,0,0,l.qty); });
+      fl.forEach(l=>{ l.km=0; l.kl=0; l.ks=l.qty; });
       showToast(mesa+' fuera de cocina', false);
       kRenderBoard();
-      for(const l of fl){ await DB.setKitchen(mesa,l.name,0,0,l.qty); }
+      for(const l of fl){ await kEscribir(mesa,l.name,0,0,l.qty); }
     }
   });
 }
